@@ -49,19 +49,22 @@
 `timescale 1ns / 1ps
 
 module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable);
-	parameter DATA_SIZE = 4'd8;
-	parameter ADDR_SIZE = 4'd13;
+	parameter DATA_SIZE = 4'h8;
+	parameter ADDR_SIZE = 4'hd;
+
+	localparam DATA_SIZE_ = DATA_SIZE - 1'b1;
+	localparam ADDR_SIZE_ = ADDR_SIZE - 1'b1;
 
 	input clk;
 	input reset_n;
-	input [DATA_SIZE-1:0] alu_result;
-	input [DATA_SIZE-1:0] alu_status;
-	input [DATA_SIZE-1:0] data_in;
-	output reg [ADDR_SIZE-1:0] address;
+	input [DATA_SIZE_:0] alu_result;
+	input [DATA_SIZE_:0] alu_status;
+	input [DATA_SIZE_:0] data_in;
+	output reg [ADDR_SIZE_:0] address;
 	output reg control; // one bit is enough? read = 0, write = 1
-	output reg [DATA_SIZE-1:0] data_out;
-	output reg [DATA_SIZE-1:0] alu_opcode;
-	output reg [DATA_SIZE-1:0] alu_a;
+	output reg [DATA_SIZE_:0] data_out;
+	output reg [DATA_SIZE_:0] alu_opcode;
+	output reg [DATA_SIZE_:0] alu_a;
 	output reg alu_enable;
 
 
@@ -83,11 +86,11 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	localparam MEM_READ = 1'b0;
 	localparam MEM_WRITE = 1'b1;
 
-	reg [ADDR_SIZE-1:0] pc;		// program counter
-	reg [DATA_SIZE-1:0] sp;		// stack pointer
-	reg [DATA_SIZE-1:0] ir;		// instruction register
-	reg [ADDR_SIZE:0] temp_addr;	// temporary address
-	reg [DATA_SIZE-1:0] temp_data;	// temporary data
+	reg [ADDR_SIZE_:0] pc;		// program counter
+	reg [DATA_SIZE_:0] sp;		// stack pointer
+	reg [DATA_SIZE_:0] ir;		// instruction register
+	reg [ADDR_SIZE_:0] temp_addr;	// temporary address
+	reg [DATA_SIZE_:0] temp_data;	// temporary data
 
 	reg [3:0] state, next_state; // current and next state registers
 	// TODO: not sure if this will be 4 bits wide. as of march 9th this was 4bit wide.
@@ -109,7 +112,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	reg write;
 	reg jump;
 
-	wire [ADDR_SIZE-1:0] next_pc;
+	wire [ADDR_SIZE_:0] next_pc;
 	assign next_pc = pc + 13'b0000000000001;
 
 	always @ (posedge clk or negedge reset_n) begin // sequencial always block
@@ -117,22 +120,23 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			// all registers must assume default values
 			pc <= 0; // TODO: this is written somewhere. something about a reset vector. must be checked.
 			sp <= 0; // TODO: the default is not 0. maybe $0100 or something like that. must be checked.
-			ir <= 0;
+			ir <= 8'h00;
 			temp_addr <= 0;
-			temp_data <= 0;
+			temp_data <= 8'h00;
 			state <= RESET;
 			// registered outputs also receive default values
 			address <= 0;
-			control <= 0; // check if these 2 shouldnt be on the other always block along with the address
-			data_out <= 0;
+			control <= MEM_READ;
+			data_out <= 8'h00;
 		end
 		else begin
 			state <= next_state;
 			control <= MEM_READ; 
-			data_out = 8'hZ;	
+			data_out <= 8'h00;	
 			case (state)
 				RESET: begin
-					// The processor was reset 
+					// The processor was reset
+					$write("under reset"); 
 				end
 				FETCH_OP: begin // this state is the simplest one. it is a simple fetch that must be done when the cpu was reset or
 						// the last cycle was a memory write.
@@ -229,13 +233,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	end
 
 	always @ (*) begin // this is the next_state logic and the output logic always block
-		//control = MEM_READ; 
-		//data_out = 8'h00;
-		
 		alu_opcode = 8'h00;
 		alu_a = 8'h00;
 		alu_enable = 1'b0;
-		//address = pc;
 
 		next_state = RESET; // this prevents the latch
 
@@ -246,12 +246,11 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			FETCH_OP: begin
 				next_state = FETCH_LOW;
 			end
-			FETCH_OP_CALC: begin
-				next_state = FETCH_LOW;
-				alu_opcode = ir;
-				alu_enable = 1'b1;
-
-			end
+			//FETCH_OP_CALC: begin // so far no addressing mode required the use of this state
+			//	next_state = FETCH_LOW;
+			//	alu_opcode = ir;
+			//	alu_enable = 1'b1;
+			//end
 			FETCH_OP_CALC_PARAM: begin
 				next_state = FETCH_LOW;
 				alu_opcode = ir;
@@ -286,7 +285,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				if (write) begin
 					alu_opcode = ir;
 					alu_enable = 1'b1;
-					alu_a = 8'hzz;
+					alu_a = 8'h00;
 				end
 
 
