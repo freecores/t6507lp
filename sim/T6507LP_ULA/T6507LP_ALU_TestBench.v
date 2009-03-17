@@ -23,6 +23,7 @@ T6507LP_ALU DUT (
 			.alu_a		(alu_a)
 		);
 
+/*
 localparam period = 10;
 
 always begin
@@ -46,5 +47,6 @@ begin
 	end
 	$finish;
 end
+*/
 endmodule
 

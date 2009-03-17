@@ -62,6 +62,8 @@ reg [7:0] Y;
 
 reg [7:0] STATUS;
 reg [7:0] result;
+reg [7:0] temp1;
+reg [7:0] temp2;
 
 `include "T6507LP_Package.v"
 
@@ -171,36 +173,33 @@ always @ (*) begin
 		//NOP_IMP: begin
 			// Do nothing :-D
 		//end
-
-		// PHA - Push A
-		// TAX - Transfer Accumulator to X
-		// TAY - Transfer Accumulator to Y
-		TAX_IMP, TAY_IMP, PHA_IMP: begin
-			result = A;
-		end
-		
+	
 		// PHP - Pull Processor Status Register
 		PLP_IMP: begin
 			STATUS = alu_a;
 		end
 
-		// TSX - Transfer Stack Pointer to X
-		TSX_IMP: begin
-			result = alu_a;
+		// STA - Store Accumulator
+		// PHA - Push A
+		// TAX - Transfer Accumulator to X
+		// TAY - Transfer Accumulator to Y
+		TAX_IMP, TAY_IMP, PHA_IMP, STA_ZPG, STA_ZPX, STA_ABS, STA_ABX, STA_ABY, STA_IDX, STA_IDY :
+		begin
+			result = A;
 		end
 
+		// STX - Store X Register
 		// TXA - Transfer X to Accumulator
-		TXA_IMP: begin
-			result = X;
-		end
-
 		// TXS - Transfer X to Stack pointer
-		TXS_IMP: begin
+		STX_ZPG, STX_ZPY, STX_ABS, TXA_IMP, TXS_IMP :
+		begin
 			result = X;
 		end
-
+			
+		// STY - Store Y Register
 		// TYA - Transfer Y to Accumulator
-		TYA_IMP: begin
+		STY_ZPG, STY_ZPX, STY_ABS, TYA_IMP :
+		begin
 			result = Y;
 		end
 
@@ -254,8 +253,19 @@ always @ (*) begin
 		// ADC - Add with carry
 		ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY :
 		begin
-			{STATUS[C],result} = A + alu_a + alu_status[C];
-			if ((A[7] == alu_a[7]) && (A[7] != alu_result[7]))
+			temp1 = A;
+			temp2 = alu_a;
+			if (alu_status[D] == 1) begin
+				if (A[3:0] > 9) begin
+					temp1 = A + 6; // A = A - 10 and A = A + 16
+				end
+				if (alu_a[3:0] > 9) begin
+					temp2 = alu_a + 6;
+				end
+			end
+
+			{STATUS[C],result} = temp1 + temp2 + alu_status[C];
+			if ((temp1[7] == temp2[7]) && (temp1[7] != alu_result[7]))
 				STATUS[V] = 1;
 			else
 				STATUS[V] = 0;
@@ -280,39 +290,15 @@ always @ (*) begin
 		end
 
 		// LDA - Load Accumulator
-		LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY :
-		begin
-			result = alu_a;
-		end
-
 		// LDX - Load X Register
-		LDX_IMM, LDX_ZPG, LDX_ZPY, LDX_ABS, LDX_ABY :
-		begin
-			result = alu_a;
-		end
-
 		// LDY - Load Y Register
-		LDY_IMM, LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX :
+		// TSX - Transfer Stack Pointer to X
+		LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY,
+		LDX_IMM, LDX_ZPG, LDX_ZPY, LDX_ABS, LDX_ABY,
+		LDY_IMM, LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX,
+		TSX_IMP :
 		begin
 			result = alu_a;
-		end
-
-		// STA - Store Accumulator
-		STA_ZPG, STA_ZPX, STA_ABS, STA_ABX, STA_ABY, STA_IDX, STA_IDY :
-		begin
-			result = A;
-		end
-
-		// STX - Store X Register
-		STX_ZPG, STX_ZPY, STX_ABS :
-		begin
-			result = X;
-		end
-			
-		// STY - Store Y Register
-		STY_ZPG, STY_ZPX, STY_ABS :
-		begin
-			result = Y;
 		end
 
 		// ORA - Logical OR
@@ -324,8 +310,19 @@ always @ (*) begin
 		// SBC - Subtract with Carry
 		SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY :
 		begin
-			{STATUS[C],result} = A - alu_a - !alu_status[C];
-			if ((A[7] == alu_a[7]) && (A[7] != alu_result[7]))
+			temp1 = A;
+			temp2 = alu_a;
+			if (alu_status[D] == 1) begin
+				if (A[3:0] > 9) begin
+					temp1 = A + 6; // A = A - 10 and A = A + 16
+				end
+				if (alu_a[3:0] > 9) begin
+					temp2 = alu_a + 6;
+				end
+			end
+
+			{STATUS[C],result} = temp1 - temp2 - ~alu_status[C];
+			if ((temp1[7] == temp2[7]) && (temp1[7] != alu_result[7]))
 				STATUS[V] = 1;
 			else
 				STATUS[V] = 0;
