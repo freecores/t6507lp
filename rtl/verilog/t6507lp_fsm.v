@@ -48,7 +48,7 @@
 
 `timescale 1ns / 1ps
 
-module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable);
+module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
 	parameter DATA_SIZE = 4'h8;
 	parameter ADDR_SIZE = 4'hd;
 
@@ -67,6 +67,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	output reg [DATA_SIZE_:0] alu_a;
 	output reg alu_enable;
 
+	input [DATA_SIZE_:0] alu_x;
+	input [DATA_SIZE_:0] alu_y;
+
 
 	// FSM states
 	localparam RESET = 4'b1111;
@@ -78,6 +81,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	localparam DUMMY_WRT_CALC = 4'b0101;
 	localparam WRITE_MEM = 4'b0110;
 	localparam FETCH_OP_CALC_PARAM = 4'b0111;
+	localparam READ_MEM_CALC_INDEX = 4'b1000;
 
 	// OPCODES TODO: verify how this get synthesised
 	`include "../T6507LP_Package.v"
@@ -105,6 +109,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	reg relative;
 	reg zero_page;
 	reg zero_page_indexed;
+	reg [DATA_SIZE_:0] index; // will be assigned with either X or Y
 
 	// regs that store the type of operation. again, this simplifies the FSM a lot.
 	reg read;
@@ -114,6 +119,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 
 	wire [ADDR_SIZE_:0] next_pc;
 	assign next_pc = pc + 13'b0000000000001;
+
+	wire [ADDR_SIZE_:0] address_plus_index; // this would update more times than actually needed, consuming power.
+						// so the assign was changed to conditional.
+	assign address_plus_index = (zero_page_indexed == 1'b1 && state == READ_MEM_CALC_INDEX)? (temp_addr + index): 0;
 
 	always @ (posedge clk or negedge reset_n) begin // sequencial always block
 		if (reset_n == 1'b0) begin
@@ -182,6 +191,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 							data_out <= 8'h00;
 						end
 					end
+					else if (zero_page_indexed) begin
+						pc <= next_pc;
+						address <= {{5{1'b0}},data_in};
+						temp_addr <= {{5{1'b0}},data_in};
+						control <= MEM_READ; 
+					end
 				end
 				FETCH_HIGH: begin
 					if (jump) begin
@@ -226,6 +241,21 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						control <= MEM_READ; 
 						data_out <= 8'h00;
 					end
+				end
+				READ_MEM_CALC_INDEX: begin
+						//pc <= next_pc; // pc was  already updated in the previous cycle
+						address <= address_plus_index;
+						temp_addr <= address_plus_index;
+
+						if (write) begin
+							control <= MEM_WRITE;
+							data_out <= alu_result;
+						end
+						else begin
+							control <= MEM_READ; 
+							data_out <= 8'h00;
+						end
+
 				end
 				DUMMY_WRT_CALC: begin
 					pc <= pc;
@@ -288,23 +318,26 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					end
 					else if (write) begin
 						next_state = WRITE_MEM;
+						alu_opcode = ir;
+						alu_enable = 1'b1;
+						alu_a = 8'h00;
 					end
 					else begin
 						$write("unknown behavior"); 
 						$finish(0);
 					end
 				end
+				else if (zero_page_indexed) begin
+					next_state = READ_MEM_CALC_INDEX;
+				end
 				else begin // at least the absolute address mode falls here
 					next_state = FETCH_HIGH;
+					if (write) begin // this is being done one cycle early?
+						alu_opcode = ir;
+						alu_enable = 1'b1;
+						alu_a = 8'h00;
+					end
 				end
-
-				if (write) begin
-					alu_opcode = ir;
-					alu_enable = 1'b1;
-					alu_a = 8'h00;
-				end
-
-
 			end
 			FETCH_HIGH: begin
 				if (jump) begin
@@ -314,6 +347,20 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					next_state = READ_MEM;
 				end
 				else if (write) begin
+					next_state = WRITE_MEM;
+				end
+				else begin
+					$write("unknown behavior"); 
+					$finish(0);
+				end
+			end
+			READ_MEM_CALC_INDEX: begin
+				if (read || read_modify_write) begin
+					next_state = READ_MEM;
+				end
+				else if (write) begin
+					alu_opcode = ir;
+					alu_enable = 1'b1;
 					next_state = WRITE_MEM;
 				end
 				else begin
@@ -355,6 +402,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		relative = 1'b0;
 		zero_page = 1'b0;
 		zero_page_indexed = 1'b0;
+	
+		index = 1'b0;
 
 		read = 1'b0;
 		read_modify_write = 1'b0;
@@ -377,8 +426,13 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				zero_page = 1'b1;
 			end	
 			ADC_ZPX, AND_ZPX, ASL_ZPX, CMP_ZPX, DEC_ZPX, EOR_ZPX, INC_ZPX, LDA_ZPX, LDY_ZPX, LSR_ZPX, ORA_ZPX, ROL_ZPX, ROR_ZPX,
-			SBC_ZPX, STA_ZPX, LDX_ZPY, STX_ZPY, STY_ZPX: begin
+			SBC_ZPX, STA_ZPX, STY_ZPX: begin
 				zero_page_indexed = 1'b1;
+				index = alu_x;
+			end
+			LDX_ZPY, STX_ZPY: begin
+				zero_page_indexed = 1'b1;
+				index = alu_y;
 			end
 			BCC_REL, BCS_REL, BEQ_REL, BMI_REL, BNE_REL, BPL_REL, BVC_REL, BVS_REL: begin
 				relative = 1'b1;
@@ -396,8 +450,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				indirect = 1'b1;	
 			end
 			default: begin
-				$write("\nunknown OPCODE!!!!! 0x%h\n", ir);
-				$finish();
+				if (reset_n == 1) begin // the processor is NOT being reset
+					$write("\nunknown OPCODE!!!!! 0x%h\n", ir);
+					$finish();
+				end
 			end
 		endcase
 	
@@ -418,7 +474,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		if (ir == JMP_ABS || ir == JMP_IND) begin // the opcodes are 8'h4C and 8'h6C
 			jump = 1'b1;
 		end
-	end // no way
+	end 
 endmodule
 
 

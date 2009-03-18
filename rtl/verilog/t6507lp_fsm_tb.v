@@ -52,6 +52,9 @@ module t6507lp_fsm_tb();
 	reg [7:0] alu_status;
 	reg [7:0] data_in;
 
+	reg [7:0] alu_x;
+	reg [7:0] alu_y;
+
 	wire [12:0] address;
 	wire control; // one bit is enough? read = 0, write = 1
 	wire [7:0] data_out;
@@ -61,17 +64,19 @@ module t6507lp_fsm_tb();
 
 	`include "../T6507LP_Package.v"
 
-	t6507lp_fsm #(8,13) my_dut(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable);
+	t6507lp_fsm #(8,13) my_dut(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
 
 	always #10 clk = ~clk;
 
-	reg[7:0] fake_mem[30:0];
+	reg[7:0] fake_mem[40:0];
 
 	initial begin
 		clk = 0;
 		reset_n = 1'b0;
 		alu_result = 8'h01;
 		alu_status = 0;
+		alu_x = 8'h07;
+		alu_y = 8'h03;
 
 		fake_mem[0] = ASL_ACC; // testing ACC mode
 		fake_mem[1] = ADC_IMM; // testing IMM mode
@@ -98,6 +103,13 @@ module t6507lp_fsm_tb();
 		fake_mem[22] = 8'h00;
 		fake_mem[23] = STA_ZPG; // testing ZPG mode, WRITE type
 		fake_mem[24] = 8'h00;
+		fake_mem[25] = LDA_ZPX; // testing ZPX mode, READ type. A = MEM[x+1]
+		fake_mem[26] = 8'h01;
+		fake_mem[27] = ASL_ZPX; // testing ZPX mode, READ_MODIFY_WRITE type. MEM[x+1] = MEM[x+1] << 1;
+		fake_mem[28] = 8'h01;
+		fake_mem[29] = STA_ZPX; // testing ZPX mode, WRITE type. MEM[x+2] = A;
+		fake_mem[30] = 8'h02;
+		
 
 		@(negedge clk) // will wait for next negative edge of the clock (t=20)
 		reset_n=1'b1;
