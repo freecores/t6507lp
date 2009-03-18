@@ -109,13 +109,16 @@ module t6507lp_fsm_tb();
 		fake_mem[28] = 8'h01;
 		fake_mem[29] = STA_ZPX; // testing ZPX mode, WRITE type. MEM[x+2] = A;
 		fake_mem[30] = 8'h02;
+		fake_mem[31] = LDA_ABX; // testing ABX mode, READ TYPE. No page crossed.
+		fake_mem[32] = 8'h0a;
+		fake_mem[33] = 8'h00;
 		
 
 		@(negedge clk) // will wait for next negative edge of the clock (t=20)
 		reset_n=1'b1;
 	
 
-		#1000;
+		#2000;
 		$finish; // to shut down the simulation
 	end //initial
 
