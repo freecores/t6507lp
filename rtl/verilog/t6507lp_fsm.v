@@ -52,8 +52,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	parameter DATA_SIZE = 4'h8;
 	parameter ADDR_SIZE = 4'hd;
 
-	localparam DATA_SIZE_ = DATA_SIZE - 1'b1;
-	localparam ADDR_SIZE_ = ADDR_SIZE - 1'b1;
+	localparam DATA_SIZE_ = DATA_SIZE - 4'b0001;
+	localparam ADDR_SIZE_ = ADDR_SIZE - 4'b0001;
 
 	input clk;
 	input reset_n;
@@ -131,8 +131,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		end
 		else begin
 			state <= next_state;
-			control <= MEM_READ; 
-			data_out <= 8'h00;	
+			
 			case (state)
 				RESET: begin
 					// The processor was reset
@@ -142,26 +141,31 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						// the last cycle was a memory write.
 					pc <= next_pc;
 					address <= next_pc;
+					control <= MEM_READ; 
 					ir <= data_in;
 				end
 				FETCH_OP_CALC, FETCH_OP_CALC_PARAM: begin // this is the pipeline happening!
 					pc <= next_pc;
 					address <= next_pc;
+					control <= MEM_READ; 
 					ir <= data_in;
 				end
 				FETCH_LOW: begin // in this state the opcode is already known so truly execution begins
 					if (accumulator || implied) begin
 						pc <= pc; // is this better?
 						address <= pc;
+						control <= MEM_READ; 
 					end
 					else if (immediate) begin
 						pc <= next_pc;
 						address <= next_pc;
+						control <= MEM_READ; 
 						temp_data <= data_in; // the follow-up byte is saved in temp_data 
 					end
 					else if (absolute) begin
 						pc <= next_pc;
 						address <= next_pc;					
+						control <= MEM_READ; 
 						temp_addr[7:0] <= data_in;
 					end
 					else if (zero_page) begin
@@ -173,12 +177,18 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 							control <= MEM_WRITE;
 							data_out <= alu_result;
 						end
+						else begin
+							control <= MEM_READ; 
+							data_out <= 8'h00;
+						end
 					end
 				end
 				FETCH_HIGH: begin
 					if (jump) begin
-						pc <= {data_in[4:0], temp_addr}; // PCL <= first byte, PCH <= second byte
-						address <= {data_in[4:0], temp_addr};
+						pc <= {data_in[4:0], temp_addr[7:0]}; // PCL <= first byte, PCH <= second byte
+						address <= {data_in[4:0], temp_addr[7:0]};
+						control <= MEM_READ; 
+						data_out <= 8'h00;
 					end
 					else begin 
 						if (write) begin 
@@ -192,6 +202,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 							pc <= next_pc;
 							temp_addr[12:8] <= data_in[4:0];
 							address <= {data_in[4:0],temp_addr[7:0]};
+							control <= MEM_READ; 
+							data_out <= 8'h00;
 						end
 					end
 					//else begin
@@ -211,6 +223,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						pc <= pc;
 						address <= pc;
 						temp_data <= data_in;
+						control <= MEM_READ; 
+						data_out <= 8'h00;
 					end
 				end
 				DUMMY_WRT_CALC: begin
@@ -222,6 +236,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				WRITE_MEM: begin
 					pc <= pc;
 					address <= pc;
+					control <= MEM_READ; 
+					data_out <= 8'h00;
 				end
 				default: begin
 					$write("unknown state"); 	// TODO: check if synth really ignores this 2 lines. Otherwise wrap it with a `ifdef 
