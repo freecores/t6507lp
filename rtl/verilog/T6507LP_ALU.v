@@ -46,7 +46,7 @@
 
 // TODO: verify code identation
 
-module T6507LP_ALU( clk_i, n_rst_i, alu_enable, alu_result, alu_status, alu_opcode, alu_a );
+module T6507LP_ALU( clk_i, n_rst_i, alu_enable, alu_result, alu_status, alu_opcode, alu_a, alu_x, alu_y );
 
 input wire       clk_i;
 input wire       n_rst_i;
@@ -55,6 +55,8 @@ input wire [7:0] alu_opcode;
 input wire [7:0] alu_a;
 output reg [7:0] alu_result;
 output reg [7:0] alu_status;
+output reg [7:0] alu_x;
+output reg [7:0] alu_y;
 
 reg [7:0] A;
 reg [7:0] X;
@@ -75,12 +77,16 @@ begin
 		A <= 0;
 		X <= 0;
 		Y <= 0;
+		alu_x <= 0;
+		alu_y <= 0;
 	end
 	else if ( alu_enable == 1 ) begin
 		alu_result <= result;
 		A <= A;
 		X <= X;
 		Y <= Y;
+		alu_x <= X;
+		alu_y <= Y;
 		case (alu_opcode)
 			ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY,
 			AND_IMM, AND_ZPG, AND_ZPX, AND_ABS, AND_ABX, AND_ABY, AND_IDX, AND_IDY,
@@ -158,7 +164,7 @@ always @ (*) begin
 			STATUS[D] = 1'b0;
 		end
 
-		// CLI - Clear Interrupt Disable.
+		// CLI - Clear Interrupt Disable
 		// TODO: verify if this should be supported by 6507
 		CLI_IMP: begin
 			STATUS[I] = 1'b0;
