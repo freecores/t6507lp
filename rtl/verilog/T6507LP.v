@@ -69,7 +69,9 @@ T6507LP_FSM FSM (
 			.control	(control),
 			.data_out(D_o),
 			.alu_opcode	(alu_opcode),
-			.alu_a		(alu_a)
+			.alu_a		(alu_a),
+			.alu_x		(alu_x),
+			.alu_y		(alu_y)
 		);
 
 T6507LP_ALU ALU (
@@ -79,6 +81,8 @@ T6507LP_ALU ALU (
 			.alu_result	(alu_result),
 			.alu_status	(alu_status),
 			.alu_opcode	(alu_opcode),
-			.alu_a		(alu_a)
+			.alu_a		(alu_a),
+			.alu_x		(alu_x),
+			.alu_y		(alu_y)
 		);
 endmodule
