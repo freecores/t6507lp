@@ -128,8 +128,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		address_plus_index = 0;
 		page_crossed = 0;
 
-		if (state == READ_MEM_CALC_INDEX || state == FETCH_HIGH_CALC_INDEX) begin
-			{page_crossed, address_plus_index} = temp_addr + index;
+		if (state == READ_MEM_CALC_INDEX || state == READ_MEM_FIX_ADDR || state == FETCH_HIGH_CALC_INDEX) begin
+			{page_crossed, address_plus_index[7:0]} = temp_addr[7:0] + index;
+			address_plus_index[12:8] = temp_addr[12:8] + page_crossed;
+
 		end
 	end
 

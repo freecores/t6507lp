@@ -112,6 +112,9 @@ module t6507lp_fsm_tb();
 		fake_mem[31] = LDA_ABX; // testing ABX mode, READ TYPE. No page crossed.
 		fake_mem[32] = 8'h0a;
 		fake_mem[33] = 8'h00;
+		fake_mem[34] = LDA_ABX; // testing ABX mode, READ TYPE. Page crossed.
+		fake_mem[35] = 8'hff;
+		fake_mem[36] = 8'h00;
 		
 
 		@(negedge clk) // will wait for next negative edge of the clock (t=20)
