@@ -68,7 +68,7 @@ module t6507lp_fsm_tb();
 
 	always #10 clk = ~clk;
 
-	reg[7:0] fake_mem[40:0];
+	reg[7:0] fake_mem[100:0];
 
 	initial begin
 		clk = 0;
@@ -115,6 +115,9 @@ module t6507lp_fsm_tb();
 		fake_mem[34] = LDA_ABX; // testing ABX mode, READ TYPE. Page crossed.
 		fake_mem[35] = 8'hff;
 		fake_mem[36] = 8'h00;
+		fake_mem[37] = ASL_ABX; // testing ABX mode, READ_MODIFY_WRITE TYPE. No page crossed.
+		fake_mem[38] = 8'h01;
+		fake_mem[39] = 8'h00;
 		
 
 		@(negedge clk) // will wait for next negative edge of the clock (t=20)
