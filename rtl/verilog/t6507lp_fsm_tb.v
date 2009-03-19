@@ -68,13 +68,13 @@ module t6507lp_fsm_tb();
 
 	always #10 clk = ~clk;
 
-	reg[7:0] fake_mem[100:0];
+	reg[7:0] fake_mem[2000:0];
 
 	initial begin
 		clk = 0;
 		reset_n = 1'b0;
 		alu_result = 8'h01;
-		alu_status = 0;
+		alu_status = 8'h00;
 		alu_x = 8'h07;
 		alu_y = 8'h03;
 
@@ -124,7 +124,19 @@ module t6507lp_fsm_tb();
 		fake_mem[40] = STA_ABX; // testing ABX mode, WRITE TYPE. No page crossed.
 		fake_mem[41] = 8'h04;
 		fake_mem[42] = 8'h00;
+		fake_mem[43] = STA_ABX; // testing ABX mode, WRITE TYPE. Page crossed.
+		fake_mem[44] = 8'hff;
+		fake_mem[45] = 8'h00;
+		fake_mem[46] = BNE_REL; // testing REL mode, taking a branch, no page crossed.
+		fake_mem[47] = 8'h0a;
+		fake_mem[58] = BNE_REL; // testing REL mode, taking a branch, page crossed.
+		fake_mem[59] = 8'hff;
+		fake_mem[315] = BEQ_REL; // testing REL mode, not taking a branch, page would have crossed.
+		fake_mem[316] = 8'hff;
+		fake_mem[317] = BEQ_REL; // testing REL mode, not taking a branch, page would not have crossed.
+		fake_mem[318] = 8'h0;
 		
+	
 
 		@(negedge clk) // will wait for next negative edge of the clock (t=20)
 		reset_n=1'b1;
