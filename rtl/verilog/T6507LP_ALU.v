@@ -286,7 +286,7 @@ always @ (*) begin
 		// CMP - Compare
 		CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY :
 		begin
-			{STATUS[C],result} = A - alu_a;// - !alu_status[C];
+			{STATUS[C],result} = A - alu_a - ~alu_status[C];
 		end
 
 		// EOR - Exclusive OR
@@ -373,13 +373,13 @@ always @ (*) begin
 		// CPX - Compare X Register
 		CPX_IMM, CPX_ZPG, CPX_ABS :
 		begin
-			{STATUS[C],result} = X - alu_a;// - !alu_status[C];
+			{STATUS[C],result} = X - alu_a - ~alu_status[C];
 		end
 
 		// CPY - Compare Y Register
 		CPY_IMM, CPY_ZPG, CPY_ABS :
 		begin
-			{STATUS[C],result} = Y - alu_a;// - !alu_status[C];
+			{STATUS[C],result} = Y - alu_a - ~alu_status[C];
 		end
 
 		default: begin // NON-DEFAULT OPCODES FALL HERE
