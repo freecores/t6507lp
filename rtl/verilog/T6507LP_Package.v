@@ -174,7 +174,7 @@ localparam	BIT_ZPG = 8'h24,
 
 localparam	BMI_REL = 8'h30;
 
-localparam	BNE_REL = 8'hF0;
+localparam	BNE_REL = 8'hD0;
 
 localparam	BPL_REL = 8'h10;
 
