@@ -9,8 +9,6 @@
 //// 6507 FSM								////
 ////									////
 //// TODO:								////
-//// - Fix absolute indexed mode					////
-//// - Code the relative mode						////
 //// - Code the indexed indirect mode					////
 //// - Code the indirect indexed mode					////
 //// - Code the absolute indirect mode					////
@@ -71,20 +69,24 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	input [DATA_SIZE_:0] alu_y;
 
 	// FSM states
-	localparam FETCH_OP = 4'b0000;
-	localparam FETCH_OP_CALC = 4'b0001;
-	localparam FETCH_LOW = 4'b0010;
-	localparam FETCH_HIGH = 4'b0011;
-	localparam READ_MEM = 4'b0100;
-	localparam DUMMY_WRT_CALC = 4'b0101;
-	localparam WRITE_MEM = 4'b0110;
-	localparam FETCH_OP_CALC_PARAM = 4'b0111;
-	localparam READ_MEM_CALC_INDEX = 4'b1000;
-	localparam FETCH_HIGH_CALC_INDEX = 4'b1001;
-	localparam READ_MEM_FIX_ADDR = 4'b1010;
-	localparam FETCH_OP_EVAL_BRANCH = 4'b1011;
-	localparam FETCH_OP_FIX_PC = 4'b1100;
-	localparam RESET = 4'b1111;
+	localparam FETCH_OP = 5'b00000;
+	localparam FETCH_OP_CALC = 5'b00001;
+	localparam FETCH_LOW = 5'b00010;
+	localparam FETCH_HIGH = 5'b00011;
+	localparam READ_MEM = 5'b00100;
+	localparam DUMMY_WRT_CALC = 5'b00101;
+	localparam WRITE_MEM = 5'b00110;
+	localparam FETCH_OP_CALC_PARAM = 5'b00111;
+	localparam READ_MEM_CALC_INDEX = 5'b01000;
+	localparam FETCH_HIGH_CALC_INDEX = 5'b01001;
+	localparam READ_MEM_FIX_ADDR = 5'b01010;
+	localparam FETCH_OP_EVAL_BRANCH = 5'b01011;
+	localparam FETCH_OP_FIX_PC = 5'b01100;
+	localparam READ_FROM_POINTER = 5'b01101;
+	localparam READ_FROM_POINTER_X = 5'b01110;
+	localparam READ_FROM_POINTER_X1 = 5'b01111;
+
+	localparam RESET = 5'b11111;
 
 	// OPCODES TODO: verify how this get synthesised
 	`include "../T6507LP_Package.v"
@@ -108,7 +110,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	reg accumulator;
 	reg immediate;
 	reg implied;
-	reg indirect;
+	reg indirectx;
+	reg indirecty;
 	reg relative;
 	reg zero_page;
 	reg zero_page_indexed;
@@ -141,6 +144,14 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				{page_crossed, address_plus_index[7:0]} = pc[7:0] + index;
 				address_plus_index[12:8] = pc[12:8] + page_crossed;// warning: pc might feed these lines twice and cause branch failure
 			end								// solution: add a temp reg i guess
+		end
+		else if (state == READ_FROM_POINTER) begin
+			{page_crossed, address_plus_index[7:0]} = temp_data + index;
+			address_plus_index[12:8] = 5'b00000;
+		end
+		else if (state == READ_FROM_POINTER_X) begin
+			{page_crossed, address_plus_index[7:0]} = temp_data + index + 8'h01;
+			address_plus_index[12:8] = 5'b00000;
 		end
 	end
 
@@ -217,6 +228,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						temp_addr <= {{5{1'b0}}, data_in};
 						control <= MEM_READ; 
 					end
+					else if (indirectx) begin
+						pc <= next_pc;
+						address <= data_in;
+						temp_data <= data_in;
+						control <= MEM_READ;
+					end
 				end
 				FETCH_HIGH_CALC_INDEX: begin
 					pc <= next_pc;
@@ -237,6 +254,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						address <= next_pc;
 						control <= MEM_READ; 
 						data_out <= 8'h00;
+						ir <= data_in;
 					end
 				end
 				FETCH_OP_FIX_PC: begin
@@ -350,8 +368,30 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					control <= MEM_READ; 
 					data_out <= 8'h00;
 				end
+				READ_FROM_POINTER: begin
+					pc <= pc;
+					address <= address_plus_index;
+					//temp_addr[7:0] <= data_in;
+					control <= MEM_READ;
+				end
+				READ_FROM_POINTER_X: begin
+					pc <= pc;
+					address <= address_plus_index;
+					temp_addr[7:0] <= data_in;
+					control <= MEM_READ;
+				end
+				READ_FROM_POINTER_X1: begin
+					pc <= pc;
+					address <= {data_in[5:0], temp_addr[7:0]};
+					if (write) begin
+						control <= MEM_WRITE;
+					end
+					else begin
+						control <= MEM_READ;
+					end
+				end
 				default: begin
-					$write("unknown state"); 	// TODO: check if synth really ignores this 2 lines. Otherwise wrap it with a `ifdef 
+					$write("unknown state"); // TODO: check if synth really ignores this 2 lines. Otherwise wrap it with a `ifdef 
 					$finish(0); 
 				end
 					
@@ -424,6 +464,25 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				end
 				else if (relative) begin
 					next_state = FETCH_OP_EVAL_BRANCH;
+				end
+				else if (indirectx) begin
+					next_state = READ_FROM_POINTER;
+				end
+			end
+			READ_FROM_POINTER: begin
+				next_state = READ_FROM_POINTER_X;
+			end
+			READ_FROM_POINTER_X: begin
+				next_state = READ_FROM_POINTER_X1;
+			end
+			READ_FROM_POINTER_X1: begin
+				if (read || read_modify_write) begin
+					next_state = READ_MEM;
+				end
+				else if (write) begin
+					alu_opcode = ir;
+					alu_enable = 1'b1;
+					next_state = WRITE_MEM;
 				end
 			end
 			FETCH_OP_EVAL_BRANCH: begin
@@ -524,7 +583,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		accumulator = 1'b0;
 		immediate = 1'b0;
 		implied = 1'b0;
-		indirect = 1'b0;
+		indirectx = 1'b0;
+		indirecty = 1'b0;
 		relative = 1'b0;
 		zero_page = 1'b0;
 		zero_page_indexed = 1'b0;
@@ -664,9 +724,13 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				absolute_indexed = 1'b1;
 				index = alu_y;
 			end
-			ADC_IDX, AND_IDX, CMP_IDX, EOR_IDX, LDA_IDX, ORA_IDX, SBC_IDX, STA_IDX, ADC_IDY, AND_IDY, CMP_IDY, EOR_IDY, LDA_IDY, 
-			ORA_IDY, SBC_IDY, STA_IDY: begin // all these opcodes are 8'hX1; TODO: optimize this
-				indirect = 1'b1;	
+			ADC_IDX, AND_IDX, CMP_IDX, EOR_IDX, LDA_IDX, ORA_IDX, SBC_IDX, STA_IDX: begin
+				indirectx = 1'b1;
+				index = alu_x;
+			end
+			ADC_IDY, AND_IDY, CMP_IDY, EOR_IDY, LDA_IDY, ORA_IDY, SBC_IDY, STA_IDY: begin 
+				indirecty = 1'b1;
+				index = alu_y;	
 			end
 			default: begin
 				$write("state : %b", state);

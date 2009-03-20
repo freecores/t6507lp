@@ -62,13 +62,15 @@ module t6507lp_fsm_tb();
 	wire [7:0] alu_a;
 	wire alu_enable;
 
+	integer i;
+
 	`include "../T6507LP_Package.v"
 
 	t6507lp_fsm #(8,13) my_dut(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
 
 	always #10 clk = ~clk;
 
-	reg[7:0] fake_mem[2000:0];
+	reg[7:0] fake_mem[2**13-1:0];
 
 	initial begin
 		clk = 0;
@@ -77,6 +79,12 @@ module t6507lp_fsm_tb();
 		alu_status = 8'h00;
 		alu_x = 8'h07;
 		alu_y = 8'h03;
+		
+		for (i=0; i < 2**13; i= i+1) begin
+			$write("\n%d",i);
+			fake_mem[i]=8'h00;
+		end
+
 
 		fake_mem[0] = ASL_ACC; // testing ACC mode
 		fake_mem[1] = ADC_IMM; // testing IMM mode
@@ -134,15 +142,25 @@ module t6507lp_fsm_tb();
 		fake_mem[315] = BEQ_REL; // testing REL mode, not taking a branch, page would have crossed.
 		fake_mem[316] = 8'hff;
 		fake_mem[317] = BEQ_REL; // testing REL mode, not taking a branch, page would not have crossed.
-		fake_mem[318] = 8'h0;
-		
-	
+		fake_mem[318] = 8'h00;
+		fake_mem[319] = LDA_IDX; // testing IDX mode READ TYPE, no page crossed;
+		fake_mem[320] = 8'h0a;	
+		fake_mem[321] = LDA_IDX; // testing IDX mode READ TYPE, page crossed; this will actually do A = MEM[6] because there is no carry
+		fake_mem[322] = 8'hff;
+		//fake_mem[319] = SLO_IDX; // testing IDX mode READ_MODIFY_WRITE TYPE
+		//fake_mem[320] = 8'h0a;   // all of read modify write instructions are not documented therefore will not be simulated
+		fake_mem[323] = STA_IDX; // testing IDX mode WRITE TYPE, page crossed being ignored
+		fake_mem[324] = 8'hff;		
+		fake_mem[325] = STA_IDX; // testing IDX mode WRITE TYPE, page not crossed;
+		fake_mem[326] = 8'hff;		
+		//fake_mem[321] = LDA_IDX; // testing IDX mode READ TYPE, page crossed;
+		//fake_mem[322] = 8'hff;	
 
 		@(negedge clk) // will wait for next negative edge of the clock (t=20)
 		reset_n=1'b1;
 	
 
-		#2000;
+		#3000;
 		$finish; // to shut down the simulation
 	end //initial
 
