@@ -125,7 +125,7 @@ module t6507lp_fsm_tb();
 		fake_mem[36] = 8'h00;
 		fake_mem[37] = ASL_ABX; // testing ABX mode, READ_MODIFY_WRITE TYPE. No page crossed.
 		fake_mem[38] = 8'h01;
-		fake_mem[39] = 8'h00;
+		fake_mem[39] = 8'd35;
 		fake_mem[40] = ASL_ABX; // testing ABX mode, READ_MODIFY_WRITE TYPE. Page crossed.
 		fake_mem[41] = 8'hff;
 		fake_mem[42] = 8'h00;
@@ -139,6 +139,8 @@ module t6507lp_fsm_tb();
 		fake_mem[47] = 8'h0a;
 		fake_mem[58] = BNE_REL; // testing REL mode, taking a branch, page crossed.
 		fake_mem[59] = 8'hff;
+		fake_mem[254] = 8'hff;
+		fake_mem[255] = 8'h11;
 		fake_mem[315] = BEQ_REL; // testing REL mode, not taking a branch, page would have crossed.
 		fake_mem[316] = 8'hff;
 		fake_mem[317] = BEQ_REL; // testing REL mode, not taking a branch, page would not have crossed.
@@ -152,10 +154,17 @@ module t6507lp_fsm_tb();
 		fake_mem[323] = STA_IDX; // testing IDX mode WRITE TYPE, page crossed being ignored
 		fake_mem[324] = 8'hff;		
 		fake_mem[325] = STA_IDX; // testing IDX mode WRITE TYPE, page not crossed;
-		fake_mem[326] = 8'hff;		
-		//fake_mem[321] = LDA_IDX; // testing IDX mode READ TYPE, page crossed;
-		//fake_mem[322] = 8'hff;	
-
+		fake_mem[326] = 8'h00;		
+		fake_mem[327] = LDA_IDY; // testing IDY mode READ TYPE, page not crossed;
+		fake_mem[328] = 8'h00;	
+		fake_mem[329] = LDA_IDY; // testing IDY mode READ TYPE, page not crossed but pointer overflowed.
+		fake_mem[330] = 8'hff;	
+		/* testing IDY mode READ TYPE, page crossed.
+		   address may assume a invalid value when page is crossed but it is fixed on the next cycle when the true read occurs.
+		   this is probably not an issue */
+		fake_mem[331] = LDA_IDY;
+		fake_mem[332] = 8'hfe;	
+// FALTOU O WRITE INDIRETO Y!
 		@(negedge clk) // will wait for next negative edge of the clock (t=20)
 		reset_n=1'b1;
 	

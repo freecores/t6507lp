@@ -9,7 +9,7 @@
 //// 6507 FSM								////
 ////									////
 //// TODO:								////
-//// - Code the indexed indirect mode					////
+//// - Fix relative mode, bit 7 means negative				////
 //// - Code the indirect indexed mode					////
 //// - Code the absolute indirect mode					////
 ////									////
@@ -101,7 +101,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	reg [ADDR_SIZE_:0] temp_addr;	// temporary address
 	reg [DATA_SIZE_:0] temp_data;	// temporary data
 
-	reg [3:0] state, next_state; // current and next state registers
+	reg [4:0] state, next_state; // current and next state registers
 	// TODO: not sure if this will be 4 bits wide. as of march 9th this was 4bit wide.
 
 	// wiring that simplifies the FSM logic
@@ -146,12 +146,22 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			end								// solution: add a temp reg i guess
 		end
 		else if (state == READ_FROM_POINTER) begin
-			{page_crossed, address_plus_index[7:0]} = temp_data + index;
-			address_plus_index[12:8] = 5'b00000;
+			if (indirectx) begin
+				{page_crossed, address_plus_index[7:0]} = temp_data + index;
+				address_plus_index[12:8] = 5'b00000;
+			end
+			else begin // indirecty falls here
+				address_plus_index[7:0] = temp_data + 8'h01;
+				address_plus_index[12:8] = 5'b00000;
+			end
 		end
 		else if (state == READ_FROM_POINTER_X) begin
 			{page_crossed, address_plus_index[7:0]} = temp_data + index + 8'h01;
 			address_plus_index[12:8] = 5'b00000;
+		end
+		else if (state == READ_FROM_POINTER_X1) begin
+			{page_crossed, address_plus_index[7:0]} = temp_addr[7:0] + index;
+			address_plus_index[12:8] = temp_addr[12:8] + page_crossed;
 		end
 	end
 
@@ -228,7 +238,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						temp_addr <= {{5{1'b0}}, data_in};
 						control <= MEM_READ; 
 					end
-					else if (indirectx) begin
+					else if (indirectx || indirecty) begin
 						pc <= next_pc;
 						address <= data_in;
 						temp_data <= data_in;
@@ -370,9 +380,15 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				end
 				READ_FROM_POINTER: begin
 					pc <= pc;
-					address <= address_plus_index;
-					//temp_addr[7:0] <= data_in;
 					control <= MEM_READ;
+					
+					if (indirectx) begin 
+						address <= address_plus_index;
+					end
+					else begin // indirecty falls here
+						address <= address_plus_index;
+						temp_addr <= {{5{1'b0}}, data_in}; 
+					end
 				end
 				READ_FROM_POINTER_X: begin
 					pc <= pc;
@@ -382,11 +398,20 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				end
 				READ_FROM_POINTER_X1: begin
 					pc <= pc;
-					address <= {data_in[5:0], temp_addr[7:0]};
-					if (write) begin
-						control <= MEM_WRITE;
+					
+					if (indirectx) begin
+						address <= {data_in[5:0], temp_addr[7:0]};
+						if (write) begin
+							control <= MEM_WRITE;
+							data_out <= alu_result;
+						end
+						else begin
+							control <= MEM_READ;
+						end
 					end
-					else begin
+					else begin // indirecty falls here
+						address <= address_plus_index;
+						temp_addr[12:8] <= data_in;
 						control <= MEM_READ;
 					end
 				end
@@ -465,24 +490,34 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				else if (relative) begin
 					next_state = FETCH_OP_EVAL_BRANCH;
 				end
-				else if (indirectx) begin
+				else if (indirectx || indirecty) begin
 					next_state = READ_FROM_POINTER;
 				end
 			end
 			READ_FROM_POINTER: begin
-				next_state = READ_FROM_POINTER_X;
+				if (indirectx) begin
+					next_state = READ_FROM_POINTER_X;
+				end
+				else begin // indirecty falls here
+					next_state = READ_FROM_POINTER_X1;
+				end
 			end
 			READ_FROM_POINTER_X: begin
 				next_state = READ_FROM_POINTER_X1;
 			end
 			READ_FROM_POINTER_X1: begin
-				if (read || read_modify_write) begin
-					next_state = READ_MEM;
+				if (indirecty) begin
+					next_state = READ_MEM_FIX_ADDR;
 				end
-				else if (write) begin
-					alu_opcode = ir;
-					alu_enable = 1'b1;
-					next_state = WRITE_MEM;
+				else begin 
+					if (read || read_modify_write) begin
+						next_state = READ_MEM;
+					end
+					else if (write) begin
+						alu_opcode = ir;
+						alu_enable = 1'b1;
+						next_state = WRITE_MEM;
+					end
 				end
 			end
 			FETCH_OP_EVAL_BRANCH: begin
