@@ -96,7 +96,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	localparam MEM_WRITE = 1'b1;
 
 	reg [ADDR_SIZE_:0] pc;		// program counter
-	reg [DATA_SIZE_:0] sp;		// stack pointer
+	reg [ADDR_SIZE_:0] sp;		// stack pointer
 	reg [DATA_SIZE_:0] ir;		// instruction register
 	reg [ADDR_SIZE_:0] temp_addr;	// temporary address
 	reg [DATA_SIZE_:0] temp_data;	// temporary data
@@ -174,9 +174,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		if (reset_n == 1'b0) begin
 			// all registers must assume default values
 			pc <= 0; // TODO: this is written somewhere. something about a reset vector. must be checked.
-			sp <= 0; // TODO: the default is not 0. maybe $0100 or something like that. must be checked.
+			sp <= 13'h100; // TODO: the default is not 0. maybe $0100 or something like that. must be checked.
 			ir <= 8'h00;
-			temp_addr <= 0;
+			temp_addr <= 13'h00;
 			temp_data <= 8'h00;
 			state <= RESET;
 			// registered outputs also receive default values
@@ -249,6 +249,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						address <= data_in;
 						temp_data <= data_in;
 						control <= MEM_READ;
+					end
+					else begin // the special instructions will fall here: BRK, RTI, RTS...
+	
 					end
 				end
 				FETCH_HIGH_CALC_INDEX: begin
@@ -509,6 +512,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				else if (indirectx || indirecty) begin
 					next_state = READ_FROM_POINTER;
 				end
+				else begin // all the special instructions will fall here
+					next_state = RESET;
+				end
 			end
 			READ_FROM_POINTER: begin
 				if (indirectx) begin
@@ -529,7 +535,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					next_state = READ_MEM_FIX_ADDR;
 				end
 				else begin 
-					if (read || read_modify_write) begin
+					if (read) begin // read_modify_write was showing up here for no reason. no instruction using pointers is from that type.
 						next_state = READ_MEM;
 					end
 					else if (write) begin
@@ -658,7 +664,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		branch = 1'b0;
 
 		case (ir)
-			BRK_IMP, CLC_IMP, CLD_IMP, CLI_IMP, CLV_IMP, DEX_IMP, DEY_IMP, INX_IMP, INY_IMP, NOP_IMP, PHA_IMP, PHP_IMP, PLA_IMP,
+			CLC_IMP, CLD_IMP, CLI_IMP, CLV_IMP, DEX_IMP, DEY_IMP, INX_IMP, INY_IMP, NOP_IMP, PHA_IMP, PHP_IMP, PLA_IMP,
 			PLP_IMP, RTI_IMP, RTS_IMP, SEC_IMP, SED_IMP, SEI_IMP, TAX_IMP, TAY_IMP, TSX_IMP, TXA_IMP, TXS_IMP, TYA_IMP: begin
 				implied = 1'b1;
 			end
@@ -796,6 +802,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			end
 			JMP_IND: begin
 				jump_indirect = 1'b1;
+			end
+			BRK_IMP: begin
+				// something goes in here
 			end
 			default: begin
 				$write("state : %b", state);

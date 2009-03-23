@@ -170,10 +170,11 @@ module t6507lp_fsm_tb();
 		fake_mem[333] = STA_IDY; // testing IDY mode WRITE TYPE, page crossed;
 		fake_mem[334] = 8'h00;  
 		fake_mem[335] = STA_IDY; // testing IDY mode WRITE TYPE, page not crossed;
-		fake_mem[336] = 8'h0e;  	
-		fake_mem[337] = JMP_IND; // testing absolute indirect addressing. page crossed when updating pointer.
-		fake_mem[338] = 8'hff; 
-		fake_mem[339] = 8'h00; 
+		fake_mem[336] = 8'h0e;  
+		fake_mem[337] = INX_IMP;  
+		fake_mem[338] = JMP_IND; // testing absolute indirect addressing. page crossed when updating pointer.
+		fake_mem[339] = 8'hff; 
+		fake_mem[340] = 8'h00; 
 		//fake_mem[337] = JMP_IND; // testing absolute indirect addressing. no page crossed when updating pointer.
 		//fake_mem[338] = 8'h3b; 
 		//fake_mem[339] = 8'h00; 
@@ -187,7 +188,7 @@ module t6507lp_fsm_tb();
 		reset_n=1'b1;
 	
 
-		#3000;
+		#4000;
 		$finish; // to shut down the simulation
 	end //initial
 
