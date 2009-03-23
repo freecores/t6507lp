@@ -99,7 +99,6 @@ localparam N = 3'b111;
 ////									////
 ////////////////////////////////////////////////////////////////////////////
 
-//TODO: Is there any addressing mode that is not used??
 localparam	IMP = 4'h0,
 		ACC = 4'h1,
 		IMM = 4'h2,
