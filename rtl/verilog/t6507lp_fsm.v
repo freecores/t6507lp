@@ -170,11 +170,17 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		end
 	end
 
+	wire [8:0] sp_plus_one;
+	assign sp_plus_one = sp + 9'b000000001;
+
+	wire [8:0] sp_minus_one;
+	assign sp_minus_one = sp - 9'b000000001;
+
 	always @ (posedge clk or negedge reset_n) begin // sequencial always block
 		if (reset_n == 1'b0) begin
 			// all registers must assume default values
 			pc <= 0; // TODO: this is written somewhere. something about a reset vector. must be checked.
-			sp <= 13'h100; // TODO: the default is not 0. maybe $0100 or something like that. must be checked.
+			sp <= 9'b100000000; // the default is 'h100 
 			ir <= 8'h00;
 			temp_addr <= 13'h00;
 			temp_data <= 8'h00;
