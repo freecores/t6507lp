@@ -6,10 +6,12 @@
 //// http://www.opencores.org/cores/t6507lp/				////
 ////									////
 //// Description							////
-//// 6507 FSM								////
+//// 6507 FSM testbench							////
 ////									////
 //// TODO:								////
-//// - Perform simple tests before going into serious verification	////
+//// - Test indirect indexed mode					////
+//// - Test absolute indirect mode					////
+//// - Test special stack instructions					////
 //// 									////
 //// Author(s):								////
 //// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
@@ -56,7 +58,7 @@ module t6507lp_fsm_tb();
 	reg [7:0] alu_y;
 
 	wire [12:0] address;
-	wire control; // one bit is enough? read = 0, write = 1
+	wire control; 
 	wire [7:0] data_out;
 	wire [7:0] alu_opcode;
 	wire [7:0] alu_a;
@@ -64,7 +66,7 @@ module t6507lp_fsm_tb();
 
 	integer i;
 
-	`include "../T6507LP_Package.v"
+	`include "../T6507LP_Package.v" // TODO: remove this include
 
 	t6507lp_fsm #(8,13) my_dut(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
 
