@@ -165,8 +165,16 @@ module t6507lp_fsm_tb();
 		   address may assume a invalid value when page is crossed but it is fixed on the next cycle when the true read occurs.
 		   this is probably not an issue */
 		fake_mem[331] = LDA_IDY;
-		fake_mem[332] = 8'hfe;	
-// FALTOU O WRITE INDIRETO Y!
+		fake_mem[332] = 8'hfe;
+		fake_mem[333] = STA_IDY;
+		fake_mem[334] = 8'h00;  // testing IDY mode WRITE TYPE, page not crossed;
+
+
+
+
+
+
+	
 		@(negedge clk) // will wait for next negative edge of the clock (t=20)
 		reset_n=1'b1;
 	

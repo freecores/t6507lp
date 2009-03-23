@@ -553,6 +553,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				end
 				else if (write) begin
 					next_state = WRITE_MEM;
+					alu_enable = 1'b1;
+					alu_opcode = ir;
 				end
 				else begin
 					$write("unknown behavior"); 
