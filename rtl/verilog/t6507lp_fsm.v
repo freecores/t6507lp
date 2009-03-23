@@ -122,6 +122,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	reg read_modify_write;
 	reg write;
 	reg jump;
+	reg jump_indirect;
 
 	wire [ADDR_SIZE_:0] next_pc;
 	assign next_pc = pc + 13'b0000000000001;
@@ -148,6 +149,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		else if (state == READ_FROM_POINTER) begin
 			if (indirectx) begin
 				{page_crossed, address_plus_index[7:0]} = temp_data + index;
+				address_plus_index[12:8] = 5'b00000;
+			end
+			else if (jump_indirect) begin
+				address_plus_index[7:0] = temp_addr + 8'h01;
 				address_plus_index[12:8] = 5'b00000;
 			end
 			else begin // indirecty falls here
@@ -212,11 +217,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						control <= MEM_READ; 
 						temp_data <= data_in; // the follow-up byte is saved in temp_data 
 					end
-					else if (absolute || absolute_indexed) begin
+					else if (absolute || absolute_indexed || jump_indirect) begin
 						pc <= next_pc;
 						address <= next_pc;					
 						control <= MEM_READ; 
 						temp_addr <= {{5{1'b0}},data_in};
+						temp_data <= 8'h00;
 					end
 					else if (zero_page) begin
 						pc <= next_pc;
@@ -379,15 +385,22 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					data_out <= 8'h00;
 				end
 				READ_FROM_POINTER: begin
-					pc <= pc;
-					control <= MEM_READ;
-					
-					if (indirectx) begin 
+					if (jump_indirect) begin
+						pc[7:0] <= data_in;
+						control <= MEM_READ;
 						address <= address_plus_index;
 					end
-					else begin // indirecty falls here
-						address <= address_plus_index;
-						temp_addr <= {{5{1'b0}}, data_in}; 
+					else begin
+						pc <= pc;
+						control <= MEM_READ;
+					
+						if (indirectx) begin 
+							address <= address_plus_index;
+						end
+						else begin // indirecty falls here
+							address <= address_plus_index;
+							temp_addr <= {{5{1'b0}}, data_in}; 
+						end
 					end
 				end
 				READ_FROM_POINTER_X: begin
@@ -397,10 +410,13 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					control <= MEM_READ;
 				end
 				READ_FROM_POINTER_X1: begin
-					pc <= pc;
-					
-					if (indirectx) begin
-						address <= {data_in[5:0], temp_addr[7:0]};
+					if (jump_indirect) begin
+						pc[12:8] <= data_in[4:0];
+						control <= MEM_READ;
+						address <= {data_in[4:0], pc[7:0]};
+					end
+					else if (indirectx) begin
+						address <= {data_in[4:0], temp_addr[7:0]};
 						if (write) begin
 							control <= MEM_WRITE;
 							data_out <= alu_result;
@@ -476,7 +492,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				else if (zero_page_indexed) begin
 					next_state = READ_MEM_CALC_INDEX;
 				end
-				else if (absolute) begin // at least the absolute address mode falls here
+				else if (absolute || jump_indirect) begin // at least the absolute address mode falls here
 					next_state = FETCH_HIGH;
 					if (write) begin // this is being done one cycle early but i have checked and the ALU will still work properly
 						alu_opcode = ir;
@@ -498,7 +514,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				if (indirectx) begin
 					next_state = READ_FROM_POINTER_X;
 				end
-				else begin // indirecty falls here
+				else begin // indirecty and jump indirect falls here
 					next_state = READ_FROM_POINTER_X1;
 				end
 			end
@@ -506,7 +522,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				next_state = READ_FROM_POINTER_X1;
 			end
 			READ_FROM_POINTER_X1: begin
-				if (indirecty) begin
+				if (jump_indirect) begin
+					next_state = FETCH_OP;
+				end
+				else if (indirecty) begin
 					next_state = READ_MEM_FIX_ADDR;
 				end
 				else begin 
@@ -562,7 +581,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				end
 			end
 			FETCH_HIGH: begin
-				if (jump) begin
+				if (jump_indirect) begin
+					next_state = READ_FROM_POINTER;
+				end
+				else if (jump) begin
 					next_state = FETCH_OP;
 				end
 				else if (read || read_modify_write) begin
@@ -632,10 +654,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		read_modify_write = 1'b0;
 		write = 1'b0;
 		jump = 1'b0;
+		jump_indirect = 1'b0;
 		branch = 1'b0;
 
-		//$write("trying with %h\n", ir);
-		
 		case (ir)
 			BRK_IMP, CLC_IMP, CLD_IMP, CLI_IMP, CLV_IMP, DEX_IMP, DEY_IMP, INX_IMP, INY_IMP, NOP_IMP, PHA_IMP, PHP_IMP, PLA_IMP,
 			PLP_IMP, RTI_IMP, RTS_IMP, SEC_IMP, SED_IMP, SEI_IMP, TAX_IMP, TAY_IMP, TSX_IMP, TXA_IMP, TXS_IMP, TYA_IMP: begin
@@ -748,7 +769,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					branch = 1'b0;
 				end
 			end
-			ADC_ABS, AND_ABS, ASL_ABS, BIT_ABS, CMP_ABS, CPX_ABS, CPY_ABS, DEC_ABS, EOR_ABS, INC_ABS, JMP_ABS, JSR_ABS, LDA_ABS, 
+			ADC_ABS, AND_ABS, ASL_ABS, BIT_ABS, CMP_ABS, CPX_ABS, CPY_ABS, DEC_ABS, EOR_ABS, INC_ABS, JSR_ABS, LDA_ABS, 
 			LDX_ABS, LDY_ABS, LSR_ABS, ORA_ABS, ROL_ABS, ROR_ABS, SBC_ABS, STA_ABS, STX_ABS, STY_ABS: begin
 				absolute = 1'b1;
 			end
@@ -768,6 +789,13 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			ADC_IDY, AND_IDY, CMP_IDY, EOR_IDY, LDA_IDY, ORA_IDY, SBC_IDY, STA_IDY: begin 
 				indirecty = 1'b1;
 				index = alu_y;	
+			end
+			JMP_ABS: begin
+				absolute = 1'b1;
+				jump = 1'b1;
+			end
+			JMP_IND: begin
+				jump_indirect = 1'b1;
 			end
 			default: begin
 				$write("state : %b", state);
@@ -791,10 +819,6 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				read = 1'b1;
 			end
 		endcase
-			
-		if (ir == JMP_ABS || ir == JMP_IND) begin // the opcodes are 8'h4C and 8'h6C
-			jump = 1'b1;
-		end
 	end 
 endmodule
 

@@ -141,6 +141,7 @@ module t6507lp_fsm_tb();
 		fake_mem[47] = 8'h0a;
 		fake_mem[58] = BNE_REL; // testing REL mode, taking a branch, page crossed.
 		fake_mem[59] = 8'hff;
+		fake_mem[60] = 8'hff;
 		fake_mem[254] = 8'hff;
 		fake_mem[255] = 8'h11;
 		fake_mem[315] = BEQ_REL; // testing REL mode, not taking a branch, page would have crossed.
@@ -166,9 +167,16 @@ module t6507lp_fsm_tb();
 		   this is probably not an issue */
 		fake_mem[331] = LDA_IDY;
 		fake_mem[332] = 8'hfe;
-		fake_mem[333] = STA_IDY;
-		fake_mem[334] = 8'h00;  // testing IDY mode WRITE TYPE, page not crossed;
-
+		fake_mem[333] = STA_IDY; // testing IDY mode WRITE TYPE, page crossed;
+		fake_mem[334] = 8'h00;  
+		fake_mem[335] = STA_IDY; // testing IDY mode WRITE TYPE, page not crossed;
+		fake_mem[336] = 8'h0e;  	
+		fake_mem[337] = JMP_IND; // testing absolute indirect addressing. page crossed when updating pointer.
+		fake_mem[338] = 8'hff; 
+		fake_mem[339] = 8'h00; 
+		//fake_mem[337] = JMP_IND; // testing absolute indirect addressing. no page crossed when updating pointer.
+		//fake_mem[338] = 8'h3b; 
+		//fake_mem[339] = 8'h00; 
 
 
 
