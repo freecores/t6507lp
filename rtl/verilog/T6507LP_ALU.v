@@ -69,16 +69,36 @@ reg [7:0] temp2;
 
 `include "T6507LP_Package.v"
 
+always @ * begin
+	STATUS[Z] = (result == 0) ? 1 : 0;
+	STATUS[N] = result[7];
+end
+
+
 always @ (posedge clk_i or negedge n_rst_i)
 begin
 	if (n_rst_i == 0) begin
+		$display("RESTART");
 		alu_result <= 0;
-		alu_status <= 8'b00100010;
+		alu_status[C] <= 0;
+		alu_status[N] <= 0;
+		alu_status[V] <= 0;
+		alu_status[Z] <= 1;
+		alu_status[I] <= 0;
+		alu_status[B] <= 0;
+		alu_status[D] <= 0;
 		A <= 0;
 		X <= 0;
 		Y <= 0;
 		alu_x <= 0;
 		alu_y <= 0;
+		STATUS[C] <= 0;
+		STATUS[N] <= 0;
+		STATUS[V] <= 0;
+		STATUS[Z] <= 1;
+		STATUS[I] <= 0;
+		STATUS[B] <= 0;
+		STATUS[D] <= 0;
 	end
 	else if ( alu_enable == 1 ) begin
 		alu_result <= result;
@@ -103,17 +123,21 @@ begin
 			LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY,
 			PLA_IMP :
 			begin
-				A <= alu_a;
+				A <= result;
 				alu_status <= STATUS;
+				$display("A <= result;");
+				$display("%h <= %h", A, result);
+				$display("alu_status <= STATUS;");
+				$display("%h <= %h", alu_status, STATUS);
 			end
 			LDX_IMM, LDX_ZPG, LDX_ZPY, LDX_ABS, LDX_ABY :
 			begin
-				X <= alu_a;
+				X <= result;
 				alu_status <= STATUS;
 			end
 			LDY_IMM, LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX :
 			begin
-				Y <= alu_a;
+				Y <= result;
 				alu_status <= STATUS;
 			end
 			LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX,
@@ -130,11 +154,13 @@ begin
 			begin
 				alu_status <= STATUS;
 			end
-			PLP_IMP :
+			PLP_IMP, RTI_IMP :
 			begin
 				alu_status <= alu_a;
 			end
-
+			default : begin
+				$display("ERROR");
+			end
 		endcase
 	end
 end
@@ -181,7 +207,7 @@ always @ (*) begin
 		//end
 	
 		// PHP - Pull Processor Status Register
-		PLP_IMP: begin
+		PLP_IMP, RTI_IMP: begin
 			STATUS = alu_a;
 		end
 
@@ -265,8 +291,14 @@ always @ (*) begin
 				if (A[3:0] > 9) begin
 					temp1 = A + 6; // A = A - 10 and A = A + 16
 				end
+				if (temp1[7:4] > 9) begin
+					temp1 = temp1[7:4] + 6; // A = A - 10 and A = A + 16
+				end
 				if (alu_a[3:0] > 9) begin
 					temp2 = alu_a + 6;
+				end
+				if (temp2[7:4] > 9) begin
+					temp2 = temp2[7:4] + 6; // A = A - 10 and A = A + 16
 				end
 			end
 
@@ -275,6 +307,16 @@ always @ (*) begin
 				STATUS[V] = 1;
 			else
 				STATUS[V] = 0;
+
+			if (alu_status[D] == 1) begin
+				if (result[3:0] > 9) begin
+					result = result[3:0] + 6; // A = A - 10 and A = A + 16
+				end
+				if (result[7:4] > 9) begin
+					result = result[7:4] + 6; // A = A - 10 and A = A + 16
+					STATUS[C] = 1;
+				end
+			end
 		end
 			
 		// AND - Logical AND
@@ -305,6 +347,7 @@ always @ (*) begin
 		TSX_IMP :
 		begin
 			result = alu_a;
+			$display("result = %h alu_a = %h",result, alu_a);
 		end
 
 		// ORA - Logical OR
@@ -322,12 +365,20 @@ always @ (*) begin
 				if (A[3:0] > 9) begin
 					temp1 = A + 6; // A = A - 10 and A = A + 16
 				end
+				if (temp1[7:4] > 9) begin
+					temp1 = temp1[7:4] + 6; // A = A - 10 and A = A + 16
+				end
 				if (alu_a[3:0] > 9) begin
 					temp2 = alu_a + 6;
 				end
+				if (temp2[7:4] > 9) begin
+					temp2 = temp2[7:4] + 6; // A = A - 10 and A = A + 16
+				end
 			end
 
-			{STATUS[C],result} = temp1 - temp2 - ~alu_status[C];
+			{STATUS[C],result} = temp1 - temp2 - alu_status[C];
+			$display("STATUS[C] = %h result = %h", STATUS[C],result);
+			$display("temp1 = %h temp2 = %h alu_status = %h", temp1,temp2,alu_status[C]);
 			if ((temp1[7] == temp2[7]) && (temp1[7] != alu_result[7]))
 				STATUS[V] = 1;
 			else
@@ -373,13 +424,13 @@ always @ (*) begin
 		// CPX - Compare X Register
 		CPX_IMM, CPX_ZPG, CPX_ABS :
 		begin
-			{STATUS[C],result} = X - alu_a - ~alu_status[C];
+			{STATUS[C],result} = X - alu_a - alu_status[C];
 		end
 
 		// CPY - Compare Y Register
 		CPY_IMM, CPY_ZPG, CPY_ABS :
 		begin
-			{STATUS[C],result} = Y - alu_a - ~alu_status[C];
+			{STATUS[C],result} = Y - alu_a - alu_status[C];
 		end
 
 		default: begin // NON-DEFAULT OPCODES FALL HERE
