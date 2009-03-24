@@ -46,11 +46,11 @@
 `timescale 1ns / 1ps
 
 module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
-	parameter DATA_SIZE = 8;
-	parameter ADDR_SIZE = 13;
+	parameter [3:0] DATA_SIZE = 4'd8;
+	parameter [3:0] ADDR_SIZE = 4'd13;
 
-	localparam DATA_SIZE_ = DATA_SIZE - 4'b0001;
-	localparam ADDR_SIZE_ = ADDR_SIZE - 4'b0001;
+	localparam [3:0] DATA_SIZE_ = DATA_SIZE - 4'b0001;
+	localparam [3:0] ADDR_SIZE_ = ADDR_SIZE - 4'b0001;
 
 	input clk;
 	input reset_n;
@@ -67,7 +67,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	input [DATA_SIZE_:0] alu_x;
 	input [DATA_SIZE_:0] alu_y;
 
-	// FSM states
+	// FSM states. If aiming for less power consumption try gray coding.
 	localparam FETCH_OP = 5'b00000;
 	//localparam FETCH_OP_CALC = 5'b00001; this was never used
 	localparam FETCH_LOW = 5'b00010;
@@ -97,7 +97,6 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	localparam PUSH_REGISTER = 5'b11010;
 	localparam PULL_REGISTER = 5'b11011;
 	localparam DUMMY = 5'b11100;
-
 	localparam RESET = 5'b11111;
 
 	// OPCODES TODO: verify how this get synthesised
@@ -136,7 +135,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	reg jump_indirect;
 
 	// regs for the special instructions
-	reg break;
+	reg brk;
 	reg rti;
 	reg rts;
 	reg pha;
@@ -154,8 +153,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	reg branch;
 
 	always @(*) begin
-		address_plus_index = 0;
-		page_crossed = 0;
+		address_plus_index = 8'h00;
+		page_crossed = 1'b0;
 
 		if (state == READ_MEM_CALC_INDEX || state == READ_MEM_FIX_ADDR || state == FETCH_HIGH_CALC_INDEX) begin
 			{page_crossed, address_plus_index[7:0]} = temp_addr[7:0] + index;
@@ -173,7 +172,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				address_plus_index[12:8] = 5'b00000;
 			end
 			else if (jump_indirect) begin
-				address_plus_index[7:0] = temp_addr + 8'h01;
+				address_plus_index[7:0] = temp_addr[7:0] + 8'h01; // temp_addr should be 7:0?
 				address_plus_index[12:8] = 5'b00000;
 			end
 			else begin // indirecty falls here
@@ -201,9 +200,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		if (reset_n == 1'b0) begin
 			// all registers must assume default values
 			pc <= 0; // TODO: this is written somewhere. something about a reset vector. must be checked.
-			sp <= 9'b100000000; // the default is 'h100 
+			sp <= 9'b000000000; // the default is 'h100 
 			ir <= 8'h00;
-			temp_addr <= 13'h00;
+			temp_addr <= 13'h0000;
 			temp_data <= 8'h00;
 			state <= RESET;
 			// registered outputs also receive default values
@@ -216,6 +215,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			
 			case (state)
 				RESET: begin	// The processor was reset
+					sp <= 9'b100000000; // this prevents flipflops with different drivers
 					$write("under reset"); 
 				end
 				/*
@@ -278,7 +278,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						control <= MEM_READ;
 					end
 					else begin // the special instructions will fall here: BRK, RTI, RTS...
-						if (break) begin
+						if (brk) begin
 							pc <= next_pc;
 							address <= sp;
 							data_out <= {{3{1'b0}}, pc[12:8]};
@@ -632,7 +632,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					next_state = READ_FROM_POINTER;
 				end
 				else begin // all the special instructions will fall here
-					if (break) begin
+					if (brk) begin
 						next_state = PUSH_PCH;
 					end
 					else if (rti || rts) begin
@@ -853,7 +853,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		zero_page = 1'b0;
 		zero_page_indexed = 1'b0;
 	
-		index = 1'b0;
+		index = 8'h00;
 
 		read = 1'b0;
 		read_modify_write = 1'b0;
@@ -862,7 +862,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		jump_indirect = 1'b0;
 		branch = 1'b0;
 
-		break = 1'b0;
+		brk = 1'b0;
 		rti = 1'b0;
 		rts = 1'b0;
 		pha = 1'b0;
@@ -1012,7 +1012,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				jump_indirect = 1'b1;
 			end
 			BRK_IMP: begin
-				break = 1'b1;
+				brk = 1'b1;
 			end
 			RTI_IMP: begin
 				rti = 1'b1;
@@ -1037,7 +1037,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			end
 			default: begin
 				$write("state : %b", state);
-				if (reset_n == 1 && state != FETCH_OP_FIX_PC) begin // the processor is NOT being reset neither it is fixing the pc
+				if (reset_n == 1'b1 && state != FETCH_OP_FIX_PC) begin // the processor is NOT being reset neither it is fixing the pc
 					$write("\nunknown OPCODE!!!!! 0x%h\n", ir);
 					$finish();
 				end

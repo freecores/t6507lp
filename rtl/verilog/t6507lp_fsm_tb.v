@@ -64,7 +64,7 @@ module t6507lp_fsm_tb();
 	wire [7:0] alu_a;
 	wire alu_enable;
 
-	integer i;
+	integer my_i;
 
 	`include "../T6507LP_Package.v" // TODO: remove this include
 
@@ -82,9 +82,9 @@ module t6507lp_fsm_tb();
 		alu_x = 8'h07;
 		alu_y = 8'h03;
 		
-		for (i=0; i < 2**13; i= i+1) begin
-			$write("\n%d",i);
-			fake_mem[i]=8'h00;
+		for (my_i=0; my_i < 2**13; my_i= my_i+1) begin
+			$write("\n%d",my_i);
+			fake_mem[my_i]=8'h00;
 		end
 
 
