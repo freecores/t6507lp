@@ -143,7 +143,9 @@ module t6507lp_fsm_tb();
 		fake_mem[59] = 8'hff;
 		fake_mem[60] = 8'hff;
 		fake_mem[254] = 8'hff;
-		fake_mem[255] = 8'h11;
+		fake_mem[257] = 8'h55; // PCL fetched from here when executing RTS_IMP
+		fake_mem[258] = 8'h01;    // PCH fetched from here when executing RTS_IMP
+		fake_mem[264] = 8'd340;
 		fake_mem[315] = BEQ_REL; // testing REL mode, not taking a branch, page would have crossed.
 		fake_mem[316] = 8'hff;
 		fake_mem[317] = BEQ_REL; // testing REL mode, not taking a branch, page would not have crossed.
@@ -180,7 +182,10 @@ module t6507lp_fsm_tb();
 		//fake_mem[339] = 8'h00;
 		fake_mem[338] = BRK_IMP;
 		fake_mem[339] = RTI_IMP;
-
+		fake_mem[340] = RTS_IMP;
+		// 341 is skipped due to RTS internal functionality
+		fake_mem[342] = PHA_IMP;	
+		fake_mem[342] = PHP_IMP;	
 
   
 
