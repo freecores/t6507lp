@@ -185,7 +185,7 @@ module t6507lp_fsm_tb();
 		fake_mem[340] = RTS_IMP;
 		// 341 is skipped due to RTS internal functionality
 		fake_mem[342] = PHA_IMP;	
-		fake_mem[342] = PHP_IMP;	
+		fake_mem[343] = PHP_IMP;	
 
   
 
