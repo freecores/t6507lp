@@ -96,6 +96,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	localparam PULL_PCH = 5'b11000;
 	localparam INCREMENT_PC = 5'b11001;
 	localparam PUSH_REGISTER = 5'b11010;
+	localparam PULL_REGISTER = 5'b11011;
 
 	localparam RESET = 5'b11111;
 
@@ -140,7 +141,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	reg rti;
 	reg rts;
 	reg pha;
-	reg php;	
+	reg php;
+	reg pla;	
+	reg plp;	
 
 	wire [ADDR_SIZE_:0] next_pc;
 	assign next_pc = pc + 13'b0000000000001;
@@ -292,6 +295,11 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 							address <= sp;
 							data_out <= (pha) ? alu_result : alu_status;
 							control <= MEM_WRITE;
+						end
+						else if (pla || plp) begin
+							pc <= pc;
+							address <= sp;
+							control <= MEM_READ;
 						end
 					end
 				end
@@ -533,6 +541,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					address <= pc;
 					sp <= sp_minus_one;
 					control <= MEM_READ;
+					temp_data <= data_in;
+				end
+				PULL_REGISTER: begin
+					pc <= pc;
+					address <= pc;
+					temp_data <= data_in;
 				end
 				default: begin
 					$write("unknown state"); // TODO: check if synth really ignores this 2 lines. Otherwise wrap it with a `ifdef 
@@ -627,6 +641,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					end
 					else if (php) begin
 						next_state = PUSH_REGISTER;
+					end
+					else if (pla || plp) begin
+						next_state = INCREMENT_SP;
 					end
 				end
 			end
@@ -767,7 +784,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			INCREMENT_SP: begin
 				if (rti) begin 
 					next_state = PULL_STATUS;
-				end				
+				end			
+				else if (pla || plp) begin
+					next_state = PULL_REGISTER;
+				end	
 				else begin // rts
 					next_state = PULL_PCL;
 				end 
@@ -794,6 +814,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			end
 			PUSH_REGISTER: begin
 				next_state = FETCH_OP;
+			end
+			PULL_REGISTER: begin
+				next_state = FETCH_OP_CALC_PARAM;
 			end
 			default: begin
 				next_state = RESET; 
@@ -828,6 +851,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		rts = 1'b0;
 		pha = 1'b0;
 		php = 1'b0;
+		pla = 1'b0;
+		plp = 1'b0;
 
 		case (ir)
 			CLC_IMP, CLD_IMP, CLI_IMP, CLV_IMP, DEX_IMP, DEY_IMP, INX_IMP, INY_IMP, NOP_IMP, 
@@ -983,6 +1008,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			end
 			PHP_IMP: begin
 				php = 1'b1;
+			end
+			PLA_IMP: begin
+				pla = 1'b1;
+			end
+			PLP_IMP: begin
+				plp = 1'b1;
 			end
 			default: begin
 				$write("state : %b", state);

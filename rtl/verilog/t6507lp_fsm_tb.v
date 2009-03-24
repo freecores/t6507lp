@@ -186,8 +186,9 @@ module t6507lp_fsm_tb();
 		// 341 is skipped due to RTS internal functionality
 		fake_mem[342] = PHA_IMP;	
 		fake_mem[343] = PHP_IMP;	
+		fake_mem[344] = PLA_IMP;	
+		fake_mem[345] = PLP_IMP;	
 
-  
 
 		fake_mem[8190] = 8'h53; // this is the reset vector
 		fake_mem[8191] = 8'h01;	
