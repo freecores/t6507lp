@@ -179,7 +179,7 @@ module t6507lp_fsm_tb();
 		//fake_mem[338] = 8'h3b;   // these are commented cause they will actually jump
 		//fake_mem[339] = 8'h00;
 		fake_mem[338] = BRK_IMP;
-		fake_mem[339] = INX_IMP;
+		fake_mem[339] = RTI_IMP;
 
 
   
