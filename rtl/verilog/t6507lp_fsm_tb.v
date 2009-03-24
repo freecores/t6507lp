@@ -172,18 +172,20 @@ module t6507lp_fsm_tb();
 		fake_mem[335] = STA_IDY; // testing IDY mode WRITE TYPE, page not crossed;
 		fake_mem[336] = 8'h0e;  
 		fake_mem[337] = INX_IMP;  
-		fake_mem[338] = JMP_IND; // testing absolute indirect addressing. page crossed when updating pointer.
-		fake_mem[339] = 8'hff; 
-		fake_mem[340] = 8'h00; 
+		//fake_mem[338] = JMP_IND; // testing absolute indirect addressing. page crossed when updating pointer.
+		//fake_mem[339] = 8'hff; 
+		//fake_mem[340] = 8'h00; 
 		//fake_mem[337] = JMP_IND; // testing absolute indirect addressing. no page crossed when updating pointer.
-		//fake_mem[338] = 8'h3b; 
-		//fake_mem[339] = 8'h00; 
+		//fake_mem[338] = 8'h3b;   // these are commented cause they will actually jump
+		//fake_mem[339] = 8'h00;
+		fake_mem[338] = BRK_IMP;
+		fake_mem[339] = INX_IMP;
 
 
+  
 
-
-
-	
+		fake_mem[8190] = 8'h53; // this is the reset vector
+		fake_mem[8191] = 8'h01;	
 		@(negedge clk) // will wait for next negative edge of the clock (t=20)
 		reset_n=1'b1;
 	

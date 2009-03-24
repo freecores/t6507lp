@@ -85,6 +85,11 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	localparam READ_FROM_POINTER = 5'b01101;
 	localparam READ_FROM_POINTER_X = 5'b01110;
 	localparam READ_FROM_POINTER_X1 = 5'b01111;
+	localparam PUSH_PCH = 5'b10000;
+	localparam PUSH_PCL = 5'b10001;
+	localparam PUSH_STATUS = 5'b10010;
+	localparam FETCH_PCL = 5'b10011;
+	localparam FETCH_PCH = 5'b10100;
 
 	localparam RESET = 5'b11111;
 
@@ -96,15 +101,15 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	localparam MEM_WRITE = 1'b1;
 
 	reg [ADDR_SIZE_:0] pc;		// program counter
-	reg [ADDR_SIZE_:0] sp;		// stack pointer
+	reg [DATA_SIZE:0] sp;		// stack pointer. 9 bits wide.
 	reg [DATA_SIZE_:0] ir;		// instruction register
 	reg [ADDR_SIZE_:0] temp_addr;	// temporary address
 	reg [DATA_SIZE_:0] temp_data;	// temporary data
 
 	reg [4:0] state, next_state; // current and next state registers
-	// TODO: not sure if this will be 4 bits wide. as of march 9th this was 4bit wide.
+	// TODO: not sure if this will be 5 bits wide. as of march 24th this was 5bit wide.
 
-	// wiring that simplifies the FSM logic
+	// wiring that simplifies the FSM logic by simplifying the addressing modes
 	reg absolute;
 	reg absolute_indexed;
 	reg accumulator;
@@ -123,6 +128,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	reg write;
 	reg jump;
 	reg jump_indirect;
+
+	// regs for the special instructions
+	reg break;
 
 	wire [ADDR_SIZE_:0] next_pc;
 	assign next_pc = pc + 13'b0000000000001;
@@ -194,24 +202,25 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			state <= next_state;
 			
 			case (state)
-				RESET: begin
-					// The processor was reset
+				RESET: begin	// The processor was reset
 					$write("under reset"); 
 				end
-				FETCH_OP: begin // this state is the simplest one. it is a simple fetch that must be done when the cpu was reset or
-						// the last cycle was a memory write.
+				/*
+				FETCH_OP: executed when the processor was reset or the last instruction could not fetch.
+				FETCH_OP_CALC: enables the alu and fetchs the next instruction opcode. (pipelining)
+				FETCH_OP_CALC_PARAM: enables the alu with an argument (alu_a) and fetchs the next instruction opcode. (pipelining)
+				*/
+				FETCH_OP, FETCH_OP_CALC, FETCH_OP_CALC_PARAM: begin // this is the pipeline happening!
 					pc <= next_pc;
 					address <= next_pc;
 					control <= MEM_READ; 
 					ir <= data_in;
 				end
-				FETCH_OP_CALC, FETCH_OP_CALC_PARAM: begin // this is the pipeline happening!
-					pc <= next_pc;
-					address <= next_pc;
-					control <= MEM_READ; 
-					ir <= data_in;
-				end
-				FETCH_LOW: begin // in this state the opcode is already known so truly execution begins
+				/*
+				in this state the opcode is already known so truly execution begins.
+				all instruction execute this cycle.
+				*/
+				FETCH_LOW: begin 		
 					if (accumulator || implied) begin
 						pc <= pc; // is this better?
 						address <= pc;
@@ -257,7 +266,13 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						control <= MEM_READ;
 					end
 					else begin // the special instructions will fall here: BRK, RTI, RTS...
-	
+						if (break) begin
+							pc <= next_pc;
+							address <= sp;
+							data_out <= {{3{1'b0}}, pc[12:8]};
+							control <= MEM_WRITE;
+							sp <= sp_minus_one;
+						end
 					end
 				end
 				FETCH_HIGH_CALC_INDEX: begin
@@ -267,6 +282,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					control <= MEM_READ; 
 					data_out <= 8'h00;
 				end
+				// this cycle fetchs the next operand while still evaluating if a branch occurred.
 				FETCH_OP_EVAL_BRANCH: begin
 					if (branch) begin
 						pc <= {{5{1'b0}}, address_plus_index[7:0]};
@@ -282,6 +298,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						ir <= data_in;
 					end
 				end
+				// sometimes when reading memory page crosses may occur. the pc register must be fixed, i.e., add 16'h0100
 				FETCH_OP_FIX_PC: begin
 					if (page_crossed) begin
 						pc[12:8] <= address_plus_index[12:8];
@@ -294,6 +311,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						ir <= data_in;
 					end
 				end
+				// several instructions ocupy 3 bytes in memory. this cycle reads the third byte.
 				FETCH_HIGH: begin
 					if (jump) begin
 						pc <= {data_in[4:0], temp_addr[7:0]}; // PCL <= first byte, PCH <= second byte
@@ -440,6 +458,34 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						control <= MEM_READ;
 					end
 				end
+				PUSH_PCH: begin
+					pc <= pc;
+					address <= sp;
+					data_out <= pc[7:0];
+					control <= MEM_WRITE;
+					sp <= sp_minus_one;
+				end
+				PUSH_PCL: begin
+					pc <= pc;
+					address <= sp;
+					data_out <= alu_status;
+					control <= MEM_WRITE;
+					sp <= sp_minus_one;
+				end
+				PUSH_STATUS: begin
+					address <= 13'hFFFE;
+					control <= MEM_READ;
+				end
+				FETCH_PCL: begin
+					pc[7:0] <= data_in;
+					address <= 13'hFFFF;
+					control <= MEM_READ;
+				end
+				FETCH_PCH: begin
+					pc[12:8] <= data_in[4:0];
+					address <= {data_in[4:0], pc[7:0]};
+					control <= MEM_READ;
+				end
 				default: begin
 					$write("unknown state"); // TODO: check if synth really ignores this 2 lines. Otherwise wrap it with a `ifdef 
 					$finish(0); 
@@ -519,7 +565,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					next_state = READ_FROM_POINTER;
 				end
 				else begin // all the special instructions will fall here
-					next_state = RESET;
+					if (break) begin
+						next_state = PUSH_PCH;
+					end
 				end
 			end
 			READ_FROM_POINTER: begin
@@ -641,6 +689,21 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			WRITE_MEM: begin
 				next_state = FETCH_OP;
 			end
+			PUSH_PCH: begin
+				next_state = PUSH_PCL;
+			end
+			PUSH_PCL: begin
+				next_state = PUSH_STATUS;
+			end
+			PUSH_STATUS: begin
+				next_state = FETCH_PCL;
+			end
+			FETCH_PCL: begin
+				next_state = FETCH_PCH;
+			end
+			FETCH_PCH: begin
+				next_state = FETCH_OP;
+			end
 			default: begin
 				next_state = RESET; 
 			end
@@ -668,6 +731,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		jump = 1'b0;
 		jump_indirect = 1'b0;
 		branch = 1'b0;
+
+		break = 1'b0;
 
 		case (ir)
 			CLC_IMP, CLD_IMP, CLI_IMP, CLV_IMP, DEX_IMP, DEY_IMP, INX_IMP, INY_IMP, NOP_IMP, PHA_IMP, PHP_IMP, PLA_IMP,
@@ -810,7 +875,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				jump_indirect = 1'b1;
 			end
 			BRK_IMP: begin
-				// something goes in here
+				break = 1'b1;
 			end
 			default: begin
 				$write("state : %b", state);
