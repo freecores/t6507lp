@@ -143,8 +143,8 @@ module t6507lp_fsm_tb();
 		fake_mem[59] = 8'hff;
 		fake_mem[60] = 8'hff;
 		fake_mem[254] = 8'hff;
-		fake_mem[257] = 8'h55; // PCL fetched from here when executing RTS_IMP
-		fake_mem[258] = 8'h01;    // PCH fetched from here when executing RTS_IMP
+		fake_mem[256] = 8'h55; // PCL fetched from here when executing RTS_IMP
+		fake_mem[257] = 8'h01;    // PCH fetched from here when executing RTS_IMP
 		fake_mem[264] = 8'd340;
 		fake_mem[315] = BEQ_REL; // testing REL mode, not taking a branch, page would have crossed.
 		fake_mem[316] = 8'hff;
@@ -180,14 +180,18 @@ module t6507lp_fsm_tb();
 		//fake_mem[337] = JMP_IND; // testing absolute indirect addressing. no page crossed when updating pointer.
 		//fake_mem[338] = 8'h3b;   // these are commented cause they will actually jump
 		//fake_mem[339] = 8'h00;
-		fake_mem[338] = BRK_IMP;
-		fake_mem[339] = RTI_IMP;
-		fake_mem[340] = RTS_IMP;
+		//fake_mem[338] = BRK_IMP;
+		//fake_mem[339] = RTI_IMP;
+		//fake_mem[340] = RTS_IMP;
 		// 341 is skipped due to RTS internal functionality
-		fake_mem[342] = PHA_IMP;	
-		fake_mem[343] = PHP_IMP;	
-		fake_mem[344] = PLA_IMP;	
-		fake_mem[345] = PLP_IMP;	
+		//fake_mem[342] = PHA_IMP;	
+		//fake_mem[343] = PHP_IMP;	
+		//fake_mem[344] = PLA_IMP;	
+		//fake_mem[345] = PLP_IMP;
+		fake_mem[338] = JSR_ABS;
+		fake_mem[339] = 8'h01;
+		fake_mem[340] = 8'h01;
+			
 
 
 		fake_mem[8190] = 8'h53; // this is the reset vector

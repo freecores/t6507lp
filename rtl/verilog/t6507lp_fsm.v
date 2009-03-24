@@ -10,8 +10,7 @@
 ////									////
 //// TODO:								////
 //// - Fix relative mode, bit 7 means negative				////
-//// - Code the indirect indexed mode					////
-//// - Code the absolute indirect mode					////
+//// - Comment the code							////
 ////									////
 //// Author(s):								////
 //// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
@@ -59,7 +58,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	input [DATA_SIZE_:0] alu_status;
 	input [DATA_SIZE_:0] data_in;
 	output reg [ADDR_SIZE_:0] address;
-	output reg control; // one bit is enough? read = 0, write = 1
+	output reg control; // read = 0, write = 1
 	output reg [DATA_SIZE_:0] data_out;
 	output reg [DATA_SIZE_:0] alu_opcode;
 	output reg [DATA_SIZE_:0] alu_a;
@@ -70,7 +69,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 
 	// FSM states
 	localparam FETCH_OP = 5'b00000;
-	localparam FETCH_OP_CALC = 5'b00001;
+	//localparam FETCH_OP_CALC = 5'b00001; this was never used
 	localparam FETCH_LOW = 5'b00010;
 	localparam FETCH_HIGH = 5'b00011;
 	localparam READ_MEM = 5'b00100;
@@ -97,6 +96,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	localparam INCREMENT_PC = 5'b11001;
 	localparam PUSH_REGISTER = 5'b11010;
 	localparam PULL_REGISTER = 5'b11011;
+	localparam DUMMY = 5'b11100;
 
 	localparam RESET = 5'b11111;
 
@@ -114,7 +114,6 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	reg [DATA_SIZE_:0] temp_data;	// temporary data
 
 	reg [4:0] state, next_state; // current and next state registers
-	// TODO: not sure if this will be 5 bits wide. as of march 24th this was 5bit wide.
 
 	// wiring that simplifies the FSM logic by simplifying the addressing modes
 	reg absolute;
@@ -143,7 +142,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	reg pha;
 	reg php;
 	reg pla;	
-	reg plp;	
+	reg plp;
+	reg jsr;	
 
 	wire [ADDR_SIZE_:0] next_pc;
 	assign next_pc = pc + 13'b0000000000001;
@@ -220,10 +220,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				end
 				/*
 				FETCH_OP: executed when the processor was reset or the last instruction could not fetch.
-				FETCH_OP_CALC: enables the alu and fetchs the next instruction opcode. (pipelining)
 				FETCH_OP_CALC_PARAM: enables the alu with an argument (alu_a) and fetchs the next instruction opcode. (pipelining)
 				*/
-				FETCH_OP, FETCH_OP_CALC, FETCH_OP_CALC_PARAM: begin // this is the pipeline happening!
+				FETCH_OP, FETCH_OP_CALC_PARAM: begin // this is the pipeline happening!
 					pc <= next_pc;
 					address <= next_pc;
 					control <= MEM_READ; 
@@ -284,7 +283,6 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 							address <= sp;
 							data_out <= {{3{1'b0}}, pc[12:8]};
 							control <= MEM_WRITE;
-							sp <= sp_minus_one;
 						end
 						else if (rti || rts) begin
 							address <= sp;
@@ -300,6 +298,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 							pc <= pc;
 							address <= sp;
 							control <= MEM_READ;
+						end
+						else begin // jsr
+							address <= sp;
+							control <= MEM_READ;
+							temp_addr <= {{5{1'b0}}, data_in};
+							pc <= next_pc;
 						end
 					end
 				end
@@ -363,10 +367,6 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 							data_out <= 8'h00;
 						end
 					end
-					//else begin
-					//	$write("FETCHHIGH PROBLEM"); 
-					//	$finish(0); 
-					//end
 				end
 				READ_MEM: begin
 					if (read_modify_write) begin
@@ -385,7 +385,6 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					end
 				end
 				READ_MEM_CALC_INDEX: begin
-						//pc <= next_pc; // pc was  already updated in the previous cycle
 						address <= address_plus_index;
 						temp_addr <= address_plus_index;
 
@@ -488,17 +487,25 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				end
 				PUSH_PCH: begin
 					pc <= pc;
-					address <= sp;
+					address <= sp_minus_one;
 					data_out <= pc[7:0];
 					control <= MEM_WRITE;
 					sp <= sp_minus_one;
 				end
 				PUSH_PCL: begin
-					pc <= pc;
-					address <= sp;
-					data_out <= alu_status;
-					control <= MEM_WRITE;
-					sp <= sp_minus_one;
+					if (jsr) begin
+						pc <= pc;
+						address <= pc;
+						control <= MEM_READ;
+						sp <= sp_minus_one;
+					end
+					else begin
+						pc <= pc;
+						address <= sp_minus_one;
+						data_out <= alu_status;
+						control <= MEM_WRITE;
+						sp <= sp_minus_one;
+					end
 				end
 				PUSH_STATUS: begin
 					address <= 13'hFFFE;
@@ -548,6 +555,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					address <= pc;
 					temp_data <= data_in;
 				end
+				DUMMY: begin
+					address <= sp;
+					control <= MEM_WRITE;
+				end
 				default: begin
 					$write("unknown state"); // TODO: check if synth really ignores this 2 lines. Otherwise wrap it with a `ifdef 
 					$finish(0); 
@@ -561,8 +572,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		alu_opcode = 8'h00;
 		alu_a = 8'h00;
 		alu_enable = 1'b0;
-
-		next_state = RESET; // this prevents the latch
+		next_state = RESET; // these lines prevents latches
 
 		case (state)
 			RESET: begin
@@ -571,11 +581,6 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			FETCH_OP: begin
 				next_state = FETCH_LOW;
 			end
-			//FETCH_OP_CALC: begin // so far no addressing mode required the use of this state
-			//	next_state = FETCH_LOW;
-			//	alu_opcode = ir;
-			//	alu_enable = 1'b1;
-			//end
 			FETCH_OP_CALC_PARAM: begin
 				next_state = FETCH_LOW;
 				alu_opcode = ir;
@@ -609,7 +614,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				else if (zero_page_indexed) begin
 					next_state = READ_MEM_CALC_INDEX;
 				end
-				else if (absolute || jump_indirect) begin // at least the absolute address mode falls here
+				else if (absolute || jump_indirect) begin
 					next_state = FETCH_HIGH;
 					if (write) begin // this is being done one cycle early but i have checked and the ALU will still work properly
 						alu_opcode = ir;
@@ -645,6 +650,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					else if (pla || plp) begin
 						next_state = INCREMENT_SP;
 					end
+					else begin // jsr
+						next_state = DUMMY;
+					end
 				end
 			end
 			READ_FROM_POINTER: begin
@@ -666,7 +674,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					next_state = READ_MEM_FIX_ADDR;
 				end
 				else begin 
-					if (read) begin // read_modify_write was showing up here for no reason. no instruction using pointers is from that type.
+					if (read) begin // no instruction using pointers is from type read_modify_write
 						next_state = READ_MEM;
 					end
 					else if (write) begin
@@ -770,7 +778,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				next_state = PUSH_PCL;
 			end
 			PUSH_PCL: begin
-				next_state = PUSH_STATUS;
+				if (jsr) begin
+					next_state = FETCH_HIGH;
+				end
+				else begin
+					next_state = PUSH_STATUS;
+				end
 			end
 			PUSH_STATUS: begin
 				next_state = FETCH_PCL;
@@ -818,6 +831,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			PULL_REGISTER: begin
 				next_state = FETCH_OP_CALC_PARAM;
 			end
+			DUMMY: begin
+				next_state = PUSH_PCH;
+			end
 			default: begin
 				next_state = RESET; 
 			end
@@ -853,6 +869,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 		php = 1'b0;
 		pla = 1'b0;
 		plp = 1'b0;
+		jsr = 1'b0;
 
 		case (ir)
 			CLC_IMP, CLD_IMP, CLI_IMP, CLV_IMP, DEX_IMP, DEY_IMP, INX_IMP, INY_IMP, NOP_IMP, 
@@ -966,7 +983,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					branch = 1'b0;
 				end
 			end
-			ADC_ABS, AND_ABS, ASL_ABS, BIT_ABS, CMP_ABS, CPX_ABS, CPY_ABS, DEC_ABS, EOR_ABS, INC_ABS, JSR_ABS, LDA_ABS, 
+			ADC_ABS, AND_ABS, ASL_ABS, BIT_ABS, CMP_ABS, CPX_ABS, CPY_ABS, DEC_ABS, EOR_ABS, INC_ABS, LDA_ABS, 
 			LDX_ABS, LDY_ABS, LSR_ABS, ORA_ABS, ROL_ABS, ROR_ABS, SBC_ABS, STA_ABS, STX_ABS, STY_ABS: begin
 				absolute = 1'b1;
 			end
@@ -1014,6 +1031,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			end
 			PLP_IMP: begin
 				plp = 1'b1;
+			end
+			JSR_ABS: begin
+				jsr = 1'b1;
 			end
 			default: begin
 				$write("state : %b", state);
