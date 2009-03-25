@@ -10,6 +10,7 @@
 ////									////
 //// TODO:								////
 //// - Fix relative mode, bit 7 means negative				////
+//// - Check reset behavior						////
 //// - Comment the code							////
 ////									////
 //// Author(s):								////
@@ -144,14 +145,21 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 	reg plp;
 	reg jsr;	
 
-	wire [ADDR_SIZE_:0] next_pc;
+	wire [ADDR_SIZE_:0] next_pc;	 // a simple logic to add one to the PC
 	assign next_pc = pc + 13'b0000000000001;
 
-	reg [ADDR_SIZE_:0] address_plus_index; // this would update more times than actually needed, consuming power.
-	reg page_crossed;			// so the simple assign was changed into a combinational always block
-	
-	reg branch;
+	wire [8:0] sp_plus_one;		// simple adder and subtracter for the stack pointer
+	assign sp_plus_one = sp + 9'b000000001;
 
+	wire [8:0] sp_minus_one;
+	assign sp_minus_one = sp - 9'b000000001;
+
+	reg [ADDR_SIZE_:0] address_plus_index; 	// this two registers are used when the instruction uses indexing.
+	reg page_crossed;			// address_plus_index always adds index to address and page_crossed asserts when the sum creates a carry.
+	
+	reg branch; 	// a simple reg that is asserted everytime a branch will be executed.			
+
+	// this is the combinational logic related to indexed instructions
 	always @(*) begin
 		address_plus_index = 8'h00;
 		page_crossed = 1'b0;
@@ -163,7 +171,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		else if (branch) begin
 			if (state == FETCH_OP_FIX_PC || state == FETCH_OP_EVAL_BRANCH) begin
 				{page_crossed, address_plus_index[7:0]} = pc[7:0] + index;
-				address_plus_index[12:8] = pc[12:8] + page_crossed;// warning: pc might feed these lines twice and cause branch failure
+				address_plus_index[12:8] = pc[12:8] + page_crossed;	// warning: pc might feed these lines twice and cause branch failure
 			end								// solution: add a temp reg i guess
 		end
 		else if (state == READ_FROM_POINTER) begin
@@ -190,12 +198,6 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		end
 	end
 
-	wire [8:0] sp_plus_one;
-	assign sp_plus_one = sp + 9'b000000001;
-
-	wire [8:0] sp_minus_one;
-	assign sp_minus_one = sp - 9'b000000001;
-
 	always @ (posedge clk or negedge reset_n) begin // sequencial always block
 		if (reset_n == 1'b0) begin
 			// all registers must assume default values
@@ -206,7 +208,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			temp_data <= 8'h00;
 			state <= RESET;
 			// registered outputs also receive default values
-			address <= 0;
+			address <= 13'h0000;
 			mem_rw <= MEM_READ;
 			data_out <= 8'h00;
 		end
@@ -230,7 +232,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 				end
 				/*
 				in this state the opcode is already known so truly execution begins.
-				all instruction execute this cycle.
+				all instructions execute this cycle.
 				*/
 				FETCH_LOW: begin 		
 					if (accumulator || implied) begin
@@ -368,6 +370,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 						end
 					end
 				end
+				// read memory at address
 				READ_MEM: begin
 					if (read_modify_write) begin
 						pc <= pc;
@@ -403,7 +406,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 						mem_rw <= MEM_READ;
 						data_out <= 8'h00;
 
-						if (page_crossed) begin
+						if (page_crossed) begin // fix address 
 							address <= address_plus_index;
 							temp_addr <= address_plus_index;
 						end
@@ -426,6 +429,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 						temp_addr <= address_plus_index;
 					end
 				end
+				// some instructions have a dummy write cycle. this is it.
 				DUMMY_WRT_CALC: begin
 					pc <= pc;
 					address <= temp_addr;
@@ -568,7 +572,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		end
 	end
 
-	always @ (*) begin // this is the next_state logic and the output logic always block
+	always @ (*) begin // this is the next_state logic and the combinational output logic always block
 		alu_opcode = 8'h00;
 		alu_a = 8'h00;
 		alu_enable = 1'b0;
