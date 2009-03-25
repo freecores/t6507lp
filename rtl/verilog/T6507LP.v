@@ -45,38 +45,52 @@
 `include "timescale.v"
 
 `include  "T6507LP_ALU.v" 
-`include  "T6507LP_FSM.v"
+`include  "t6507lp_fsm.v"
 
-module T6507LP(n_rst_i, clk_i, rw_i, rdy_i, D_i, D_o, A_o);
+module t6507lp(clk, reset_n, data_in, rw_mem, data_out, address);
+	parameter [3:0] DATA_SIZE = 4'd8;
+	parameter [3:0] ADDR_SIZE = 4'd13;
 
-input n_rst_i;
-input clk_i;
-input rw_i;
-input rdy_i;
-input [7:0] D_i;	// data, 8 bits wide
-output [7:0] D_o;
-output [12:0] A_o;	// address, 13 bits wide
-`include  "T6507LP_Package.v"
+	localparam [3:0] DATA_SIZE_ = DATA_SIZE - 4'b0001;
+	localparam [3:0] ADDR_SIZE_ = ADDR_SIZE - 4'b0001;
 
-// TODO: fix variables and signals naming convention
-T6507LP_FSM FSM (
-	.clk_in		(clk_i),
-	.n_rst_in	(n_rst_in),
-	.alu_result	(alu_result),
-	.alu_status	(alu_status),
-	.data_in	(D_i),
-	.address	(address),
-	.mem_rw		(mem_rw),
-	.data_out	(D_o),
-	.alu_opcode	(alu_opcode),
-	.alu_a		(alu_a),
-	.alu_x		(alu_x),
-	.alu_y		(alu_y)
-);
+	// note: in the top level inputs are just inputs, outputs are just outputs and the internal signals are wired.
+	input clk;
+	input reset_n;
+	input [DATA_SIZE_:0] data_in;
+	output rw_mem;
+	output [DATA_SIZE_:0] data_out;
+	output [ADDR_SIZE_:0] address;
 
-T6507LP_ALU ALU (
-	.clk_i		(clk_i),
-	.n_rst_i	(n_rst_i),
+	wire [DATA_SIZE_:0] alu_result;
+	wire [DATA_SIZE_:0] alu_status;
+	wire [DATA_SIZE_:0] alu_x;
+	wire [DATA_SIZE_:0] alu_y;
+	wire [DATA_SIZE_:0] alu_opcode;
+	wire [DATA_SIZE_:0] alu_a;
+	wire alu_enable;
+
+	// `include  "T6507LP_Package.v"
+
+	t6507lp_fsm #(DATA_SIZE, ADDR_SIZE) t6507lp_fsm(
+		.clk		(clk),
+		.reset_n	(reset_n),
+		.alu_result	(alu_result),
+		.alu_status	(alu_status),
+		.data_in	(data_in),
+		.alu_x		(alu_x),
+		.alu_y		(alu_y),
+		.address	(address),
+		.mem_rw		(mem_rw),
+		.data_out	(data_out),
+		.alu_opcode	(alu_opcode),
+		.alu_a		(alu_a),
+		.alu_enable	(alu_enable)
+	);
+
+T6507LP_ALU T6507LP_ALU (
+	.clk_i		(clk),
+	.n_rst_i	(reset_n),
 	.alu_enable	(alu_enable),
 	.alu_result	(alu_result),
 	.alu_status	(alu_status),

@@ -46,16 +46,14 @@ module t6507lp_fsm_tb();
 	localparam MEM_READ = 1'b0;
 	localparam MEM_WRITE = 1'b1;
 
-	reg clk;
+	reg clk; // regs are inputs
 	reg reset_n;
 	reg [7:0] alu_result;
 	reg [7:0] alu_status;
 	reg [7:0] data_in;
-
 	reg [7:0] alu_x;
 	reg [7:0] alu_y;
-
-	wire [12:0] address;
+	wire [12:0] address; // wires are outputs
 	wire mem_rw; 
 	wire [7:0] data_out;
 	wire [7:0] alu_opcode;
@@ -66,20 +64,20 @@ module t6507lp_fsm_tb();
 
 	`include "T6507LP_Package.v"
 
-	t6507lp_fsm #(8,13) my_dut(
+	t6507lp_fsm #(8,13) t6507lp_fsm(
 		.clk(clk),
 		.reset_n(reset_n),
 		.alu_result(alu_result),
 		.alu_status(alu_status),
 		.data_in(data_in),
+		.alu_x(alu_x),
+		.alu_y(alu_y),
 		.address(address),
 		.mem_rw(mem_rw),
 		.data_out(data_out),
 		.alu_opcode(alu_opcode),
 		.alu_a(alu_a),
-		.alu_enable(alu_enable),
-		.alu_x(alu_x),
-		.alu_y(alu_y)
+		.alu_enable(alu_enable)
 	);
 
 	always #10 clk = ~clk;
@@ -87,7 +85,7 @@ module t6507lp_fsm_tb();
 	reg[7:0] fake_mem[2**13-1:0];
 
 	initial begin
-		clk = 0;
+		clk = 1'b0;
 		reset_n = 1'b0;
 		alu_result = 8'h01;
 		alu_status = 8'h00;
@@ -98,7 +96,6 @@ module t6507lp_fsm_tb();
 			$write("\n%d",my_i);
 			fake_mem[my_i]=8'h00;
 		end
-
 
 		fake_mem[0] = ASL_ACC; // testing ACC mode
 		fake_mem[1] = ADC_IMM; // testing IMM mode

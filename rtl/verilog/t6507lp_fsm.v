@@ -45,7 +45,7 @@
 
 `include "timescale.v"
 
-module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, mem_rw, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
+module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, address, mem_rw, data_out, alu_opcode, alu_a, alu_enable);
 	parameter [3:0] DATA_SIZE = 4'd8;
 	parameter [3:0] ADDR_SIZE = 4'd13;
 
@@ -57,6 +57,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, mem_r
 	input [DATA_SIZE_:0] alu_result;	// result from alu operation
 	input [DATA_SIZE_:0] alu_status;	// alu status register
 	input [DATA_SIZE_:0] data_in;		// data that comes from the bus controller
+	input [DATA_SIZE_:0] alu_x;		// alu x index register
+	input [DATA_SIZE_:0] alu_y;		// alu y index register
 	output reg [ADDR_SIZE_:0] address;	// system bus address
 	output reg mem_rw; 			// read = 0, write = 1
 	output reg [DATA_SIZE_:0] data_out;	// data that will be written somewhere else
@@ -64,8 +66,6 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, mem_r
 	output reg [DATA_SIZE_:0] alu_a;	// extra operand sent to the alu
 	output reg alu_enable;			// a flag that when high tells the alu when to perform the operations
 
-	input [DATA_SIZE_:0] alu_x;
-	input [DATA_SIZE_:0] alu_y;
 
 	// FSM states. If aiming for less power consumption try gray coding.
 	//localparam FETCH_OP_CALC = 5'b00001; this was never used
