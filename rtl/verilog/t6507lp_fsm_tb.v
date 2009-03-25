@@ -66,7 +66,21 @@ module t6507lp_fsm_tb();
 
 	`include "T6507LP_Package.v"
 
-	t6507lp_fsm #(8,13) my_dut(clk, reset_n, alu_result, alu_status, data_in, address, mem_rw, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
+	t6507lp_fsm #(8,13) my_dut(
+		.clk(clk),
+		.reset_n(reset_n),
+		.alu_result(alu_result),
+		.alu_status(alu_status),
+		.data_in(data_in),
+		.address(address),
+		.mem_rw(mem_rw),
+		.data_out(data_out),
+		.alu_opcode(alu_opcode),
+		.alu_a(alu_a),
+		.alu_enable(alu_enable),
+		.alu_x(alu_x),
+		.alu_y(alu_y)
+	);
 
 	always #10 clk = ~clk;
 
