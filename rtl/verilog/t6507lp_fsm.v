@@ -43,7 +43,7 @@
 ////									////
 ////////////////////////////////////////////////////////////////////////////
 
-`timescale 1ns / 1ps
+`include "timescale.v"
 
 module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
 	parameter [3:0] DATA_SIZE = 4'd8;
@@ -100,7 +100,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	localparam RESET = 5'b11111;
 
 	// OPCODES TODO: verify how this get synthesised
-	`include "../T6507LP_Package.v"
+	`include "T6507LP_Package.v"
 
 	// control signals
 	localparam MEM_READ = 1'b0;

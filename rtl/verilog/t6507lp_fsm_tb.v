@@ -44,8 +44,7 @@
 ////									////
 ////////////////////////////////////////////////////////////////////////////
 
-
-`timescale 1ns / 1ps
+`include "timescale.v"
 
 module t6507lp_fsm_tb();
 	reg clk;
@@ -66,7 +65,7 @@ module t6507lp_fsm_tb();
 
 	integer my_i;
 
-	`include "../T6507LP_Package.v" // TODO: remove this include
+	`include "T6507LP_Package.v" // TODO: remove this include
 
 	t6507lp_fsm #(8,13) my_dut(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
 
