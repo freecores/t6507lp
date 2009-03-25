@@ -45,31 +45,31 @@
 
 `include "timescale.v"
 
-module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
+module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, mem_rw, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
 	parameter [3:0] DATA_SIZE = 4'd8;
 	parameter [3:0] ADDR_SIZE = 4'd13;
 
 	localparam [3:0] DATA_SIZE_ = DATA_SIZE - 4'b0001;
 	localparam [3:0] ADDR_SIZE_ = ADDR_SIZE - 4'b0001;
 
-	input clk;
-	input reset_n;
-	input [DATA_SIZE_:0] alu_result;
-	input [DATA_SIZE_:0] alu_status;
-	input [DATA_SIZE_:0] data_in;
-	output reg [ADDR_SIZE_:0] address;
-	output reg control; // read = 0, write = 1
-	output reg [DATA_SIZE_:0] data_out;
-	output reg [DATA_SIZE_:0] alu_opcode;
-	output reg [DATA_SIZE_:0] alu_a;
-	output reg alu_enable;
+	input clk; 				// master clock
+	input reset_n;				// active low reset
+	input [DATA_SIZE_:0] alu_result;	// result from alu operation
+	input [DATA_SIZE_:0] alu_status;	// alu status register
+	input [DATA_SIZE_:0] data_in;		// data that comes from the bus controller
+	output reg [ADDR_SIZE_:0] address;	// system bus address
+	output reg mem_rw; 			// read = 0, write = 1
+	output reg [DATA_SIZE_:0] data_out;	// data that will be written somewhere else
+	output reg [DATA_SIZE_:0] alu_opcode;	// current opcode
+	output reg [DATA_SIZE_:0] alu_a;	// extra operand sent to the alu
+	output reg alu_enable;			// a flag that when high tells the alu when to perform the operations
 
 	input [DATA_SIZE_:0] alu_x;
 	input [DATA_SIZE_:0] alu_y;
 
 	// FSM states. If aiming for less power consumption try gray coding.
-	localparam FETCH_OP = 5'b00000;
 	//localparam FETCH_OP_CALC = 5'b00001; this was never used
+	localparam FETCH_OP = 5'b00000;
 	localparam FETCH_LOW = 5'b00010;
 	localparam FETCH_HIGH = 5'b00011;
 	localparam READ_MEM = 5'b00100;
@@ -102,7 +102,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 	// OPCODES TODO: verify how this get synthesised
 	`include "T6507LP_Package.v"
 
-	// control signals
+	// mem_rw signals
 	localparam MEM_READ = 1'b0;
 	localparam MEM_WRITE = 1'b1;
 
@@ -207,7 +207,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 			state <= RESET;
 			// registered outputs also receive default values
 			address <= 0;
-			control <= MEM_READ;
+			mem_rw <= MEM_READ;
 			data_out <= 8'h00;
 		end
 		else begin
@@ -225,7 +225,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				FETCH_OP, FETCH_OP_CALC_PARAM: begin // this is the pipeline happening!
 					pc <= next_pc;
 					address <= next_pc;
-					control <= MEM_READ; 
+					mem_rw <= MEM_READ; 
 					ir <= data_in;
 				end
 				/*
@@ -236,18 +236,18 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					if (accumulator || implied) begin
 						pc <= pc; // is this better?
 						address <= pc;
-						control <= MEM_READ; 
+						mem_rw <= MEM_READ; 
 					end
 					else if (immediate || relative) begin
 						pc <= next_pc;
 						address <= next_pc;
-						control <= MEM_READ; 
+						mem_rw <= MEM_READ; 
 						temp_data <= data_in; // the follow-up byte is saved in temp_data 
 					end
 					else if (absolute || absolute_indexed || jump_indirect) begin
 						pc <= next_pc;
 						address <= next_pc;					
-						control <= MEM_READ; 
+						mem_rw <= MEM_READ; 
 						temp_addr <= {{5{1'b0}},data_in};
 						temp_data <= 8'h00;
 					end
@@ -257,11 +257,11 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						temp_addr <= {{5{1'b0}},data_in};
 
 						if (write) begin
-							control <= MEM_WRITE;
+							mem_rw <= MEM_WRITE;
 							data_out <= alu_result;
 						end
 						else begin
-							control <= MEM_READ; 
+							mem_rw <= MEM_READ; 
 							data_out <= 8'h00;
 						end
 					end
@@ -269,39 +269,39 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						pc <= next_pc;
 						address <= {{5{1'b0}}, data_in};
 						temp_addr <= {{5{1'b0}}, data_in};
-						control <= MEM_READ; 
+						mem_rw <= MEM_READ; 
 					end
 					else if (indirectx || indirecty) begin
 						pc <= next_pc;
 						address <= data_in;
 						temp_data <= data_in;
-						control <= MEM_READ;
+						mem_rw <= MEM_READ;
 					end
 					else begin // the special instructions will fall here: BRK, RTI, RTS...
 						if (brk) begin
 							pc <= next_pc;
 							address <= sp;
 							data_out <= {{3{1'b0}}, pc[12:8]};
-							control <= MEM_WRITE;
+							mem_rw <= MEM_WRITE;
 						end
 						else if (rti || rts) begin
 							address <= sp;
-							control <= MEM_READ;
+							mem_rw <= MEM_READ;
 						end
 						else if (pha || php) begin
 							pc <= pc;
 							address <= sp;
 							data_out <= (pha) ? alu_result : alu_status;
-							control <= MEM_WRITE;
+							mem_rw <= MEM_WRITE;
 						end
 						else if (pla || plp) begin
 							pc <= pc;
 							address <= sp;
-							control <= MEM_READ;
+							mem_rw <= MEM_READ;
 						end
 						else begin // jsr
 							address <= sp;
-							control <= MEM_READ;
+							mem_rw <= MEM_READ;
 							temp_addr <= {{5{1'b0}}, data_in};
 							pc <= next_pc;
 						end
@@ -311,7 +311,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					pc <= next_pc;
 					temp_addr[12:8] <= data_in[4:0];
 					address <= {data_in[4:0], address_plus_index[7:0]};
-					control <= MEM_READ; 
+					mem_rw <= MEM_READ; 
 					data_out <= 8'h00;
 				end
 				// this cycle fetchs the next operand while still evaluating if a branch occurred.
@@ -319,13 +319,13 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					if (branch) begin
 						pc <= {{5{1'b0}}, address_plus_index[7:0]};
 						address <= {{5{1'b0}}, address_plus_index[7:0]};
-						control <= MEM_READ; 
+						mem_rw <= MEM_READ; 
 						data_out <= 8'h00;
 					end
 					else begin
 						pc <= next_pc;
 						address <= next_pc;
-						control <= MEM_READ; 
+						mem_rw <= MEM_READ; 
 						data_out <= 8'h00;
 						ir <= data_in;
 					end
@@ -339,7 +339,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					else begin
 						pc <= next_pc;
 						address <= next_pc;
-						control <= MEM_READ; 
+						mem_rw <= MEM_READ; 
 						ir <= data_in;
 					end
 				end
@@ -348,7 +348,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					if (jump) begin
 						pc <= {data_in[4:0], temp_addr[7:0]}; // PCL <= first byte, PCH <= second byte
 						address <= {data_in[4:0], temp_addr[7:0]};
-						control <= MEM_READ; 
+						mem_rw <= MEM_READ; 
 						data_out <= 8'h00;
 					end
 					else begin 
@@ -356,14 +356,14 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 							pc <= next_pc;
 							temp_addr[12:8] <= data_in[4:0];
 							address <= {data_in[4:0],temp_addr[7:0]};
-							control <= MEM_WRITE;
+							mem_rw <= MEM_WRITE;
 							data_out <= alu_result;
 						end
 						else begin // read_modify_write or just read
 							pc <= next_pc;
 							temp_addr[12:8] <= data_in[4:0];
 							address <= {data_in[4:0],temp_addr[7:0]};
-							control <= MEM_READ; 
+							mem_rw <= MEM_READ; 
 							data_out <= 8'h00;
 						end
 					end
@@ -372,7 +372,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					if (read_modify_write) begin
 						pc <= pc;
 						address <= temp_addr;
-						control <= MEM_WRITE;
+						mem_rw <= MEM_WRITE;
 						temp_data <= data_in;
 						data_out <= data_in; // writeback the same value
 					end
@@ -380,7 +380,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						pc <= pc;
 						address <= pc;
 						temp_data <= data_in;
-						control <= MEM_READ; 
+						mem_rw <= MEM_READ; 
 						data_out <= 8'h00;
 					end
 				end
@@ -389,18 +389,18 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						temp_addr <= address_plus_index;
 
 						if (write) begin
-							control <= MEM_WRITE;
+							mem_rw <= MEM_WRITE;
 							data_out <= alu_result;
 						end
 						else begin
-							control <= MEM_READ; 
+							mem_rw <= MEM_READ; 
 							data_out <= 8'h00;
 						end
 
 				end
 				READ_MEM_FIX_ADDR: begin
 					if (read) begin
-						control <= MEM_READ;
+						mem_rw <= MEM_READ;
 						data_out <= 8'h00;
 
 						if (page_crossed) begin
@@ -413,14 +413,14 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 						end
 					end
 					else if (write) begin
-						control <= MEM_WRITE;
+						mem_rw <= MEM_WRITE;
 						data_out <= alu_result;
 						address <= address_plus_index;
 						temp_addr <= address_plus_index;
 
 					end
 					else begin // read modify write
-						control <= MEM_READ; 
+						mem_rw <= MEM_READ; 
 						data_out <= 8'h00;
 						address <= address_plus_index;
 						temp_addr <= address_plus_index;
@@ -429,24 +429,24 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				DUMMY_WRT_CALC: begin
 					pc <= pc;
 					address <= temp_addr;
-					control <= MEM_WRITE;
+					mem_rw <= MEM_WRITE;
 					data_out <= alu_result;
 				end
 				WRITE_MEM: begin
 					pc <= pc;
 					address <= pc;
-					control <= MEM_READ; 
+					mem_rw <= MEM_READ; 
 					data_out <= 8'h00;
 				end
 				READ_FROM_POINTER: begin
 					if (jump_indirect) begin
 						pc[7:0] <= data_in;
-						control <= MEM_READ;
+						mem_rw <= MEM_READ;
 						address <= address_plus_index;
 					end
 					else begin
 						pc <= pc;
-						control <= MEM_READ;
+						mem_rw <= MEM_READ;
 					
 						if (indirectx) begin 
 							address <= address_plus_index;
@@ -461,65 +461,65 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					pc <= pc;
 					address <= address_plus_index;
 					temp_addr[7:0] <= data_in;
-					control <= MEM_READ;
+					mem_rw <= MEM_READ;
 				end
 				READ_FROM_POINTER_X1: begin
 					if (jump_indirect) begin
 						pc[12:8] <= data_in[4:0];
-						control <= MEM_READ;
+						mem_rw <= MEM_READ;
 						address <= {data_in[4:0], pc[7:0]};
 					end
 					else if (indirectx) begin
 						address <= {data_in[4:0], temp_addr[7:0]};
 						if (write) begin
-							control <= MEM_WRITE;
+							mem_rw <= MEM_WRITE;
 							data_out <= alu_result;
 						end
 						else begin
-							control <= MEM_READ;
+							mem_rw <= MEM_READ;
 						end
 					end
 					else begin // indirecty falls here
 						address <= address_plus_index;
 						temp_addr[12:8] <= data_in;
-						control <= MEM_READ;
+						mem_rw <= MEM_READ;
 					end
 				end
 				PUSH_PCH: begin
 					pc <= pc;
 					address <= sp_minus_one;
 					data_out <= pc[7:0];
-					control <= MEM_WRITE;
+					mem_rw <= MEM_WRITE;
 					sp <= sp_minus_one;
 				end
 				PUSH_PCL: begin
 					if (jsr) begin
 						pc <= pc;
 						address <= pc;
-						control <= MEM_READ;
+						mem_rw <= MEM_READ;
 						sp <= sp_minus_one;
 					end
 					else begin
 						pc <= pc;
 						address <= sp_minus_one;
 						data_out <= alu_status;
-						control <= MEM_WRITE;
+						mem_rw <= MEM_WRITE;
 						sp <= sp_minus_one;
 					end
 				end
 				PUSH_STATUS: begin
 					address <= 13'hFFFE;
-					control <= MEM_READ;
+					mem_rw <= MEM_READ;
 				end
 				FETCH_PCL: begin
 					pc[7:0] <= data_in;
 					address <= 13'hFFFF;
-					control <= MEM_READ;
+					mem_rw <= MEM_READ;
 				end
 				FETCH_PCH: begin
 					pc[12:8] <= data_in[4:0];
 					address <= {data_in[4:0], pc[7:0]};
-					control <= MEM_READ;
+					mem_rw <= MEM_READ;
 				end
 				INCREMENT_SP: begin
 					sp <= sp_plus_one;
@@ -547,7 +547,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 					pc <= pc;
 					address <= pc;
 					sp <= sp_minus_one;
-					control <= MEM_READ;
+					mem_rw <= MEM_READ;
 					temp_data <= data_in;
 				end
 				PULL_REGISTER: begin
@@ -557,7 +557,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, address, contr
 				end
 				DUMMY: begin
 					address <= sp;
-					control <= MEM_WRITE;
+					mem_rw <= MEM_WRITE;
 				end
 				default: begin
 					$write("unknown state"); // TODO: check if synth really ignores this 2 lines. Otherwise wrap it with a `ifdef 

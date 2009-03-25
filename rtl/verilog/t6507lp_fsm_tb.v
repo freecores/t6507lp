@@ -8,11 +8,6 @@
 //// Description							////
 //// 6507 FSM testbench							////
 ////									////
-//// TODO:								////
-//// - Test indirect indexed mode					////
-//// - Test absolute indirect mode					////
-//// - Test special stack instructions					////
-//// 									////
 //// Author(s):								////
 //// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
 //// - Samuel Nascimento Pagliarini (creep), snpagliarini@gmail.com	////
@@ -47,6 +42,10 @@
 `include "timescale.v"
 
 module t6507lp_fsm_tb();
+	// mem_rw signals
+	localparam MEM_READ = 1'b0;
+	localparam MEM_WRITE = 1'b1;
+
 	reg clk;
 	reg reset_n;
 	reg [7:0] alu_result;
@@ -57,7 +56,7 @@ module t6507lp_fsm_tb();
 	reg [7:0] alu_y;
 
 	wire [12:0] address;
-	wire control; 
+	wire mem_rw; 
 	wire [7:0] data_out;
 	wire [7:0] alu_opcode;
 	wire [7:0] alu_a;
@@ -65,9 +64,9 @@ module t6507lp_fsm_tb();
 
 	integer my_i;
 
-	`include "T6507LP_Package.v" // TODO: remove this include
+	`include "T6507LP_Package.v"
 
-	t6507lp_fsm #(8,13) my_dut(clk, reset_n, alu_result, alu_status, data_in, address, control, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
+	t6507lp_fsm #(8,13) my_dut(clk, reset_n, alu_result, alu_status, data_in, address, mem_rw, data_out, alu_opcode, alu_a, alu_enable, alu_x, alu_y);
 
 	always #10 clk = ~clk;
 
@@ -204,11 +203,11 @@ module t6507lp_fsm_tb();
 	end //initial
 
 	always @(clk) begin
-		if (control == 0) begin // MEM_READ
+		if (mem_rw == MEM_READ) begin // MEM_READ
 			data_in <= fake_mem[address];
 			$write("\nreading from mem position %h: %h", address, fake_mem[address]);
 		end
-		else if (control == 1'b1) begin // MEM_WRITE
+		else begin // MEM_WRITE
 			fake_mem[address] <= data_out;
 			$write("\nreading from mem position %h: %h", address, fake_mem[address]);
 		end
