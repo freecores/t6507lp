@@ -42,7 +42,7 @@
 ////									////
 ////////////////////////////////////////////////////////////////////////////
 
-`timescale 1ns / 1ps
+`include "timescale.v"
 
 `include  "T6507LP_ALU.v" 
 `include  "T6507LP_FSM.v"
