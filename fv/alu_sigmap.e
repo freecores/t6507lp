@@ -11,10 +11,26 @@ unit alu_signal_map_u {
 
 	alu_opcode : out simple_port of byte is instance;
 	keep bind(alu_opcode, external);
-	keep rst.hdl_path() == "alu_opcode";
+	keep alu_opcode.hdl_path() == "alu_opcode";
 
 	alu_a : out simple_port of byte is instance;
 	keep bind(alu_a, external);
-	keep rst.hdl_path() == "alu_a";
+	keep alu_a.hdl_path() == "alu_a";
+
+	alu_result : in simple_port of byte is instance;
+	keep bind(alu_result, external);
+	keep alu_result.hdl_path() == "alu_result";
+
+	alu_status : in simple_port of byte is instance;
+	keep bind(alu_status, external);
+	keep alu_status.hdl_path() == "alu_status";
+
+	alu_x : in simple_port of byte is instance;
+	keep bind(alu_x, external);
+	keep alu_x.hdl_path() == "alu_x";
+
+	alu_y : in simple_port of byte is instance;
+	keep bind(alu_y, external);
+	keep alu_y.hdl_path() == "alu_y";
 };
 '>
