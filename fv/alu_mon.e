@@ -4,9 +4,9 @@ unit alu_mon_u {
 //	event pkt_detected_e;
 //	event clock_e;
 
-	alu_result: out simple_port of bool;
-	alu_status: out simple_port of bool;
-	alu_x: out simple_port of byte;
-	alu_y: out simple_port of byte;
+	alu_result: in simple_port of byte;
+	alu_status: in simple_port of byte;
+	alu_x: in simple_port of byte;
+	alu_y: in simple_port of byte;
 };
 '>

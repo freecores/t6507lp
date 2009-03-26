@@ -11,6 +11,6 @@ unit alu_bfm_u {
 	rst: out simple_port of bool;
 	alu_enable: out simple_port of bool;
 	alu_opcode: out simple_port of byte;
-	alu_a: out simple_port of byte;
+	//alu_a: out simple_port of byte;
 };
 '>
