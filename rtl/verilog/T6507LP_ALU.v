@@ -69,11 +69,11 @@ reg [7:0] temp2;
 
 `include "T6507LP_Package.v"
 
-always @ * begin
-	STATUS[Z] = (result == 0) ? 1 : 0;
-	STATUS[N] = result[7];
-	STATUS[5] = 1;
-end
+//always @ * begin
+//	STATUS[Z] = (result == 0) ? 1 : 0;
+//	STATUS[N] = result[7];
+//	STATUS[5] = 1;
+//end
 
 
 always @ (posedge clk_i or negedge n_rst_i)
@@ -93,13 +93,13 @@ begin
 		Y <= 0;
 		alu_x <= 0;
 		alu_y <= 0;
-		STATUS[C] <= 0;
-		STATUS[N] <= 0;
-		STATUS[V] <= 0;
-		STATUS[Z] <= 1;
-		STATUS[I] <= 0;
-		STATUS[B] <= 0;
-		STATUS[D] <= 0;
+		//STATUS[C] <= 0;
+		//STATUS[N] <= 0;
+		//STATUS[V] <= 0;
+		//STATUS[Z] <= 1;
+		//STATUS[I] <= 0;
+		//STATUS[B] <= 0;
+		//STATUS[D] <= 0;
 	end
 	else if ( alu_enable == 1 ) begin
 		//A <= A;
@@ -218,8 +218,18 @@ begin
 end
 
 always @ (*) begin
+	temp1 = A;
+	temp2 = alu_a;
+	result = alu_result;
+	STATUS[C] = alu_status[C];
+	STATUS[V] = alu_status[V];
+	STATUS[Z] = (result == 0) ? 1 : 0;
+	STATUS[N] = result[7];
+	STATUS[5] = 1;
+	STATUS[B] = alu_status[B];
+	STATUS[I] = alu_status[I];
+	STATUS[D] = alu_status[D];
 	case (alu_opcode)
-
 		// BIT - Bit Test
 		BIT_ZPG, BIT_ABS:
 		begin
@@ -337,8 +347,8 @@ always @ (*) begin
 		// ADC - Add with carry
 		ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY :
 		begin
-			temp1 = A;
-			temp2 = alu_a;
+			//temp1 = A;
+			//temp2 = alu_a;
 			if (alu_status[D] == 1) begin
 				if (A[3:0] > 9) begin
 					temp1 = A + 6; // A = A - 10 and A = A + 16
@@ -412,8 +422,8 @@ always @ (*) begin
 		// SBC - Subtract with Carry
 		SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY :
 		begin
-			temp1 = A;
-			temp2 = alu_a;
+			//temp1 = A;
+			//temp2 = alu_a;
 			if (alu_status[D] == 1) begin
 				if (A[3:0] > 9) begin
 					temp1 = A + 6; // A = A - 10 and A = A + 16

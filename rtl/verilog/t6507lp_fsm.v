@@ -218,7 +218,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			case (state)
 				RESET: begin	// The processor was reset
 					sp <= 9'b100000000; // this prevents flipflops with different drivers
-					$write("under reset"); 
+					//$write("under reset"); 
 				end
 				/*
 				FETCH_OP: executed when the processor was reset or the last instruction could not fetch.
@@ -564,8 +564,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 					mem_rw <= MEM_WRITE;
 				end
 				default: begin
-					$write("unknown state"); // TODO: check if synth really ignores this 2 lines. Otherwise wrap it with a `ifdef 
-					$finish(0); 
+					//$write("unknown state"); // TODO: check if synth really ignores this 2 lines. Otherwise wrap it with a `ifdef 
+					//$finish(0); 
 				end
 					
 			endcase
@@ -611,8 +611,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 						alu_a = 8'h00;
 					end
 					else begin
-						$write("unknown behavior"); 
-						$finish(0);
+						//$write("unknown behavior"); 
+						//$finish(0);
 					end
 				end
 				else if (zero_page_indexed) begin
@@ -725,8 +725,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 					alu_opcode = ir;
 				end
 				else begin
-					$write("unknown behavior"); 
-					$finish(0);
+					//$write("unknown behavior"); 
+					//$finish(0);
 				end
 			end
 			FETCH_HIGH: begin
@@ -743,8 +743,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 					next_state = WRITE_MEM;
 				end
 				else begin
-					$write("unknown behavior"); 
-					$finish(0);
+					//$write("unknown behavior"); 
+					//$finish(0);
 				end
 			end
 			READ_MEM_CALC_INDEX: begin
@@ -757,8 +757,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 					next_state = WRITE_MEM;
 				end
 				else begin
-					$write("unknown behavior"); 
-					$finish(0);
+					//$write("unknown behavior"); 
+					//$finish(0);
 				end
 			end
 			READ_MEM: begin
@@ -1040,10 +1040,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 				jsr = 1'b1;
 			end
 			default: begin
-				$write("state : %b", state);
+				//$write("state : %b", state);
 				if (reset_n == 1'b1 && state != FETCH_OP_FIX_PC) begin // the processor is NOT being reset neither it is fixing the pc
-					$write("\nunknown OPCODE!!!!! 0x%h\n", ir);
-					$finish();
+					//$write("\nunknown OPCODE!!!!! 0x%h\n", ir);
+					//$finish();
 				end
 			end
 		endcase

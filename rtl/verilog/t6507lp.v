@@ -44,8 +44,8 @@
 
 `include "timescale.v"
 
-`include  "T6507LP_ALU.v" 
-`include  "t6507lp_fsm.v"
+//`include  "T6507LP_ALU.v" 
+//`include  "t6507lp_fsm.v"
 
 module t6507lp(clk, reset_n, data_in, rw_mem, data_out, address);
 	parameter [3:0] DATA_SIZE = 4'd8;
@@ -71,7 +71,7 @@ module t6507lp(clk, reset_n, data_in, rw_mem, data_out, address);
 	wire alu_enable;
 
 	// `include  "T6507LP_Package.v"
-
+//TODO change rw_mem to mem_rw
 	t6507lp_fsm #(DATA_SIZE, ADDR_SIZE) t6507lp_fsm(
 		.clk		(clk),
 		.reset_n	(reset_n),
@@ -81,7 +81,7 @@ module t6507lp(clk, reset_n, data_in, rw_mem, data_out, address);
 		.alu_x		(alu_x),
 		.alu_y		(alu_y),
 		.address	(address),
-		.mem_rw		(mem_rw),
+		.mem_rw		(rw_mem),
 		.data_out	(data_out),
 		.alu_opcode	(alu_opcode),
 		.alu_a		(alu_a),
