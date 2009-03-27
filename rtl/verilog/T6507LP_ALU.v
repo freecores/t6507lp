@@ -72,13 +72,14 @@ reg [7:0] temp2;
 always @ * begin
 	STATUS[Z] = (result == 0) ? 1 : 0;
 	STATUS[N] = result[7];
+	STATUS[5] = 1;
 end
 
 
 always @ (posedge clk_i or negedge n_rst_i)
 begin
 	if (n_rst_i == 0) begin
-		$display("RESTART");
+		//$display("RESTART");
 		alu_result <= 0;
 		alu_status[C] <= 0;
 		alu_status[N] <= 0;
@@ -101,12 +102,9 @@ begin
 		STATUS[D] <= 0;
 	end
 	else if ( alu_enable == 1 ) begin
-		alu_result <= result;
-		A <= A;
-		X <= X;
-		Y <= Y;
-		alu_x <= X;
-		alu_y <= Y;
+		//A <= A;
+		//X <= X;
+		//Y <= Y;
 		case (alu_opcode)
 			ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY,
 			AND_IMM, AND_ZPG, AND_ZPX, AND_ABS, AND_ABX, AND_ABY, AND_IDX, AND_IDY,
@@ -115,51 +113,105 @@ begin
 			LSR_ACC,
 			ORA_IMM, ORA_ZPG, ORA_ZPX, ORA_ABS, ORA_ABX, ORA_ABY, ORA_IDX, ORA_IDY,
 			ROL_ACC, ROR_ACC,
-			SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY :
+			SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY,
+		        LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY,
+			PLA_IMP,
+			TXA_IMP, TYA_IMP :
 			begin
+				alu_result <= result;
 				A <= result;
 				alu_status <= STATUS;
 			end
-			LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY,
-			PLA_IMP :
+			// LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY,
+			//PLA_IMP:
+			//begin
+			//	A <= result;
+			//	alu_status <= STATUS;
+				//$display("A <= result;");
+				//$display("%h <= %h", A, result);
+				//$display("alu_status <= STATUS;");
+				//$display("%h <= %h", alu_status, STATUS);
+			//end
+			LDX_IMM, LDX_ZPG, LDX_ZPY, LDX_ABS, LDX_ABY, TAX_IMP, TSX_IMP, INX_IMP, DEX_IMP :
 			begin
-				A <= result;
+				//$display("Aqui deu erro");
+				//$display("X <= Result");
+				//$display("%h <=   %h", X, result);
+				X <= result;
+				alu_x <= result;
 				alu_status <= STATUS;
-				$display("A <= result;");
-				$display("%h <= %h", A, result);
-				$display("alu_status <= STATUS;");
-				$display("%h <= %h", alu_status, STATUS);
 			end
-			LDX_IMM, LDX_ZPG, LDX_ZPY, LDX_ABS, LDX_ABY :
+			TXS_IMP :
 			begin
 				X <= result;
-				alu_status <= STATUS;
+				alu_x <= result;
 			end
-			LDY_IMM, LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX :
+			LDY_IMM, LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX, TAY_IMP, INY_IMP, DEY_IMP :
 			begin
 				Y <= result;
+				alu_y <= result;
 				alu_status <= STATUS;
 			end
 			LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX,
 			ROL_ZPG, ROL_ZPX, ROL_ABS, ROL_ABX,
 			ROR_ZPG, ROR_ZPX, ROR_ABS, ROR_ABX,
-			BIT_ZPG, BIT_ABS,
-			BRK_IMP,
-			CLC_IMP, CLD_IMP, CLI_IMP, CLV_IMP,
 			CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY,
 			CPX_IMM, CPX_ZPG, CPX_ABS,
 			CPY_IMM, CPY_ZPG, CPY_ABS,
-			SEC_IMP, SED_IMP, SEI_IMP,
-			TAX_IMP, TAY_IMP, TSX_IMP, TXA_IMP, TXS_IMP, TYA_IMP :
+			PHP_IMP :
 			begin
 				alu_status <= STATUS;
+			end
+			SEC_IMP :
+			begin
+				alu_status[C] <= 1;
+			end
+			SED_IMP :
+			begin
+				alu_status[D] <= 1;
+			end
+			SEI_IMP :
+			begin
+				alu_status[I] <= 1;
+			end
+			CLC_IMP :
+			begin
+				alu_status[C] <= 0;
+			end
+			CLD_IMP :
+			begin
+				alu_status[D] <= 0;
+			end
+			CLI_IMP :
+			begin
+				alu_status[I] <= 0;
+			end
+			CLV_IMP : 
+			begin
+				alu_status[V] <= 0;
+			end
+			BRK_IMP :
+			begin
+				alu_status[B] <= 0;
 			end
 			PLP_IMP, RTI_IMP :
 			begin
 				alu_status <= alu_a;
 			end
+			BIT_ZPG, BIT_ABS :
+			begin
+				alu_status[Z] <= STATUS[Z];
+				alu_status[V] <= alu_a[6];
+				alu_status[N] <= alu_a[7];
+			end
+			INC_ZPG, INC_ZPX, INC_ABS, INC_ABX, DEC_ZPG, DEC_ZPX, DEC_ABS, DEC_ABX :
+			begin
+				alu_result <= result;
+				alu_status <= STATUS;
+
+			end
 			default : begin
-				$display("ERROR");
+				//$display("ERROR");
 			end
 		endcase
 	end
@@ -172,7 +224,7 @@ always @ (*) begin
 		BIT_ZPG, BIT_ABS:
 		begin
 			result = A & alu_a;
-			STATUS[V] = result[6];
+			//STATUS[V] = alu_a[6];
 		end
 
 		// BRK - Force Interrupt
@@ -206,7 +258,7 @@ always @ (*) begin
 			// Do nothing :-D
 		//end
 	
-		// PHP - Pull Processor Status Register
+		// PLP - Pull Processor Status Register
 		PLP_IMP, RTI_IMP: begin
 			STATUS = alu_a;
 		end
@@ -328,7 +380,8 @@ always @ (*) begin
 		// CMP - Compare
 		CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY :
 		begin
-			{STATUS[C],result} = A - alu_a - ~alu_status[C];
+			result = A - alu_a;
+			STATUS[C] = (A >= alu_a) ? 1 : 0;
 		end
 
 		// EOR - Exclusive OR
@@ -347,7 +400,7 @@ always @ (*) begin
 		TSX_IMP :
 		begin
 			result = alu_a;
-			$display("result = %h alu_a = %h",result, alu_a);
+			//$display("result = %h alu_a = %h",result, alu_a);
 		end
 
 		// ORA - Logical OR
@@ -376,9 +429,9 @@ always @ (*) begin
 				end
 			end
 
-			{STATUS[C],result} = temp1 - temp2 - alu_status[C];
-			$display("STATUS[C] = %h result = %h", STATUS[C],result);
-			$display("temp1 = %h temp2 = %h alu_status = %h", temp1,temp2,alu_status[C]);
+			{STATUS[C],result} = temp1 - temp2 - ~alu_status[C];
+			//$display("STATUS[C] = %h result = %h", STATUS[C],result);
+			//$display("temp1 = %h temp2 = %h alu_status = %h", temp1,temp2,alu_status[C]);
 			if ((temp1[7] == temp2[7]) && (temp1[7] != alu_result[7]))
 				STATUS[V] = 1;
 			else
@@ -424,13 +477,15 @@ always @ (*) begin
 		// CPX - Compare X Register
 		CPX_IMM, CPX_ZPG, CPX_ABS :
 		begin
-			{STATUS[C],result} = X - alu_a - alu_status[C];
+			result = X - alu_a;
+			STATUS[C] = (X >= alu_a) ? 1 : 0;
 		end
 
 		// CPY - Compare Y Register
 		CPY_IMM, CPY_ZPG, CPY_ABS :
 		begin
-			{STATUS[C],result} = Y - alu_a - alu_status[C];
+			result = Y - alu_a;
+			STATUS[C] = (Y >= alu_a) ? 1 : 0;
 		end
 
 		default: begin // NON-DEFAULT OPCODES FALL HERE
