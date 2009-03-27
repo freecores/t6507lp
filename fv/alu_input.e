@@ -32,14 +32,11 @@ struct alu_input_s {
 	event T1_cover_event;
 	cover T1_cover_event is {
 		item input_kind using no_collect=TRUE;
-		item alu_opcode using radix=HEX, no_collect=TRUE;
+		item alu_opcode using num_of_buckets=256, radix=HEX, no_collect=TRUE;
 		cross input_kind, alu_opcode;
 		//item alu_a;
 	};
 
-	post_generate() is also {
-		emit T1_cover_event;
-	};
 };
 '>
 

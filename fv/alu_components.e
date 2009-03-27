@@ -7,4 +7,5 @@ import alu_sigmap;
 import alu_sync;
 import alu_agent;
 import alu_input;
+import alu_chk;
 '>

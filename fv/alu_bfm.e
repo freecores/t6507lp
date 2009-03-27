@@ -19,7 +19,9 @@ unit alu_bfm_u {
 		reset_n$ = data.reset_n;
 		alu_enable$ = data.alu_enable;
 		alu_opcode$ = data.alu_opcode;
-		alu_a$ = data.alu_a;	
+		alu_a$ = data.alu_a;
+
+		agent.chk.store(data);
 
 	};
 
