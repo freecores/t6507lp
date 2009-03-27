@@ -3,10 +3,11 @@ import alu_components;
 unit alu_env_u {
 	agent: alu_agent_u is instance;
 	sync: alu_sync_u is instance;
+	teste: list of alu_input_s;
+	keep teste.size() == 10;
+
 
 	keep agent.env == me;
-
-
 };
 
 extend alu_agent_u {
@@ -16,5 +17,6 @@ extend alu_agent_u {
 
 extend sys {
 	env: alu_env_u is instance;
+	keep env.hdl_path() == "~/t6507lp_alu_wrapper";
 };
 '>

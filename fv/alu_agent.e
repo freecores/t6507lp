@@ -6,26 +6,42 @@ unit alu_agent_u {
 	smp: alu_signal_map_u is instance;
 	mon: alu_mon_u is instance;
 	bfm: alu_bfm_u is instance;
-	sync: alu_sync_u is instance;
-	
+
 	event main_clk;	
-	
-	keep bfm.rst == smp.rst;
+
+	keep bfm.agent == me;	
+	keep bfm.reset_n == smp.reset_n;
 	keep bfm.alu_enable == smp.alu_enable;
 	keep bfm.alu_opcode == smp.alu_opcode;
-	//keep bfm.alu_a == smp.alu_a;
+	keep bfm.alu_a == smp.alu_a;
 
 	keep mon.alu_result == smp.alu_result;
 	keep mon.alu_status == smp.alu_status;
 	keep mon.alu_x == smp.alu_x;
 	keep mon.alu_y == smp.alu_y;
 
-	help() @ main_clk is {
-		out ("Hello World");
-	};
+	//on main_clk {
+		//while TRUE {
+			//counter = counter +1;
+
+			//if (counter == 37) {
+				//dut_error();
+			//}
+			//else {
+				//out("\n",counter);
+			//}
+		//}
+	//};
 
 	run() is also {
-		start help();
+		//start help();
 	};
 };
+
+extend alu_bfm_u {
+	agent: alu_agent_u;
+	event main_clk is only @agent.main_clk;
+};
+
+
 '>

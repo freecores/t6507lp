@@ -1,9 +1,8 @@
 alu_sync.e;
 <'
 unit alu_sync_u {
-	clk: in event_port is instance;
-	keep bind(clk, external);
-	keep clk.hdl_path() == "clk";
-	keep clk.edge() == rise;
+	clk_p: in simple_port of bit is instance;
+	keep bind(clk_p, external);
+	event clk is rise (clk_p$) @sys.any;
 };
 '>

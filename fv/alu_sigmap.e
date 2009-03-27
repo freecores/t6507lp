@@ -1,9 +1,9 @@
 alu_sig_map.e;
 <'
 unit alu_signal_map_u {
-	rst : out simple_port of bool is instance;
-	keep bind(rst, external);
-	keep rst.hdl_path() == "n_rst_i";
+	reset_n : out simple_port of bool is instance;
+	keep bind(reset_n, external);
+	keep reset_n.hdl_path() == "reset_n";
 
 	alu_enable : out simple_port of bool is instance;
 	keep bind(alu_enable, external);
