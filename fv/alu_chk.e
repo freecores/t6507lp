@@ -59,7 +59,22 @@ unit alu_chk_u {
 				};
 			};
 			
-			// here comes the compare!
+			// here i have already calculated. must compare!
+			if (reg_a != alu_result) {
+				dut_error("WRONG!");
+			};
+
+			if (reg_x != alu_x) {
+				dut_error("WRONG!");
+			};
+
+			if (reg_y != alu_y) {
+				dut_error("WRONG!");
+			};
+
+			if (reg_status != alu_status) {
+				dut_error("WRONG!");
+			};
 		}
 	};
 
@@ -74,7 +89,7 @@ unit alu_chk_u {
 			ADC_IDX: { exec_sum(); };
 			ADC_IDY: { exec_sum(); };
 
-			AND_IMM: { exec_and(); };
+			AND_IMM: { exec_and(); }; // A,Z,N = A&M
 			AND_ZPG: { exec_and(); };
 			AND_ZPX: { exec_and(); };
 			AND_ABS: { exec_and(); };
@@ -91,8 +106,9 @@ unit alu_chk_u {
 	};
 
 	exec_and() is {
-
-
+		reg_a = reg_a & inst.alu_a; // TODO: this is probably wrong
+		update_z(reg_a);
+		update_n(reg_a);
 	};
 
 	exec_sum() is {
