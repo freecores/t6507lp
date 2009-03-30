@@ -8,4 +8,6 @@ import alu_sync;
 import alu_agent;
 import alu_input;
 import alu_chk;
+import alu_opcodes;
 '>
+

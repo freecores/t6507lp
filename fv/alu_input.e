@@ -1,6 +1,6 @@
 alu_input.e
 <'
-
+import alu_components.e;
 type alu_input_t: [ENABLED_VALID, DISABLED_VALID]; 
 
 struct alu_input_s {
@@ -8,7 +8,7 @@ struct alu_input_s {
 	
 	reset_n: bool;
 	alu_enable: bool;
-	alu_opcode: byte;
+	alu_opcode: valid_opcodes;
 	alu_a: byte;
 
 	keep soft input_kind == select {
@@ -19,13 +19,13 @@ struct alu_input_s {
 	when ENABLED_VALID'input_kind alu_input_s {
 		keep reset_n == TRUE; // remember this is active low 
 		keep alu_enable == TRUE;
-		keep alu_opcode in [0..255];
+		//keep alu_opcode in [0..255];
 		keep alu_a in [0..255];
 	};
 	when DISABLED_VALID'input_kind alu_input_s {
 		keep reset_n == TRUE; // remember this is active low 
 		keep alu_enable == FALSE;
-		keep alu_opcode in [0..255];
+		//keep alu_opcode in [0..255];
 		keep alu_a in [0..255];
 	};
 
@@ -39,15 +39,4 @@ struct alu_input_s {
 
 };
 '>
-
-event cover_me;
-
-   cover cover_me is {
-      item a1 using no_collect=TRUE;
-      item b2 using no_collect=TRUE;
-      transition a1 using name=a_trans, no_collect=TRUE;
-      transition b2 using name = b_trans, no_collect=TRUE;
-      cross a_trans,b_trans;
-   };
-
 
