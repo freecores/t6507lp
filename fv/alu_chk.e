@@ -18,7 +18,9 @@ unit alu_chk_u {
 	keep count_cycles == 0;
 
 	store(input : alu_input_s) is {
-		out ("cycle ", count_cycles, ": input stored: ");
+		count_cycles = count_cycles + 1;
+
+		out ("CYCLE ", count_cycles, " STORE:");
 		print input;
 
 		if (first_cycle) {
@@ -30,7 +32,6 @@ unit alu_chk_u {
 			next_inst = input;
 		};
 
-		count_cycles = count_cycles + 1;
 
 		if (count_cycles == 10000) {
 			dut_error();
@@ -46,13 +47,17 @@ unit alu_chk_u {
 			reg_a = 0; // TODO: check this
 		}
 		else {
+
+			out ("CYCLE ", count_cycles, " COMPARE:");
+			print inst;
+
 			case inst.input_kind {
 				ENABLED_VALID: {
-					out("cycle ", count_cycles, ": executing and comparing");
+					out("CYCLE ", count_cycles, ": executing and comparing");
 					execute();
 				};
 				DISABLED_VALID: { 
-					out("cycle ", count_cycles, ": just comparing");
+					out("CYCLE ", count_cycles, ": just comparing");
 				};
 				default: {
 					dut_error("error at e code");
@@ -61,6 +66,8 @@ unit alu_chk_u {
 			
 			// here i have already calculated. must compare!
 			if (reg_a != alu_result) {
+				print reg_a;
+				print alu_result;
 				dut_error("WRONG!");
 			};
 
@@ -119,7 +126,7 @@ unit alu_chk_u {
 
 		print me;
 
-		dut_error();
+		//dut_error();
 	};
 
 	update_z(arg : byte) is {

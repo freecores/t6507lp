@@ -6,7 +6,8 @@ unit alu_bfm_u {
 	alu_enable: out simple_port of bool;
 	alu_opcode: out simple_port of byte;
 	alu_a: out simple_port of byte;
-
+	
+	event done;
 	event main_clk;
 
 	on main_clk {
@@ -22,7 +23,7 @@ unit alu_bfm_u {
 		alu_a$ = data.alu_a;
 
 		agent.chk.store(data);
-
+		emit done;
 	};
 
 };

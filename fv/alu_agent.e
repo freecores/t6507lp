@@ -47,7 +47,7 @@ extend alu_bfm_u {
 
 extend alu_mon_u {
 	agent: alu_agent_u;
-	event main_clk is only @agent.main_clk;
+	event main_clk is only @agent.bfm.done;
 };
 
 
