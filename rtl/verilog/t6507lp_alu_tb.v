@@ -1,18 +1,18 @@
 `include "timescale.v"
-module T6507LP_ALU_TestBench;
+module t6507lp_alu_tb;
 
-`include  "T6507LP_Package.v"
+`include  "t6507lp_package.v"
 
-reg clk_i;
-reg n_rst_i;
-reg alu_enable;
-wire [7:0] alu_result;
-wire [7:0] alu_status;
-reg [7:0] alu_opcode;
-reg [7:0] alu_a;
-wire [7:0] alu_x;
-wire [7:0] alu_y;
-reg [31:0] i;
+reg         clk;
+reg         reset;
+reg         alu_enable;
+wire [7:0]  alu_result;
+wire [7:0]  alu_status;
+reg  [7:0]  alu_opcode;
+reg  [7:0]  alu_a;
+wire [7:0]  alu_x;
+wire [7:0]  alu_y;
+reg  [31:0] i;
 
 reg [7:0] alu_result_expected;
 reg [7:0] alu_status_expected;
@@ -22,9 +22,9 @@ reg [7:0] alu_y_expected;
 reg c_aux;
 reg [7:0] temp;
 
-T6507LP_ALU DUT (
-			.clk_i		(clk_i),
-			.n_rst_i	(n_rst_i),
+t6507lp_alu DUT (
+			.clk		(clk),
+			.reset_n	(reset_n),
 			.alu_enable	(alu_enable),
 			.alu_result	(alu_result),
 			.alu_status	(alu_status),
@@ -58,31 +58,17 @@ endtask
 
 
 always begin
-	#(period/2) clk_i = ~clk_i;
+	#(period/2) clk = ~clk;
 end
-
-/*
-always @ (negedge clk_i)
-begin
-	if (alu_result_expected == 0)
-		alu_status_expected[Z] = 1;
-	else
-		alu_status_expected[Z] = 0;
-	if (alu_result_expected[7] == 1)
-		alu_status_expected[N] = 1;
-	else
-		alu_status_expected[N] = 0;
-end
-*/
 
 initial
 begin
 	// Reset
-	clk_i = 0;
-	n_rst_i = 0;
+	clk = 0;
+	reset_n = 0;
 	@(negedge clk_i);
 	@(negedge clk_i);
-	n_rst_i = 1;
+	reset_n = 1;
 	alu_enable = 1;
 	alu_result_expected = 8'h00;
 	alu_status_expected = 8'b00100010;

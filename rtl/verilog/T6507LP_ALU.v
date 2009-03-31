@@ -46,10 +46,10 @@
 
 // TODO: verify code identation
 
-module T6507LP_ALU( clk_i, n_rst_i, alu_enable, alu_result, alu_status, alu_opcode, alu_a, alu_x, alu_y );
+module T6507LP_ALU( clk, reset_n, alu_enable, alu_result, alu_status, alu_opcode, alu_a, alu_x, alu_y );
 
-input wire       clk_i;
-input wire       n_rst_i;
+input wire       clk;
+input wire       reset_n;
 input wire       alu_enable;
 input wire [7:0] alu_opcode;
 input wire [7:0] alu_a;
@@ -64,21 +64,14 @@ reg [7:0] Y;
 
 reg [7:0] STATUS;
 reg [7:0] result;
-reg [7:0] temp1;
-reg [7:0] temp2;
+reg [7:0] bcd1;
+reg [7:0] bcd2;
 
-`include "T6507LP_Package.v"
+`include "t6507lp_package.v"
 
-//always @ * begin
-//	STATUS[Z] = (result == 0) ? 1 : 0;
-//	STATUS[N] = result[7];
-//	STATUS[5] = 1;
-//end
-
-
-always @ (posedge clk_i or negedge n_rst_i)
+always @ (posedge clk or negedge reset_n)
 begin
-	if (n_rst_i == 0) begin
+	if (reset_n == 0) begin
 		//$display("RESTART");
 		alu_result <= 0;
 		alu_status[C] <= 0;
@@ -93,72 +86,42 @@ begin
 		Y <= 0;
 		alu_x <= 0;
 		alu_y <= 0;
-		//STATUS[C] <= 0;
-		//STATUS[N] <= 0;
-		//STATUS[V] <= 0;
-		//STATUS[Z] <= 1;
-		//STATUS[I] <= 0;
-		//STATUS[B] <= 0;
-		//STATUS[D] <= 0;
 	end
 	else if ( alu_enable == 1 ) begin
-		//A <= A;
-		//X <= X;
-		//Y <= Y;
 		case (alu_opcode)
 			ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY,
 			AND_IMM, AND_ZPG, AND_ZPX, AND_ABS, AND_ABX, AND_ABY, AND_IDX, AND_IDY,
-			ASL_ACC,
-			EOR_IMM, EOR_ZPG, EOR_ZPX, EOR_ABS, EOR_ABX, EOR_ABY, EOR_IDX, EOR_IDY,
-			LSR_ACC,
-			ORA_IMM, ORA_ZPG, ORA_ZPX, ORA_ABS, ORA_ABX, ORA_ABY, ORA_IDX, ORA_IDY,
-			ROL_ACC, ROR_ACC,
-			SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY,
-		        LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY,
-			PLA_IMP,
-			TXA_IMP, TYA_IMP :
+			ASL_ACC, EOR_IMM, EOR_ZPG, EOR_ZPX, EOR_ABS, EOR_ABX, EOR_ABY, EOR_IDX,
+			EOR_IDY, LSR_ACC, ORA_IMM, ORA_ZPG, ORA_ZPX, ORA_ABS, ORA_ABX, ORA_ABY,
+			ORA_IDX, ORA_IDY, ROL_ACC, ROR_ACC, SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS,
+			SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY, LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS,
+			LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY, PLA_IMP, TXA_IMP, TYA_IMP :
 			begin
+				A          <= result;
 				alu_result <= result;
-				A <= result;
 				alu_status <= STATUS;
 			end
-			// LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY,
-			//PLA_IMP:
-			//begin
-			//	A <= result;
-			//	alu_status <= STATUS;
-				//$display("A <= result;");
-				//$display("%h <= %h", A, result);
-				//$display("alu_status <= STATUS;");
-				//$display("%h <= %h", alu_status, STATUS);
-			//end
 			LDX_IMM, LDX_ZPG, LDX_ZPY, LDX_ABS, LDX_ABY, TAX_IMP, TSX_IMP, INX_IMP, DEX_IMP :
 			begin
-				//$display("Aqui deu erro");
-				//$display("X <= Result");
-				//$display("%h <=   %h", X, result);
-				X <= result;
-				alu_x <= result;
+				X          <= result;
+				alu_x      <= result;
 				alu_status <= STATUS;
 			end
 			TXS_IMP :
 			begin
-				X <= result;
+				X     <= result;
 				alu_x <= result;
 			end
 			LDY_IMM, LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX, TAY_IMP, INY_IMP, DEY_IMP :
 			begin
-				Y <= result;
-				alu_y <= result;
+				Y          <= result;
+				alu_y      <= result;
 				alu_status <= STATUS;
 			end
-			LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX,
-			ROL_ZPG, ROL_ZPX, ROL_ABS, ROL_ABX,
-			ROR_ZPG, ROR_ZPX, ROR_ABS, ROR_ABX,
-			CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY,
-			CPX_IMM, CPX_ZPG, CPX_ABS,
-			CPY_IMM, CPY_ZPG, CPY_ABS,
-			PHP_IMP :
+			LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX, ROL_ZPG, ROL_ZPX, ROL_ABS, ROL_ABX,
+			ROR_ZPG, ROR_ZPX, ROR_ABS, ROR_ABX, CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS,
+			CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY, CPX_IMM, CPX_ZPG, CPX_ABS, CPY_IMM,
+			CPY_ZPG, CPY_ABS, PHP_IMP :
 			begin
 				alu_status <= STATUS;
 			end
@@ -218,9 +181,9 @@ begin
 end
 
 always @ (*) begin
-	temp1 = A;
-	temp2 = alu_a;
-	result = alu_result;
+	bcd1      = A;
+	bcd2      = alu_a;
+	result    = alu_result;
 	STATUS[C] = alu_status[C];
 	STATUS[V] = alu_status[V];
 	STATUS[Z] = (result == 0) ? 1 : 0;
@@ -229,12 +192,11 @@ always @ (*) begin
 	STATUS[B] = alu_status[B];
 	STATUS[I] = alu_status[I];
 	STATUS[D] = alu_status[D];
+
 	case (alu_opcode)
 		// BIT - Bit Test
-		BIT_ZPG, BIT_ABS:
-		begin
+		BIT_ZPG, BIT_ABS: begin
 			result = A & alu_a;
-			//STATUS[V] = alu_a[6];
 		end
 
 		// BRK - Force Interrupt
@@ -277,23 +239,20 @@ always @ (*) begin
 		// PHA - Push A
 		// TAX - Transfer Accumulator to X
 		// TAY - Transfer Accumulator to Y
-		TAX_IMP, TAY_IMP, PHA_IMP, STA_ZPG, STA_ZPX, STA_ABS, STA_ABX, STA_ABY, STA_IDX, STA_IDY :
-		begin
+		TAX_IMP, TAY_IMP, PHA_IMP, STA_ZPG, STA_ZPX, STA_ABS, STA_ABX, STA_ABY, STA_IDX, STA_IDY : begin
 			result = A;
 		end
 
 		// STX - Store X Register
 		// TXA - Transfer X to Accumulator
 		// TXS - Transfer X to Stack pointer
-		STX_ZPG, STX_ZPY, STX_ABS, TXA_IMP, TXS_IMP :
-		begin
+		STX_ZPG, STX_ZPY, STX_ABS, TXA_IMP, TXS_IMP : begin
 			result = X;
 		end
 			
 		// STY - Store Y Register
 		// TYA - Transfer Y to Accumulator
-		STY_ZPG, STY_ZPX, STY_ABS, TYA_IMP :
-		begin
+		STY_ZPG, STY_ZPX, STY_ABS, TYA_IMP : begin
 			result = Y;
 		end
 
@@ -313,8 +272,7 @@ always @ (*) begin
 		end
 
 		// INC - Increment memory
-		INC_ZPG, INC_ZPX, INC_ABS, INC_ABX :
-		begin
+		INC_ZPG, INC_ZPX, INC_ABS, INC_ABX : begin
 			result = alu_a + 1;
 		end
 
@@ -329,8 +287,7 @@ always @ (*) begin
 		end
 
 		// DEC - Decrement memory
-		DEC_ZPG, DEC_ZPX, DEC_ABS, DEC_ABX :
-		begin
+		DEC_ZPG, DEC_ZPX, DEC_ABS, DEC_ABX : begin
 			result = alu_a - 1;
 		end
 
@@ -345,27 +302,24 @@ always @ (*) begin
 		end
 
 		// ADC - Add with carry
-		ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY :
-		begin
-			//temp1 = A;
-			//temp2 = alu_a;
+		ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY : begin
 			if (alu_status[D] == 1) begin
 				if (A[3:0] > 9) begin
-					temp1 = A + 6; // A = A - 10 and A = A + 16
+					bcd1 = A + 6; // A = A - 10 and A = A + 16
 				end
-				if (temp1[7:4] > 9) begin
-					temp1 = temp1[7:4] + 6; // A = A - 10 and A = A + 16
+				if (bcd1[7:4] > 9) begin
+					bcd1 = bcd1[7:4] + 6; // A = A - 10 and A = A + 16
 				end
 				if (alu_a[3:0] > 9) begin
-					temp2 = alu_a + 6;
+					bcd2 = alu_a + 6;
 				end
-				if (temp2[7:4] > 9) begin
-					temp2 = temp2[7:4] + 6; // A = A - 10 and A = A + 16
+				if (bcd2[7:4] > 9) begin
+					bcd2 = bcd2[7:4] + 6; // A = A - 10 and A = A + 16
 				end
 			end
 
-			{STATUS[C],result} = temp1 + temp2 + alu_status[C];
-			if ((temp1[7] == temp2[7]) && (temp1[7] != alu_result[7]))
+			{STATUS[C],result} = bcd1 + bcd2 + alu_status[C];
+			if ((bcd1[7] == bcd2[7]) && (bcd1[7] != alu_result[7]))
 				STATUS[V] = 1;
 			else
 				STATUS[V] = 0;
@@ -382,21 +336,18 @@ always @ (*) begin
 		end
 			
 		// AND - Logical AND
-		AND_IMM, AND_ZPG, AND_ZPX, AND_ABS, AND_ABX, AND_ABY, AND_IDX, AND_IDY :
-		begin
+		AND_IMM, AND_ZPG, AND_ZPX, AND_ABS, AND_ABX, AND_ABY, AND_IDX, AND_IDY : begin
 			result = A & alu_a;
 		end
 
 		// CMP - Compare
-		CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY :
-		begin
+		CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY : begin
 			result = A - alu_a;
 			STATUS[C] = (A >= alu_a) ? 1 : 0;
 		end
 
 		// EOR - Exclusive OR
-		EOR_IMM, EOR_ZPG, EOR_ZPX, EOR_ABS, EOR_ABX, EOR_ABY, EOR_IDX, EOR_IDY :
-		begin
+		EOR_IMM, EOR_ZPG, EOR_ZPX, EOR_ABS, EOR_ABX, EOR_ABY, EOR_IDX, EOR_IDY : begin
 			result = A ^ alu_a ;
 		end
 
@@ -407,42 +358,34 @@ always @ (*) begin
 		LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY,
 		LDX_IMM, LDX_ZPG, LDX_ZPY, LDX_ABS, LDX_ABY,
 		LDY_IMM, LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX,
-		TSX_IMP :
-		begin
+		TSX_IMP : begin
 			result = alu_a;
-			//$display("result = %h alu_a = %h",result, alu_a);
 		end
 
 		// ORA - Logical OR
-		ORA_IMM, ORA_ZPG, ORA_ZPX, ORA_ABS, ORA_ABX, ORA_ABY, ORA_IDX, ORA_IDY :
-		begin
+		ORA_IMM, ORA_ZPG, ORA_ZPX, ORA_ABS, ORA_ABX, ORA_ABY, ORA_IDX, ORA_IDY : begin
 			result = A | alu_a;
 		end
 
 		// SBC - Subtract with Carry
-		SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY :
-		begin
-			//temp1 = A;
-			//temp2 = alu_a;
+		SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY : begin
 			if (alu_status[D] == 1) begin
 				if (A[3:0] > 9) begin
-					temp1 = A + 6; // A = A - 10 and A = A + 16
+					bcd1 = A + 6; // A = A - 10 and A = A + 16
 				end
-				if (temp1[7:4] > 9) begin
-					temp1 = temp1[7:4] + 6; // A = A - 10 and A = A + 16
+				if (bcd1[7:4] > 9) begin
+					bcd1 = bcd1[7:4] + 6; // A = A - 10 and A = A + 16
 				end
 				if (alu_a[3:0] > 9) begin
-					temp2 = alu_a + 6;
+					bcd2 = alu_a + 6;
 				end
-				if (temp2[7:4] > 9) begin
-					temp2 = temp2[7:4] + 6; // A = A - 10 and A = A + 16
+				if (bcd2[7:4] > 9) begin
+					bcd2 = bcd2[7:4] + 6; // A = A - 10 and A = A + 16
 				end
 			end
 
-			{STATUS[C],result} = temp1 - temp2 - ~alu_status[C];
-			//$display("STATUS[C] = %h result = %h", STATUS[C],result);
-			//$display("temp1 = %h temp2 = %h alu_status = %h", temp1,temp2,alu_status[C]);
-			if ((temp1[7] == temp2[7]) && (temp1[7] != alu_result[7]))
+			{STATUS[C],result} = bcd1 - bcd2 - ~alu_status[C];
+			if ((bcd1[7] == bcd2[7]) && (bcd1[7] != alu_result[7]))
 				STATUS[V] = 1;
 			else
 				STATUS[V] = 0;
@@ -452,8 +395,7 @@ always @ (*) begin
 		ASL_ACC : begin
 			{STATUS[C],result} = A << 1;
 		end
-		ASL_ZPG, ASL_ZPX, ASL_ABS, ASL_ABX :
-		begin
+		ASL_ZPG, ASL_ZPX, ASL_ABS, ASL_ABX : begin
 			{STATUS[C],result} = alu_a << 1;
 		end
 
@@ -461,8 +403,7 @@ always @ (*) begin
 		LSR_ACC: begin
 			{result, STATUS[C]} = A >> 1;
 		end
-		LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX :
-		begin
+		LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX : begin
 			{result, STATUS[C]} = alu_a >> 1;
 		end
 			
@@ -470,8 +411,7 @@ always @ (*) begin
 		ROL_ACC : begin
 			{STATUS[C],result} = {A,alu_status[C]}; //TODO: does it really work?
 		end
-		ROL_ZPG, ROL_ZPX, ROL_ABS, ROL_ABX :
-		begin
+		ROL_ZPG, ROL_ZPX, ROL_ABS, ROL_ABX : begin
 			{STATUS[C],result} = {alu_a,alu_status[C]};
 		end
 
@@ -479,21 +419,18 @@ always @ (*) begin
 		ROR_ACC : begin
 			{result,STATUS[C]} = {alu_status[C],A};
 		end
-		ROR_ZPG, ROR_ZPX, ROR_ABS, ROR_ABX :
-		begin
+		ROR_ZPG, ROR_ZPX, ROR_ABS, ROR_ABX : begin
 			{result, STATUS[C]} = {alu_status[C], alu_a};
 		end
 
 		// CPX - Compare X Register
-		CPX_IMM, CPX_ZPG, CPX_ABS :
-		begin
+		CPX_IMM, CPX_ZPG, CPX_ABS : begin
 			result = X - alu_a;
 			STATUS[C] = (X >= alu_a) ? 1 : 0;
 		end
 
 		// CPY - Compare Y Register
-		CPY_IMM, CPY_ZPG, CPY_ABS :
-		begin
+		CPY_IMM, CPY_ZPG, CPY_ABS : begin
 			result = Y - alu_a;
 			STATUS[C] = (Y >= alu_a) ? 1 : 0;
 		end

@@ -55,10 +55,10 @@ module t6507lp(clk, reset_n, data_in, rw_mem, data_out, address);
 	localparam [3:0] ADDR_SIZE_ = ADDR_SIZE - 4'b0001;
 
 	// note: in the top level inputs are just inputs, outputs are just outputs and the internal signals are wired.
-	input clk;
-	input reset_n;
-	input [DATA_SIZE_:0] data_in;
-	output rw_mem;
+	input                 clk;
+	input                 reset_n;
+	input  [DATA_SIZE_:0] data_in;
+	output                rw_mem;
 	output [DATA_SIZE_:0] data_out;
 	output [ADDR_SIZE_:0] address;
 
@@ -71,7 +71,7 @@ module t6507lp(clk, reset_n, data_in, rw_mem, data_out, address);
 	wire alu_enable;
 
 	// `include  "T6507LP_Package.v"
-//TODO change rw_mem to mem_rw
+	//TODO change rw_mem to mem_rw
 	t6507lp_fsm #(DATA_SIZE, ADDR_SIZE) t6507lp_fsm(
 		.clk		(clk),
 		.reset_n	(reset_n),
@@ -88,15 +88,15 @@ module t6507lp(clk, reset_n, data_in, rw_mem, data_out, address);
 		.alu_enable	(alu_enable)
 	);
 
-T6507LP_ALU T6507LP_ALU (
-	.clk_i		(clk),
-	.n_rst_i	(reset_n),
-	.alu_enable	(alu_enable),
-	.alu_result	(alu_result),
-	.alu_status	(alu_status),
-	.alu_opcode	(alu_opcode),
-	.alu_a		(alu_a),
-	.alu_x		(alu_x),
-	.alu_y		(alu_y)
-);
+	T6507LP_ALU T6507LP_ALU (
+		.clk		(clk),
+		.rst_n  	(reset_n),
+		.alu_enable	(alu_enable),
+		.alu_result	(alu_result),
+		.alu_status	(alu_status),
+		.alu_opcode	(alu_opcode),
+		.alu_a		(alu_a),
+		.alu_x		(alu_x),
+		.alu_y		(alu_y)
+	);
 endmodule
