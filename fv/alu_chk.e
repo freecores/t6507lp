@@ -7,6 +7,7 @@ unit alu_chk_u {
 	reg_x : byte;
 	reg_y : byte;
 	reg_status : byte;
+	reg_result : byte;
 
 	inst : alu_input_s;
 	next_inst : alu_input_s;
@@ -45,9 +46,9 @@ unit alu_chk_u {
 			reg_y = alu_y;
 			reg_status = alu_status;
 			reg_a = 0; // TODO: check this
+			reg_result = 0;
 		}
 		else {
-
 			out ("CYCLE ", count_cycles, " COMPARE:");
 			print inst;
 
@@ -65,9 +66,14 @@ unit alu_chk_u {
 			};
 			
 			// here i have already calculated. must compare!
-			if (reg_a != alu_result) {
-				print reg_a;
+			if (reg_result != alu_result) {
+				print inst;
+				print me;
 				print alu_result;
+				print alu_status;
+				print alu_x;
+				print alu_y;
+				
 				dut_error("WRONG!");
 			};
 
@@ -105,6 +111,12 @@ unit alu_chk_u {
 			AND_IDX: { exec_and(); };
 			AND_IDY: { exec_and(); };
 
+			ASL_ACC: { exec_asl_acc(); }; // A,Z,C,N = M*2
+
+			ASL_ZPG: { exec_asl_mem(); }; // M,Z,C,N = M*2
+			ASL_ZPX: { exec_asl_mem(); };
+			ASL_ABS: { exec_asl_mem(); };
+			ASL_ABX: { exec_asl_mem(); };
 
 			default: {
 				//dut_error("unknown opcode");
@@ -112,10 +124,26 @@ unit alu_chk_u {
 		};
 	};
 
+	exec_asl_acc() is {
+		reg_status[0:0] = reg_a[7:7];
+		reg_a = reg_a * 2;
+		update_z(reg_a);
+		update_n(reg_a);
+		reg_result = reg_a;
+	};
+
+	exec_asl_mem() is {
+		reg_status[0:0] = inst.alu_a[7:7];
+		reg_result = inst.alu_a * 2;
+		update_z(reg_result);
+		update_n(reg_result);
+	};
+
 	exec_and() is {
 		reg_a = reg_a & inst.alu_a; // TODO: this is probably wrong
 		update_z(reg_a);
 		update_n(reg_a);
+		reg_result = reg_a;
 	};
 
 	exec_sum() is {
@@ -123,9 +151,8 @@ unit alu_chk_u {
 		reg_a = reg_a + inst.alu_a;
 		update_z(reg_a);
 		update_n(reg_a);
-
-		print me;
-
+		reg_result = reg_a;
+		//print me;
 		//dut_error();
 	};
 

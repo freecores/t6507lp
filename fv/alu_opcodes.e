@@ -2,8 +2,8 @@ alu_opcodes.e
 <'
 type valid_opcodes : [
 	ADC_IMM = 8'h69, ADC_ZPG = 8'h65, ADC_ZPX = 8'h75, ADC_ABS = 8'h6D, ADC_ABX = 8'h7D, ADC_ABY = 8'h79, ADC_IDX = 8'h61, ADC_IDY = 8'h71,
-	AND_IMM = 8'h29, AND_ZPG = 8'h25, AND_ZPX = 8'h35, AND_ABS = 8'h2D, AND_ABX = 8'h3D, AND_ABY = 8'h39, AND_IDX = 8'h21, AND_IDY = 8'h31];
-//	ASL_ACC = 8'h0A, ASL_ZPG = 8'h06, ASL_ZPX = 8'h16, ASL_ABS = 8'h0E, ASL_ABX = 8'h1E, BCC_REL = 8'h90, BCS_REL = 8'hB0, BEQ_REL = 8'hF0,
+	AND_IMM = 8'h29, AND_ZPG = 8'h25, AND_ZPX = 8'h35, AND_ABS = 8'h2D, AND_ABX = 8'h3D, AND_ABY = 8'h39, AND_IDX = 8'h21, AND_IDY = 8'h31,
+	ASL_ACC = 8'h0A, ASL_ZPG = 8'h06, ASL_ZPX = 8'h16, ASL_ABS = 8'h0E, ASL_ABX = 8'h1E ]; //, BCC_REL = 8'h90, BCS_REL = 8'hB0, BEQ_REL = 8'hF0,
 //	BIT_ZPG = 8'h24, BIT_ABS = 8'h2C, BMI_REL = 8'h30, BNE_REL = 8'hD0, BPL_REL = 8'h10, BRK_IMP = 8'h00, BVC_REL = 8'h50, BVS_REL = 8'h70, 
 //	CLC_IMP = 8'h18, CLD_IMP = 8'hD8, CLI_IMP = 8'h58, CLV_IMP = 8'hB8, CMP_IMM = 8'hC9, CMP_ZPG = 8'hC5, CMP_ZPX = 8'hD5, CMP_ABS = 8'hCD, 
 //	CMP_ABX = 8'hDD, CMP_ABY = 8'hD9, CMP_IDX = 8'hC1, CMP_IDY = 8'hD1, CPX_IMM = 8'hE0, CPX_ZPG = 8'hE4, CPX_ABS = 8'hEC, CPY_IMM = 8'hC0, 
