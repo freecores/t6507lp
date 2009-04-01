@@ -167,11 +167,10 @@ begin
 				alu_status[V] <= alu_a[6];
 				alu_status[N] <= alu_a[7];
 			end
-			INC_ZPG, INC_ZPX, INC_ABS, INC_ABX, DEC_ZPG, DEC_ZPX, DEC_ABS, DEC_ABX :
+			INC_ZPG, INC_ZPX, INC_ABS, INC_ABX, DEC_ZPG, DEC_ZPX, DEC_ABS, DEC_ABX, ASL_ZPG, ASL_ZPX, ASL_ABS, ASL_ABX :
 			begin
 				alu_result <= result;
 				alu_status <= STATUS;
-
 			end
 			default : begin
 				//$display("ERROR");
@@ -391,18 +390,22 @@ always @ (*) begin
 
 		// ASL - Arithmetic Shift Left
 		ASL_ACC : begin
-			{STATUS[C],result} = A << 1;
+			//{STATUS[C],result} = A << 1;
+			{STATUS[C],result} = {A,1'b0};
 		end
 		ASL_ZPG, ASL_ZPX, ASL_ABS, ASL_ABX : begin
-			{STATUS[C],result} = alu_a << 1;
+			//{STATUS[C],result} = alu_a << 1;
+			{STATUS[C],result} = {alu_a,1'b0};
 		end
 
 		// LSR - Logical Shift Right
 		LSR_ACC: begin
-			{result, STATUS[C]} = A >> 1;
+			//{result, STATUS[C]} = A >> 1;
+			{result,STATUS[C]} = {1'b0,A};
 		end
 		LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX : begin
-			{result, STATUS[C]} = alu_a >> 1;
+			//{result, STATUS[C]} = alu_a >> 1;
+			{result,STATUS[C]} = {1'b0,alu_a};
 		end
 			
 		// ROL - Rotate Left
