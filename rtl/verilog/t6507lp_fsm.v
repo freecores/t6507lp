@@ -101,7 +101,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 	localparam RESET = 5'b11111;
 
 	// OPCODES TODO: verify how this get synthesised
-	`include "T6507LP_Package.v"
+	`include "t6507lp_package.v"
 
 	// mem_rw signals
 	localparam MEM_READ = 1'b0;
@@ -198,6 +198,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		end
 	end
 
+	reg [2:0] rst_counter; // a counter to preserve the cpu idle for six cycles
+
 	always @ (posedge clk or negedge reset_n) begin // sequencial always block
 		if (reset_n == 1'b0) begin
 			// all registers must assume default values
@@ -211,12 +213,14 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			address <= 13'h0000;
 			mem_rw <= MEM_READ;
 			data_out <= 8'h00;
+			rst_counter <= 0;
 		end
 		else begin
 			state <= next_state;
-			
+
 			case (state)
 				RESET: begin	// The processor was reset
+					rst_counter <= rst_counter + 1;
 					sp <= 9'b100000000; // this prevents flipflops with different drivers
 					//$write("under reset"); 
 				end
@@ -580,7 +584,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 
 		case (state)
 			RESET: begin
-				next_state = FETCH_OP;
+				if (rst_counter == 6) begin
+					next_state = FETCH_OP;
+				end
 			end
 			FETCH_OP: begin
 				next_state = FETCH_LOW;

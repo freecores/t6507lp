@@ -61,6 +61,12 @@ unit alu_chk_u {
 					out("CYCLE ", count_cycles, ": just comparing");
 				};
 				RESET: {
+					reg_x = 0;
+					reg_y = 0;
+					reg_status = 8'b00100010;
+					reg_a = 0; // TODO: check this
+					reg_result = 0;
+					
 					return;
 				};
 				default: {
@@ -70,8 +76,7 @@ unit alu_chk_u {
 			
 			// here i have already calculated. must compare!
 			
-			//if (count_cycles > 3) {
-			if (reg_result != alu_result) {
+			if ((reg_result != alu_result) || (reg_x != alu_x) or (reg_y != alu_y) or (reg_status != alu_status)) {
 				print inst;
 				print me;
 				print alu_result;
@@ -81,20 +86,7 @@ unit alu_chk_u {
 				
 				dut_error("WRONG!");
 			};
-
-			if (reg_x != alu_x) {
-				dut_error("WRONG!");
-			};
-
-			if (reg_y != alu_y) {
-				dut_error("WRONG!");
-			};
-
-			if (reg_status != alu_status) {
-				dut_error("WRONG!");
-			};
-			//};
-		}
+		};
 	};
 
 	execute() is {
@@ -153,13 +145,33 @@ unit alu_chk_u {
 	};
 
 	exec_sum() is {
+		out("adding: ", reg_a, " + ", inst.alu_a, " + ", reg_status[0:0]);
 		reg_result = reg_a + inst.alu_a + reg_status[0:0];
 		update_c(reg_a, inst.alu_a, reg_status[0:0]);
+		update_v(reg_a, inst.alu_a, reg_result);
 		update_z(reg_result);
 		update_n(reg_result);
 		reg_a = reg_result;
 		//print me;
 		//dut_error();
+	};
+
+	update_c(arg1 : byte, arg2 : byte, arg3: bit) is {
+		if (arg1 + arg2 + arg3 > 256) {
+			reg_status[0:0] = 1;
+		}
+		else {
+			reg_status[0:0] = 0;
+		}
+	};
+
+	update_v(op1 : byte, op2 : byte, res : byte) is {
+		if ((op1[7:7] == op2[7:7]) && (op1[7:7] != res[7:7])) {
+			reg_status[6:6] = 1;
+		}
+		else {
+			reg_status[6:6] = 0;
+		};
 	};
 
 	update_z(arg : byte) is {
@@ -170,15 +182,7 @@ unit alu_chk_u {
 			reg_status[1:1] = 0;
 		}
 	};
-	
-	update_c(arg1 : byte, arg2 : byte, arg3: bit) is {
-		if (arg1 + arg2 + arg3 > 256) {
-			reg_status[0:0] = 1;
-		}
-		else {
-			reg_status[0:0] = 0;
-		}
-	};
+
 
 	update_n(arg : byte) is {
 		if (arg[7:7] == 1) {

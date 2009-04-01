@@ -62,7 +62,7 @@ module t6507lp_fsm_tb();
 
 	integer my_i;
 
-	`include "T6507LP_Package.v"
+	`include "t6507lp_package.v"
 
 	t6507lp_fsm #(8,13) t6507lp_fsm(
 		.clk(clk),
