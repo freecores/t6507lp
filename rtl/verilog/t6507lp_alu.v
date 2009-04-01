@@ -46,7 +46,7 @@
 
 // TODO: verify code identation
 
-module T6507LP_ALU( clk, reset_n, alu_enable, alu_result, alu_status, alu_opcode, alu_a, alu_x, alu_y );
+module t6507lp_alu( clk, reset_n, alu_enable, alu_result, alu_status, alu_opcode, alu_a, alu_x, alu_y );
 
 input wire       clk;
 input wire       reset_n;
