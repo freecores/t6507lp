@@ -186,8 +186,6 @@ always @ (*) begin
 	result    = alu_result;
 	STATUS[C] = alu_status[C];
 	STATUS[V] = alu_status[V];
-	STATUS[Z] = (result == 0) ? 1 : 0;
-	STATUS[N] = result[7];
 	STATUS[5] = 1;
 	STATUS[B] = alu_status[B];
 	STATUS[I] = alu_status[I];
@@ -436,8 +434,10 @@ always @ (*) begin
 		end
 
 		default: begin // NON-DEFAULT OPCODES FALL HERE
-		end 
+		end
 	endcase
+	STATUS[Z] = (result == 0) ? 1 : 0;
+	STATUS[N] = result[7];
 end
 
 endmodule
