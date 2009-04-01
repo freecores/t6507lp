@@ -6,6 +6,9 @@ unit alu_bfm_u {
 	alu_enable: out simple_port of bool;
 	alu_opcode: out simple_port of byte;
 	alu_a: out simple_port of byte;
+
+	reset_needed : bool;
+	keep reset_needed == TRUE;
 	
 	event done;
 	event main_clk;
@@ -15,6 +18,14 @@ unit alu_bfm_u {
 		var data : alu_input_s;
 		gen data;
 
+		while (reset_needed) {
+			gen data;
+	
+			if (data.input_kind == RESET) {
+				reset_needed = FALSE;
+			};
+		};
+	
 		emit data.T1_cover_event;
 
 		reset_n$ = data.reset_n;

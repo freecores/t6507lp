@@ -1,7 +1,7 @@
 alu_input.e
 <'
 import alu_components.e;
-type alu_input_t: [ENABLED_VALID, DISABLED_VALID]; 
+type alu_input_t: [ENABLED_VALID, DISABLED_VALID, RESET]; 
 
 struct alu_input_s {
 	input_kind : alu_input_t;
@@ -12,21 +12,28 @@ struct alu_input_s {
 	alu_a: byte;
 
 	keep soft input_kind == select {
-		50: ENABLED_VALID;
-		50: DISABLED_VALID;
+		45: ENABLED_VALID;
+		45: DISABLED_VALID;
+		10: RESET;
 	};
 
 	when ENABLED_VALID'input_kind alu_input_s {
 		keep reset_n == TRUE; // remember this is active low 
 		keep alu_enable == TRUE;
-		//keep alu_opcode in [0..255];
 		keep alu_a in [0..255];
 	};
+
 	when DISABLED_VALID'input_kind alu_input_s {
 		keep reset_n == TRUE; // remember this is active low 
 		keep alu_enable == FALSE;
-		//keep alu_opcode in [0..255];
 		keep alu_a in [0..255];
+	};
+
+	when RESET'input_kind alu_input_s {
+		keep reset_n == FALSE; // remember this is active low 
+		//keep alu_enable in [FALSE, TRUE];
+		keep alu_a in [0..255];
+		//keep alu_opcode in [0..255];
 	};
 
 	event T1_cover_event;

@@ -42,9 +42,9 @@ unit alu_chk_u {
 	compare(alu_result:byte, alu_status:byte, alu_x:byte, alu_y:byte ) is {
 		if (first_cycle) {
 			first_cycle = FALSE;
-			reg_x = alu_x;
-			reg_y = alu_y;
-			reg_status = alu_status;
+			reg_x = 0;
+			reg_y = 0;
+			reg_status = 8'b00100010;
 			reg_a = 0; // TODO: check this
 			reg_result = 0;
 		}
@@ -60,12 +60,17 @@ unit alu_chk_u {
 				DISABLED_VALID: { 
 					out("CYCLE ", count_cycles, ": just comparing");
 				};
+				RESET: {
+					return;
+				};
 				default: {
 					dut_error("error at e code");
 				};
 			};
 			
 			// here i have already calculated. must compare!
+			
+			//if (count_cycles > 10) {
 			if (reg_result != alu_result) {
 				print inst;
 				print me;
@@ -88,6 +93,7 @@ unit alu_chk_u {
 			if (reg_status != alu_status) {
 				dut_error("WRONG!");
 			};
+			//};
 		}
 	};
 
@@ -147,8 +153,8 @@ unit alu_chk_u {
 	};
 
 	exec_sum() is {
-		update_c(reg_a, inst.alu_a);
-		reg_a = reg_a + inst.alu_a;
+		update_c(reg_a, inst.alu_a, reg_status[0:0]);
+		reg_a = reg_a + inst.alu_a + reg_status[0:0];
 		update_z(reg_a);
 		update_n(reg_a);
 		reg_result = reg_a;
@@ -165,8 +171,8 @@ unit alu_chk_u {
 		}
 	};
 	
-	update_c(arg1 : byte, arg2 : byte) is {
-		if (arg1 + arg2 > 256) {
+	update_c(arg1 : byte, arg2 : byte, arg3: bit) is {
+		if (arg1 + arg2 + arg3 > 256) {
 			reg_status[0:0] = 1;
 		}
 		else {

@@ -42,7 +42,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 `include "timescale.v"
-`include "T6507LP_ALU.v"
+`include "t6507lp_alu.v"
 
 module t6507lp_alu_wrapper();
 	parameter [3:0] DATA_SIZE = 4'd8;
@@ -50,10 +50,10 @@ module t6507lp_alu_wrapper();
 
 	// all inputs are regs
 	reg clk;
-	reg reset_n;
-	reg alu_enable;
-	reg [DATA_SIZE_:0] alu_opcode;
-	reg [DATA_SIZE_:0] alu_a;
+	wire reset_n;
+	wire alu_enable;
+	wire [DATA_SIZE_:0] alu_opcode;
+	wire [DATA_SIZE_:0] alu_a;
 	
 	// all outputs are wires
 	wire [DATA_SIZE_:0] alu_result; 
@@ -64,11 +64,16 @@ module t6507lp_alu_wrapper();
 	initial clk = 0;
 	always #10 clk <= ~clk;
 
-	//always #100 $write("working");
+	always @(posedge clk) begin
+		$display("reset is %b", reset_n);
+		$display("alu_enable is %b", alu_enable);
+		$display("alu_opcode is %h", alu_opcode);
+		$display("alu_a is %d", alu_a);
+	end
 	
-	T6507LP_ALU T6507LP_ALU (
-		.clk_i		(clk),
-		.n_rst_i	(reset_n),
+	t6507lp_alu t6507lp_alu (
+		.clk		(clk),
+		.reset_n	(reset_n),
 		.alu_enable	(alu_enable),
 		.alu_result	(alu_result),
 		.alu_status	(alu_status),

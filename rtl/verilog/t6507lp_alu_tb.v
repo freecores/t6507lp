@@ -68,7 +68,7 @@ begin
 	reset_n = 0;
 	@(negedge clk);
 	@(negedge clk);
-	reset_n = 1;
+	//reset_n = 1;
 	alu_enable = 1;
 	alu_result_expected = 8'h00;
 	alu_status_expected = 8'b00100010;
