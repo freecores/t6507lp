@@ -70,7 +70,7 @@ unit alu_chk_u {
 			
 			// here i have already calculated. must compare!
 			
-			//if (count_cycles > 10) {
+			//if (count_cycles > 3) {
 			if (reg_result != alu_result) {
 				print inst;
 				print me;
@@ -153,11 +153,11 @@ unit alu_chk_u {
 	};
 
 	exec_sum() is {
+		reg_result = reg_a + inst.alu_a + reg_status[0:0];
 		update_c(reg_a, inst.alu_a, reg_status[0:0]);
-		reg_a = reg_a + inst.alu_a + reg_status[0:0];
-		update_z(reg_a);
-		update_n(reg_a);
-		reg_result = reg_a;
+		update_z(reg_result);
+		update_n(reg_result);
+		reg_a = reg_result;
 		//print me;
 		//dut_error();
 	};

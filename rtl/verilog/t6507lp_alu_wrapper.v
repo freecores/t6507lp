@@ -50,10 +50,10 @@ module t6507lp_alu_wrapper();
 
 	// all inputs are regs
 	reg clk;
-	wire reset_n;
-	wire alu_enable;
-	wire [DATA_SIZE_:0] alu_opcode;
-	wire [DATA_SIZE_:0] alu_a;
+	reg reset_n;
+	reg alu_enable;
+	reg [DATA_SIZE_:0] alu_opcode;
+	reg [DATA_SIZE_:0] alu_a;
 	
 	// all outputs are wires
 	wire [DATA_SIZE_:0] alu_result; 
