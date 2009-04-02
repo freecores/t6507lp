@@ -1,45 +1,45 @@
 ////////////////////////////////////////////////////////////////////////////
-////									////
-//// T6507LP IP Core	 						////
-////									////
-//// This file is part of the T6507LP project				////
-//// http://www.opencores.org/cores/t6507lp/				////
-////									////
-//// Description							////
-//// 6507 ALU								////
-////									////
-//// To Do:								////
-//// - Search for TODO							////
-////									////
-//// Author(s):								////
-//// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
-//// - Samuel Nascimento Pagliarini (creep), snpagliarini@gmail.com	////
-////									////
+////                                                                    ////
+//// T6507LP IP Core                                                    ////
+////                                                                    ////
+//// This file is part of the T6507LP project                           ////
+//// http://www.opencores.org/cores/t6507lp/                            ////
+////                                                                    ////
+//// Description                                                        ////
+//// 6507 ALU                                                           ////
+////                                                                    ////
+//// To Do:                                                             ////
+//// - Search for TODO                                                  ////
+////                                                                    ////
+//// Author(s):                                                         ////
+//// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com                    ////
+//// - Samuel Nascimento Pagliarini (creep), snpagliarini@gmail.com     ////
+////                                                                    ////
 ////////////////////////////////////////////////////////////////////////////
-////									////
-//// Copyright (C) 2001 Authors and OPENCORES.ORG			////
-////									////
-//// This source file may be used and distributed without		////
-//// restriction provided that this copyright statement is not		////
-//// removed from the file and that any derivative work contains	////
-//// the original copyright notice and the associated disclaimer.	////
-////									////
-//// This source file is free software; you can redistribute it		////
-//// and/or modify it under the terms of the GNU Lesser General		////
-//// Public License as published by the Free Software Foundation;	////
-//// either version 2.1 of the License, or (at your option) any		////
-//// later version.							////
-////									////
-//// This source is distributed in the hope that it will be		////
-//// useful, but WITHOUT ANY WARRANTY; without even the implied		////
-//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR		////
-//// PURPOSE. See the GNU Lesser General Public License for more	////
-//// details.								////
-////									////
-//// You should have received a copy of the GNU Lesser General		////
-//// Public License along with this source; if not, download it		////
-//// from http://www.opencores.org/lgpl.shtml				////
-////									////
+////                                                                    ////
+//// Copyright (C) 2001 Authors and OPENCORES.ORG                       ////
+////                                                                    ////
+//// This source file may be used and distributed without               ////
+//// restriction provided that this copyright statement is not          ////
+//// removed from the file and that any derivative work contains        ////
+//// the original copyright notice and the associated disclaimer.       ////
+////                                                                    ////
+//// This source file is free software; you can redistribute it         ////
+//// and/or modify it under the terms of the GNU Lesser General         ////
+//// Public License as published by the Free Software Foundation;       ////
+//// either version 2.1 of the License, or (at your option) any         ////
+//// later version.                                                     ////
+////                                                                    ////
+//// This source is distributed in the hope that it will be             ////
+//// useful, but WITHOUT ANY WARRANTY; without even the implied         ////
+//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR            ////
+//// PURPOSE. See the GNU Lesser General Public License for more        ////
+//// details.                                                           ////
+////                                                                    ////
+//// You should have received a copy of the GNU Lesser General          ////
+//// Public License along with this source; if not, download it         ////
+//// from http://www.opencores.org/lgpl.shtml                           ////
+////                                                                    ////
 ////////////////////////////////////////////////////////////////////////////
 
 `include "timescale.v"
@@ -64,15 +64,14 @@ reg [7:0] Y;
 
 reg [7:0] STATUS;
 reg [7:0] result;
-reg [7:0] bcd1;
-reg [7:0] bcd2;
+reg [7:0] op1;
+reg [7:0] op2;
 
 `include "t6507lp_package.v"
 
 always @ (posedge clk or negedge reset_n)
 begin
 	if (reset_n == 0) begin
-		//$display("RESTART");
 		alu_result <= 0;
 		alu_status[C] <= 0;
 		alu_status[N] <= 0;
@@ -89,9 +88,6 @@ begin
 		alu_y <= 0;
 	end
 	else if ( alu_enable == 1 ) begin
-		//$display("A = %h result = %h", A, result);
-		//$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
-
 		case (alu_opcode)
 			ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY,
 			AND_IMM, AND_ZPG, AND_ZPX, AND_ABS, AND_ABX, AND_ABY, AND_IDX, AND_IDY,
@@ -101,8 +97,6 @@ begin
 			SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY, LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS,
 			LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY, PLA_IMP, TXA_IMP, TYA_IMP :
 			begin
-				//$display("A = %h result = %h", A, result);
-				//$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
 				A          <= result;
 				alu_result <= result;
 				alu_status <= STATUS;
@@ -192,8 +186,8 @@ begin
 end
 
 always @ (*) begin
-	bcd1      = A;
-	bcd2      = alu_a;
+	op1      = A;
+	op2      = alu_a;
 	result    = alu_result;
 	STATUS[N] = alu_status[N];
 	STATUS[C] = alu_status[C];
@@ -227,7 +221,6 @@ always @ (*) begin
 		end
 
 		// CLI - Clear Interrupt Disable
-		// TODO: verify if this should be supported by 6507
 		CLI_IMP: begin
 			STATUS[I] = 1'b0;
 		end
@@ -317,22 +310,20 @@ always @ (*) begin
 		ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY : begin
 			if (alu_status[D] == 1) begin
 				if (A[3:0] > 9) begin
-					bcd1 = A + 6; // A = A - 10 and A = A + 16
+					op1 = A + 6; // A = A - 10 and A = A + 16
 				end
-				if (bcd1[7:4] > 9) begin
-					bcd1 = bcd1[7:4] + 6; // A = A - 10 and A = A + 16
+				if (op1[7:4] > 9) begin
+					op1 = op1[7:4] + 6; // A = A - 10 and A = A + 16
 				end
 				if (alu_a[3:0] > 9) begin
-					bcd2 = alu_a + 6;
+					op2 = alu_a + 6;
 				end
-				if (bcd2[7:4] > 9) begin
-					bcd2 = bcd2[7:4] + 6; // A = A - 10 and A = A + 16
+				if (op2[7:4] > 9) begin
+					op2 = op2[7:4] + 6; // A = A - 10 and A = A + 16
 				end
 			end
-			//$display("op1 = %h op2 = %h result = %h", bcd1, bcd2, result);
-			//$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
-			{STATUS[C],result} = bcd1 + bcd2 + alu_status[C];
-			if ((bcd1[7] == bcd2[7]) && (bcd1[7] != alu_result[7]))
+			{STATUS[C],result} = op1 + op2 + alu_status[C];
+			if ((op1[7] == op2[7]) && (op1[7] != result[7]))
 				STATUS[V] = 1;
 			else
 				STATUS[V] = 0;
@@ -346,8 +337,6 @@ always @ (*) begin
 					STATUS[C] = 1;
 				end
 			end
-			//$display("op1 = %h op2 = %h result = %h", bcd1, bcd2, result);
-			//$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
 		end
 			
 		// AND - Logical AND
@@ -386,21 +375,22 @@ always @ (*) begin
 		SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY : begin
 			if (alu_status[D] == 1) begin
 				if (A[3:0] > 9) begin
-					bcd1 = A + 6; // A = A - 10 and A = A + 16
+					op1 = A + 6; // A = A - 10 and A = A + 16
 				end
-				if (bcd1[7:4] > 9) begin
-					bcd1 = bcd1[7:4] + 6; // A = A - 10 and A = A + 16
+				if (op1[7:4] > 9) begin
+					op1 = op1[7:4] + 6; // A = A - 10 and A = A + 16
 				end
 				if (alu_a[3:0] > 9) begin
-					bcd2 = alu_a + 6;
+					op2 = alu_a + 6;
 				end
-				if (bcd2[7:4] > 9) begin
-					bcd2 = bcd2[7:4] + 6; // A = A - 10 and A = A + 16
+				if (op2[7:4] > 9) begin
+					op2 = op2[7:4] + 6; // A = A - 10 and A = A + 16
 				end
 			end
 
-			{STATUS[C],result} = bcd1 - bcd2 - ~alu_status[C];
-			if ((bcd1[7] == bcd2[7]) && (bcd1[7] != alu_result[7]))
+			{STATUS[C],result} = op1 - op2 - ~alu_status[C];
+
+			if ((op1[7] == op2[7]) && (op1[7] != result[7]))
 				STATUS[V] = 1;
 			else
 				STATUS[V] = 0;
@@ -428,13 +418,13 @@ always @ (*) begin
 			
 		// ROL - Rotate Left
 		ROL_ACC : begin
-			{STATUS[C],result} = {A,alu_status[C]}; //TODO: does it really work?
+			{STATUS[C],result} = {A,alu_status[C]};
 		end
 		ROL_ZPG, ROL_ZPX, ROL_ABS, ROL_ABX : begin
 			{STATUS[C],result} = {alu_a,alu_status[C]};
 		end
 
-		// ROR - Rotate Right		
+		// ROR - Rotate Right
 		ROR_ACC : begin
 			{result,STATUS[C]} = {alu_status[C],A};
 		end
