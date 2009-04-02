@@ -83,7 +83,7 @@ begin
 	@(negedge clk);
 	alu_result_expected = 8'h00;
 	//                       NV1BDIZC
-        alu_status_expected = 8'b00100010;
+    alu_status_expected = 8'b00100010;
 	check();
 
 	// ADC
@@ -91,10 +91,11 @@ begin
 	alu_a = 1;
 	for (i = 0; i < 1000; i = i + 1)
 	begin
+		alu_a = $random;
 		@(negedge clk);
-		$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
-		$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
-		$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], DUT.result);
+		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
+		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], DUT.result);
 		{alu_status_expected[C], alu_result_expected} = alu_a + alu_result_expected + alu_status_expected[C];
 		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_result_expected[7];
@@ -426,9 +427,9 @@ begin
 	begin
 		alu_a = i;
 		@(negedge clk);
-		$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
-		$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
-		$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
+		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
+		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
 		alu_status_expected[Z] = ((alu_a & alu_result_expected) == 0) ? 1 : 0;
 		alu_status_expected[V] = alu_a[6];
 		alu_status_expected[N] = alu_a[7];

@@ -101,7 +101,7 @@ begin
 			SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY, LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS,
 			LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY, PLA_IMP, TXA_IMP, TYA_IMP :
 			begin
-				$display("A = %h result = %h", A, result);
+				//$display("A = %h result = %h", A, result);
 				//$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
 				A          <= result;
 				alu_result <= result;
@@ -188,12 +188,12 @@ end
 always @ (*) begin
 	bcd1      = A;
 	bcd2      = alu_a;
-	result    = alu_result;
-	STATUS[C] = alu_status[C];
-	STATUS[V] = alu_status[V];
-	STATUS[B] = alu_status[B];
-	STATUS[I] = alu_status[I];
-	STATUS[D] = alu_status[D];
+	//result    = alu_result;
+	//STATUS[C] = STATUS[C];
+	//STATUS[V] = STATUS[V];
+	//STATUS[B] = STATUS[B];
+	//STATUS[I] = STATUS[I];
+	//STATUS[D] = STATUS[D];
 
 	case (alu_opcode)
 		// BIT - Bit Test
@@ -319,8 +319,8 @@ always @ (*) begin
 					bcd2 = bcd2[7:4] + 6; // A = A - 10 and A = A + 16
 				end
 			end
-			$display("op1 = %h op2 = %h result = %h", bcd1, bcd2, result);
-			$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
+			//$display("op1 = %h op2 = %h result = %h", bcd1, bcd2, result);
+			//$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
 			{STATUS[C],result} = bcd1 + bcd2 + alu_status[C];
 			if ((bcd1[7] == bcd2[7]) && (bcd1[7] != alu_result[7]))
 				STATUS[V] = 1;
