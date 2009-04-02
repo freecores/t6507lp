@@ -3,9 +3,6 @@ import alu_components;
 unit alu_env_u {
 	agent: alu_agent_u is instance;
 	sync: alu_sync_u is instance;
-	teste: list of alu_input_s;
-	keep teste.size() == 10;
-
 
 	keep agent.env == me;
 };
