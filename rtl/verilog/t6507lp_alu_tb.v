@@ -44,14 +44,14 @@ task check;
 		$display("alu_status    %b       %b   ", alu_status, alu_status_expected);
 		$display("alu_x            %h             %h   ", alu_x,      alu_x_expected     );
 		$display("alu_y            %h             %h   ", alu_y,      alu_y_expected     );
-		if ((alu_result_expected != alu_result) || (alu_status_expected != alu_status) || (alu_x_expected != alu_x) || (alu_y_expected != alu_y))
+		if ((alu_result_expected == alu_result) && (alu_status_expected == alu_status) && (alu_x_expected == alu_x) && (alu_y_expected == alu_y))
 		begin
-			$display("ERROR at instruction %h",alu_opcode);
-			$finish;
+			$display("Instruction %h... OK!", alu_opcode);
 		end
 		else
 		begin
-			$display("Instruction %h... OK!", alu_opcode);
+			$display("ERROR at instruction %h",alu_opcode);
+			$finish;
 		end
 	end
 endtask
@@ -67,7 +67,7 @@ begin
 	clk = 0;
 	reset_n = 0;
 	@(negedge clk);
-	@(negedge clk);
+	//@(negedge clk);
 	reset_n = 1;
 	alu_enable = 1;
 	alu_result_expected = 8'h00;

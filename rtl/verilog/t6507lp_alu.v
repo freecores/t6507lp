@@ -72,7 +72,7 @@ reg [7:0] bcd2;
 always @ (posedge clk or negedge reset_n)
 begin
 	if (reset_n == 0) begin
-		$display("RESTART");
+		//$display("RESTART");
 		alu_result <= 0;
 		alu_status[C] <= 0;
 		alu_status[N] <= 0;
@@ -163,7 +163,13 @@ begin
 			end
 			PLP_IMP, RTI_IMP :
 			begin
-				alu_status <= alu_a;
+				alu_status[C] <= alu_a[C];
+				alu_status[Z] <= alu_a[Z];
+				alu_status[I] <= alu_a[I];
+				alu_status[D] <= alu_a[D];
+				alu_status[B] <= alu_a[B];
+				alu_status[V] <= alu_a[V];
+				alu_status[N] <= alu_a[N];
 			end
 			BIT_ZPG, BIT_ABS :
 			begin
@@ -188,12 +194,16 @@ end
 always @ (*) begin
 	bcd1      = A;
 	bcd2      = alu_a;
-	//result    = alu_result;
-	//STATUS[C] = STATUS[C];
-	//STATUS[V] = STATUS[V];
-	//STATUS[B] = STATUS[B];
-	//STATUS[I] = STATUS[I];
-	//STATUS[D] = STATUS[D];
+	result    = alu_result;
+	STATUS[N] = alu_status[N];
+	STATUS[C] = alu_status[C];
+	STATUS[V] = alu_status[V];
+	STATUS[B] = alu_status[B];
+	STATUS[I] = alu_status[I];
+	STATUS[D] = alu_status[D];
+	STATUS[Z] = alu_status[Z];
+	STATUS[N] = alu_status[N];
+	STATUS[5] = alu_status[5];
 
 	case (alu_opcode)
 		// BIT - Bit Test
@@ -336,8 +346,8 @@ always @ (*) begin
 					STATUS[C] = 1;
 				end
 			end
-			$display("op1 = %h op2 = %h result = %h", bcd1, bcd2, result);
-			$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
+			//$display("op1 = %h op2 = %h result = %h", bcd1, bcd2, result);
+			//$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
 		end
 			
 		// AND - Logical AND
