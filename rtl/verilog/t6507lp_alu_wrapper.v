@@ -65,10 +65,10 @@ module t6507lp_alu_wrapper();
 	always #10 clk <= ~clk;
 
 	always @(posedge clk) begin
-		$display("reset is %b", reset_n);
-		$display("alu_enable is %b", alu_enable);
-		$display("alu_opcode is %h", alu_opcode);
-		$display("alu_a is %d", alu_a);
+		//$display("reset is %b", reset_n);
+		//$display("alu_enable is %b", alu_enable);
+		//$display("alu_opcode is %h", alu_opcode);
+		//$display("alu_a is %d", alu_a);
 	end
 	
 	t6507lp_alu t6507lp_alu (

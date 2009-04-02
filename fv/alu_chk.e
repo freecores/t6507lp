@@ -21,8 +21,8 @@ unit alu_chk_u {
 	store(input : alu_input_s) is {
 		count_cycles = count_cycles + 1;
 
-		out ("CYCLE ", count_cycles, " STORE:");
-		print input;
+		//out ("CYCLE ", count_cycles, " STORE:");
+		//print input;
 
 		if (first_cycle) {
 			inst = input;
@@ -33,10 +33,6 @@ unit alu_chk_u {
 			next_inst = input;
 		};
 
-
-		if (count_cycles == 10000) {
-			dut_error();
-		}
 	};
 
 	compare(alu_result:byte, alu_status:byte, alu_x:byte, alu_y:byte ) is {
@@ -49,16 +45,16 @@ unit alu_chk_u {
 			reg_result = 0;
 		}
 		else {
-			out ("CYCLE ", count_cycles, " COMPARE:");
-			print inst;
+			//out ("CYCLE ", count_cycles, " COMPARE:");
+			//print inst;
 
 			case inst.input_kind {
 				ENABLED_VALID: {
-					out("CYCLE ", count_cycles, ": executing and comparing");
+					//out("CYCLE ", count_cycles, ": executing and comparing");
 					execute();
 				};
 				DISABLED_VALID: { 
-					out("CYCLE ", count_cycles, ": just comparing");
+					//out("CYCLE ", count_cycles, ": just comparing");
 				};
 				RESET: {
 					reg_x = 0;
@@ -77,8 +73,9 @@ unit alu_chk_u {
 			// here i have already calculated. must compare!
 			
 			if ((reg_result != alu_result) || (reg_x != alu_x) or (reg_y != alu_y) or (reg_status != alu_status)) {
-				print inst;
+				out("#########################################################");
 				print me;
+				out("#########################################################");
 				print alu_result;
 				print alu_status;
 				print alu_x;
@@ -116,6 +113,10 @@ unit alu_chk_u {
 			ASL_ABS: { exec_asl_mem(); };
 			ASL_ABX: { exec_asl_mem(); };
 
+			BCC_REL: {};
+			BCS_REL: {};
+			BEQ_REL: {};
+
 			default: {
 				//dut_error("unknown opcode");
 			}
@@ -145,7 +146,7 @@ unit alu_chk_u {
 	};
 
 	exec_sum() is {
-		out("adding: ", reg_a, " + ", inst.alu_a, " + ", reg_status[0:0]);
+		//out("adding: ", reg_a, " + ", inst.alu_a, " + ", reg_status[0:0]);
 		reg_result = reg_a + inst.alu_a + reg_status[0:0];
 		update_c(reg_a, inst.alu_a, reg_status[0:0]);
 		update_v(reg_a, inst.alu_a, reg_result);
@@ -157,7 +158,7 @@ unit alu_chk_u {
 	};
 
 	update_c(arg1 : byte, arg2 : byte, arg3: bit) is {
-		if (arg1 + arg2 + arg3 > 256) {
+		if (arg1 + arg2 + arg3 > 255) {
 			reg_status[0:0] = 1;
 		}
 		else {
