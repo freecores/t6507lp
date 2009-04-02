@@ -68,7 +68,7 @@ begin
 	reset_n = 0;
 	@(negedge clk);
 	@(negedge clk);
-	//reset_n = 1;
+	reset_n = 1;
 	alu_enable = 1;
 	alu_result_expected = 8'h00;
 	alu_status_expected = 8'b00100010;
@@ -92,9 +92,9 @@ begin
 	for (i = 0; i < 1000; i = i + 1)
 	begin
 		@(negedge clk);
-		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
-		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
-		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
+		$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+		$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
+		$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], DUT.result);
 		{alu_status_expected[C], alu_result_expected} = alu_a + alu_result_expected + alu_status_expected[C];
 		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_result_expected[7];
@@ -102,7 +102,7 @@ begin
 		check();
 	end
 
-	// ADC
+	// ASL
 	alu_opcode = ASL_ABS;
 	for (i = 0; i < 1000; i = i + 1)
 	begin

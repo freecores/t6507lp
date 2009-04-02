@@ -72,11 +72,12 @@ reg [7:0] bcd2;
 always @ (posedge clk or negedge reset_n)
 begin
 	if (reset_n == 0) begin
-		//$display("RESTART");
+		$display("RESTART");
 		alu_result <= 0;
 		alu_status[C] <= 0;
 		alu_status[N] <= 0;
 		alu_status[V] <= 0;
+		alu_status[5] <= 1;
 		alu_status[Z] <= 1;
 		alu_status[I] <= 0;
 		alu_status[B] <= 0;
@@ -88,6 +89,9 @@ begin
 		alu_y <= 0;
 	end
 	else if ( alu_enable == 1 ) begin
+		//$display("A = %h result = %h", A, result);
+		//$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
+
 		case (alu_opcode)
 			ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY,
 			AND_IMM, AND_ZPG, AND_ZPX, AND_ABS, AND_ABX, AND_ABY, AND_IDX, AND_IDY,
@@ -97,6 +101,8 @@ begin
 			SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY, LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS,
 			LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY, PLA_IMP, TXA_IMP, TYA_IMP :
 			begin
+				$display("A = %h result = %h", A, result);
+				//$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
 				A          <= result;
 				alu_result <= result;
 				alu_status <= STATUS;
@@ -109,8 +115,8 @@ begin
 			end
 			TXS_IMP :
 			begin
-				X     <= result;
-				alu_x <= result;
+				X          <= result;
+				alu_x      <= result;
 			end
 			LDY_IMM, LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX, TAY_IMP, INY_IMP, DEY_IMP :
 			begin
@@ -118,10 +124,8 @@ begin
 				alu_y      <= result;
 				alu_status <= STATUS;
 			end
-			LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX, ROL_ZPG, ROL_ZPX, ROL_ABS, ROL_ABX,
-			ROR_ZPG, ROR_ZPX, ROR_ABS, ROR_ABX, CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS,
-			CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY, CPX_IMM, CPX_ZPG, CPX_ABS, CPY_IMM,
-			CPY_ZPG, CPY_ABS, PHP_IMP :
+			CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY,
+			CPX_IMM, CPX_ZPG, CPX_ABS, CPY_IMM, CPY_ZPG, CPY_ABS, PHP_IMP :
 			begin
 				alu_status <= STATUS;
 			end
@@ -167,7 +171,9 @@ begin
 				alu_status[V] <= alu_a[6];
 				alu_status[N] <= alu_a[7];
 			end
-			INC_ZPG, INC_ZPX, INC_ABS, INC_ABX, DEC_ZPG, DEC_ZPX, DEC_ABS, DEC_ABX, ASL_ZPG, ASL_ZPX, ASL_ABS, ASL_ABX :
+			INC_ZPG, INC_ZPX, INC_ABS, INC_ABX, DEC_ZPG, DEC_ZPX, DEC_ABS, DEC_ABX,
+			ASL_ZPG, ASL_ZPX, ASL_ABS, ASL_ABX, LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX,
+			ROL_ZPG, ROL_ZPX, ROL_ABS, ROL_ABX, ROR_ZPG, ROR_ZPX, ROR_ABS, ROR_ABX :
 			begin
 				alu_result <= result;
 				alu_status <= STATUS;
@@ -185,7 +191,6 @@ always @ (*) begin
 	result    = alu_result;
 	STATUS[C] = alu_status[C];
 	STATUS[V] = alu_status[V];
-	STATUS[5] = 1;
 	STATUS[B] = alu_status[B];
 	STATUS[I] = alu_status[I];
 	STATUS[D] = alu_status[D];
@@ -314,7 +319,8 @@ always @ (*) begin
 					bcd2 = bcd2[7:4] + 6; // A = A - 10 and A = A + 16
 				end
 			end
-
+			$display("op1 = %h op2 = %h result = %h", bcd1, bcd2, result);
+			$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
 			{STATUS[C],result} = bcd1 + bcd2 + alu_status[C];
 			if ((bcd1[7] == bcd2[7]) && (bcd1[7] != alu_result[7]))
 				STATUS[V] = 1;
@@ -330,6 +336,8 @@ always @ (*) begin
 					STATUS[C] = 1;
 				end
 			end
+			$display("op1 = %h op2 = %h result = %h", bcd1, bcd2, result);
+			$display("V = %b C = %b D = %b", STATUS[V], STATUS[C], STATUS[D]);
 		end
 			
 		// AND - Logical AND
