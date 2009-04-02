@@ -203,7 +203,7 @@ always @ (*) begin
 	STATUS[D] = alu_status[D];
 	STATUS[Z] = alu_status[Z];
 	STATUS[N] = alu_status[N];
-	STATUS[5] = alu_status[5];
+	STATUS[5] = 1;
 
 	case (alu_opcode)
 		// BIT - Bit Test
