@@ -153,7 +153,7 @@ begin
 			end
 			BRK_IMP :
 			begin
-				alu_status[B] <= 0;
+				alu_status[B] <= 1;
 			end
 			PLP_IMP, RTI_IMP :
 			begin
