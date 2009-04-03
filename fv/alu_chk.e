@@ -75,6 +75,7 @@ unit alu_chk_u {
 			if ((reg_result != alu_result) || (reg_x != alu_x) or (reg_y != alu_y) or (reg_status != alu_status)) {
 				out("#########################################################");
 				print me;
+				print me.inst;
 				out("#########################################################");
 				print alu_result;
 				print alu_status;
@@ -113,14 +114,36 @@ unit alu_chk_u {
 			ASL_ABS: { exec_asl_mem(); };
 			ASL_ABX: { exec_asl_mem(); };
 
-			BCC_REL: {};
+			BCC_REL: {}; // nothing is done. these are all branches.
 			BCS_REL: {};
 			BEQ_REL: {};
+			BMI_REL: {};
+			BNE_REL: {};
+			BPL_REL: {};
+			BVC_REL: {};
+			BVS_REL: {};
+
+			BIT_ZPG: { exec_bit(); }; // Z = A & M, N = M7, V = M6
+			BIT_ABS: { exec_bit(); };
+
+			BRK_IMP: { reg_status[4:4] = 1; };
+
+			CLC_IMP: { reg_status[0:0] = 0; };
+			CLD_IMP: { reg_status[3:3] = 0; };
+			CLI_IMP: { reg_status[2:2] = 0; };
+			CLV_IMP: { reg_status[6:6] = 0; };
 
 			default: {
-				//dut_error("unknown opcode");
+				out(inst.alu_opcode);
+				dut_error("unknown opcode");
 			}
 		};
+	};
+
+	exec_bit() is {
+		update_z(reg_a & inst.alu_a);
+		reg_status[7:7] = inst.alu_a[7:7];
+		reg_status[6:6] = inst.alu_a[6:6];
 	};
 
 	exec_asl_acc() is {
