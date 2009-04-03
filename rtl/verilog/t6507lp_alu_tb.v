@@ -467,7 +467,31 @@ begin
 		alu_status_expected[N] = alu_a[7];
 		check();
 	end
-	
+
+	// PHA
+	alu_opcode = PHA_IMP;
+	@(negedge clk);
+	//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+	//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
+	//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
+	alu_result_expected = DUT.A;
+	check();
+
+	// PHP
+	alu_opcode = PHP_IMP;
+	@(negedge clk);
+	//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+	//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
+	//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
+	alu_status_expected = DUT.STATUS;
+	check();
+
+	// BRK
+	alu_opcode = BRK_IMP;
+	@(negedge clk);
+	alu_status_expected[B] = 1;
+	check();
+		
 	// SEC
 	alu_opcode = SEC_IMP;
 	@(negedge clk);

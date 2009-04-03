@@ -123,6 +123,10 @@ begin
 			begin
 				alu_status <= STATUS;
 			end
+			PHA_IMP :
+			begin
+				alu_result <= result;
+			end
 			SEC_IMP :
 			begin
 				alu_status[C] <= 1;
@@ -331,8 +335,8 @@ always @ (*) begin
 				STATUS[V] = 1;
 			else
 				STATUS[V] = 0;
-			$display("op1 + op2 + C = result + C (V)");
-			$display("%d  + %d  + %b = %d + %b (%b)", op1, op2, alu_status[C],result,STATUS[C],STATUS[V]);
+			//$display("op1 + op2 + C = result + C (V)");
+			//$display("%d  + %d  + %b = %d + %b (%b)", op1, op2, alu_status[C],result,STATUS[C],STATUS[V]);
 
 			if (alu_status[D] == 1) begin
 				if (result[3:0] > 9) begin
@@ -359,8 +363,8 @@ always @ (*) begin
 		// EOR - Exclusive OR
 		EOR_IMM, EOR_ZPG, EOR_ZPX, EOR_ABS, EOR_ABX, EOR_ABY, EOR_IDX, EOR_IDY : begin
 			result = A ^ alu_a;
-			$display("op1 ^ op2 = result");
-			$display("%d  ^ %d  = %d", op1, op2, result);
+			//$display("op1 ^ op2 = result");
+			//$display("%d  ^ %d  = %d", op1, op2, result);
 		end
 
 		// LDA - Load Accumulator
