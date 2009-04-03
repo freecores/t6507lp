@@ -239,6 +239,10 @@ always @ (*) begin
 		PLP_IMP, RTI_IMP: begin
 			STATUS = alu_a;
 		end
+		
+		PLA_IMP : begin
+			result = alu_a;
+		end
 
 		// STA - Store Accumulator
 		// PHA - Push A
