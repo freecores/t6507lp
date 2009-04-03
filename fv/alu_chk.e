@@ -9,11 +9,14 @@ unit alu_chk_u {
 	reg_status : byte;
 	reg_result : byte;
 
-	inst : alu_input_s;
-	next_inst : alu_input_s;
+	!inst : alu_input_s;
+	!next_inst : alu_input_s;
 
 	count_cycles : int;
 	first_cycle : bool;
+	last_a : byte;
+	last_status : byte;
+	last_result : byte;
 
 	keep first_cycle == TRUE;
 	keep count_cycles == 0;
@@ -23,6 +26,10 @@ unit alu_chk_u {
 
 		//out ("CYCLE ", count_cycles, " STORE:");
 		//print input;
+
+		last_a = reg_a;
+		last_status = reg_status;
+		last_result = reg_result;
 
 		if (first_cycle) {
 			inst = input;
@@ -47,6 +54,11 @@ unit alu_chk_u {
 		else {
 			//out ("CYCLE ", count_cycles, " COMPARE:");
 			//print inst;
+
+			if (count_cycles == 99999) {
+				out("ENOUGH!");
+				stop_run();
+			};
 
 			case inst.input_kind {
 				ENABLED_VALID: {
@@ -133,10 +145,171 @@ unit alu_chk_u {
 			CLI_IMP: { reg_status[2:2] = 0; };
 			CLV_IMP: { reg_status[6:6] = 0; };
 
+			CMP_IMM: { exec_cmp(reg_a); }; // Z,C,N = A-M
+			CMP_ZPG: { exec_cmp(reg_a); };
+			CMP_ZPX: { exec_cmp(reg_a); };
+			CMP_ABS: { exec_cmp(reg_a); };
+			CMP_ABX: { exec_cmp(reg_a); };
+			CMP_ABY: { exec_cmp(reg_a); };
+			CMP_IDX: { exec_cmp(reg_a); };
+			CMP_IDY: { exec_cmp(reg_a); };
+
+			CPX_IMM: { exec_cmp(reg_x); }; // Z,C,N = X-M
+			CPX_ZPG: { exec_cmp(reg_x); };
+			CPX_ABS: { exec_cmp(reg_x); };
+
+			CPY_IMM: { exec_cmp(reg_y); }; //Z,C,N = Y-M
+			CPY_ZPG: { exec_cmp(reg_y); };
+			CPY_ABS: { exec_cmp(reg_y); };
+
+			DEC_ZPG: { exec_dec(inst.alu_a, TRUE); }; // M,Z,N = M-1
+			DEC_ZPX: { exec_dec(inst.alu_a, TRUE); };
+			DEC_ABS: { exec_dec(inst.alu_a, TRUE); };
+			DEC_ABX: { exec_dec(inst.alu_a, TRUE); };
+
+			DEX_IMP: { exec_dec(reg_x, FALSE); };  // X,Z,N = X-1
+			DEY_IMP: { exec_dec(reg_y, FALSE); };  // Y,Z,N = Y-1
+
+			EOR_IMM: { exec_eor(); }; // A,Z,N = A^M
+			EOR_ZPG: { exec_eor(); };
+			EOR_ZPX: { exec_eor(); };
+			EOR_ABS: { exec_eor(); };
+			EOR_ABX: { exec_eor(); };
+			EOR_ABY: { exec_eor(); };
+			EOR_IDX: { exec_eor(); };
+			EOR_IDY: { exec_eor(); };
+
+			INC_ZPG: { exec_inc(inst.alu_a, TRUE); };
+			INC_ZPX: { exec_inc(inst.alu_a, TRUE); };
+			INC_ABS: { exec_inc(inst.alu_a, TRUE); };
+			INC_ABX: { exec_inc(inst.alu_a, TRUE); };
+
+			INX_IMP: { exec_inc(reg_x, FALSE); };
+			INY_IMP: { exec_inc(reg_y, FALSE); };
+
+			JMP_ABS: {};
+			JMP_IND: {};
+			JSR_ABS: {};
+
+			LDA_IMM: { exec_load(reg_a, TRUE); }; // A,Z,N = M
+			LDA_ZPG: { exec_load(reg_a, TRUE); };
+			LDA_ZPX: { exec_load(reg_a, TRUE); };
+			LDA_ABS: { exec_load(reg_a, TRUE); };
+			LDA_ABX: { exec_load(reg_a, TRUE); };
+			LDA_ABY: { exec_load(reg_a, TRUE); };
+			LDA_IDX: { exec_load(reg_a, TRUE); };
+			LDA_IDY: { exec_load(reg_a, TRUE); };
+
+			LDX_IMM: { exec_load(reg_x, FALSE); };
+			LDX_ZPG: { exec_load(reg_x, FALSE); };
+			LDX_ZPY: { exec_load(reg_x, FALSE); };
+			LDX_ABS: { exec_load(reg_x, FALSE); };
+			LDX_ABY: { exec_load(reg_x, FALSE); };
+
+			LDY_IMM: { exec_load(reg_y, FALSE); };
+			LDY_ZPG: { exec_load(reg_y, FALSE); };
+			LDY_ZPX: { exec_load(reg_y, FALSE); };
+			LDY_ABS: { exec_load(reg_y, FALSE); };
+			LDY_ABX: { exec_load(reg_y, FALSE); };
+
+			LSR_ACC: { exec_lsr(reg_a); }; // A,C,Z,N = A/2 or M,C,Z,N = M/2
+			LSR_ZPG: { exec_lsr(inst.alu_a); };
+			LSR_ZPX: { exec_lsr(inst.alu_a); };
+			LSR_ABS: { exec_lsr(inst.alu_a); };
+			LSR_ABX: { exec_lsr(inst.alu_a); };
+
+			NOP_IMP: {};
+
+			ORA_IMM: { exec_or(); }; // A,Z,N = A|M
+			ORA_ZPG: { exec_or(); };
+			ORA_ZPX: { exec_or(); };
+			ORA_ABS: { exec_or(); };
+			ORA_ABX: { exec_or(); };
+			ORA_ABY: { exec_or(); };
+			ORA_IDX: { exec_or(); };
+			ORA_IDY: { exec_or(); };
+
+			PHA_IMP: { reg_result = reg_a; };
+			PHP_IMP: {}; // P is always connected and the result is not updated
+			PLA_IMP: { 
+				reg_a = inst.alu_a;
+				reg_result = inst.alu_a;
+				update_z(reg_a);
+				update_n(reg_a);
+			};
+			PLP_IMP: { 
+				reg_status = inst.alu_a; 
+				reg_status[5:5] = 1; // this is always one
+			};
+
 			default: {
 				out(inst.alu_opcode);
 				dut_error("unknown opcode");
 			}
+		};
+	};
+
+	exec_or() is {
+		reg_a = reg_a | inst.alu_a;
+		reg_result = reg_a;
+		update_z(reg_a);
+		update_n(reg_a);
+	};
+
+	exec_lsr(arg1 : *byte) is {
+		reg_status[0:0] = arg1[0:0];
+		arg1 = arg1 >> 1;
+		update_z(arg1);
+		update_n(arg1);
+		reg_result = arg1;
+	};
+
+	exec_load(arg1 : *byte, update_result : bool) is {
+		arg1 = inst.alu_a;
+	
+		if (update_result) { // 
+			reg_result = inst.alu_a; // no need for this but...
+		};
+		update_z(arg1);
+		update_n(arg1);
+	};
+
+	exec_inc(arg1 : *byte, update_result : bool) is {
+		arg1 = arg1 + 1;
+		update_z(arg1);
+		update_n(arg1);
+
+		if (update_result) { // 
+			reg_result = arg1;
+		};
+	};
+
+	exec_eor() is {
+		reg_a = reg_a ^ inst.alu_a;
+		reg_result = reg_a;
+		update_z(reg_a);
+		update_n(reg_a);
+	};
+
+	exec_dec(arg1 : *byte, update_result : bool) is {
+		arg1 = arg1 - 1;
+		update_z(arg1);
+		update_n(arg1);
+
+		if (update_result) { // DEX and DEY do not output the result
+			reg_result = arg1;
+		};
+	};
+
+	exec_cmp(arg1 : byte) is {
+		update_z(arg1 - inst.alu_a);
+		update_n(arg1 - inst.alu_a);
+		
+		if (arg1 >= inst.alu_a) {
+			reg_status[0:0] = 1;
+		}
+		else {
+			reg_status[0:0] = 0;
 		};
 	};
 
