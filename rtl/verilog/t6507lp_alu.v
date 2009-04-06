@@ -331,6 +331,7 @@ always @ (*) begin
 					STATUS[C] = 1;
 					bcdh = bcdh % 10;
 				end
+				result = {bcdh[3:0],bcdl[3:0]};
 			end
 			else
 				{STATUS[C],result} = op1 + op2 + alu_status[C];
@@ -418,8 +419,8 @@ always @ (*) begin
 				STATUS[V] = 0;
 */
 			if (alu_status[D] == 1) begin
-				bcdl = A[3:0] + alu_a[3:0] + alu_status[C];
-				bcdh = A[7:4] + alu_a[7:4];
+				bcdl = A[3:0] - alu_a[3:0] - ~alu_status[C];
+				bcdh = A[7:4] - alu_a[7:4];
 				if (bcdl > 9) begin
 					bcdh = bcdh + bcdl[5:4];
 					bcdl = bcdl % 10;
@@ -428,6 +429,7 @@ always @ (*) begin
 					STATUS[C] = 1;
 					bcdh = bcdh % 10;
 				end
+				result = {bcdh[3:0],bcdl[3:0]};
 			end
 			else
 				{STATUS[C],result} = op1 - op2 - ~alu_status[C];
