@@ -431,7 +431,7 @@ always @ (*) begin
 				STATUS[V] = 0;
 */
 			if (alu_status[D] == 1) begin
-				bcdl = A[3:0] - alu_a[3:0] - ~alu_status[C];
+				bcdl = A[3:0] - alu_a[3:0] - ( 1 - alu_status[C] );
 				bcdh = A[7:4] - alu_a[7:4];
 				if (bcdl > 9) begin
 					bcdh = bcdh + bcdl[5:4];
