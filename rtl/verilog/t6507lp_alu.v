@@ -124,7 +124,7 @@ begin
 				alu_status <= STATUS;
 			end
 			CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY,
-			CPX_IMM, CPX_ZPG, CPX_ABS, CPY_IMM, CPY_ZPG, CPY_ABS, PHP_IMP :
+			CPX_IMM, CPX_ZPG, CPX_ABS, CPY_IMM, CPY_ZPG, CPY_ABS :
 			begin
 				alu_status <= STATUS;
 			end
@@ -186,6 +186,8 @@ begin
 			begin
 				alu_result <= result;
 				alu_status <= STATUS;
+			end
+			PHP_IMP : begin
 			end
 			default : begin
 				//$display("ERROR");
@@ -323,8 +325,11 @@ always @ (*) begin
 		// TODO: verify synthesis for % operand
 		ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY : begin
 			if (alu_status[D] == 1) begin
+				$display("MODO DECIMAL");
 				AL = A[3:0] + alu_a[3:0] + alu_status[C];
 				AH = A[7:4] + alu_a[7:4];
+				$display("AL = %h", AL);
+				$display("AH = %h", AH);
 				if (AL > 9) begin
 					bcdh = AH + (AL / 10);
 					bcdl = AL % 10;
@@ -333,10 +338,15 @@ always @ (*) begin
 					STATUS[C] = 1;
 					bcdh2 = bcdh % 10;
 				end
+				$display("bcdh = %h", bcdh);
+				$display("bcdl = %h", bcdl);
 				result = {bcdh2[3:0],bcdl[3:0]};
+				$display("result = %h", result);
 			end
-			else
+			else begin
+				$display("MODO NORMAL");
 				{STATUS[C],result} = op1 + op2 + alu_status[C];
+			end
 			
 			if ((op1[7] == op2[7]) && (op1[7] != result[7]))
 				STATUS[V] = 1;
@@ -434,7 +444,7 @@ always @ (*) begin
 				result = {bcdh[3:0],bcdl[3:0]};
 			end
 			else
-				{STATUS[C],result} = op1 - op2 - ~alu_status[C];
+				{STATUS[C],result} = op1 - op2 - ( 1 - alu_status[C]);
 			
 			if ((op1[7] == op2[7]) && (op1[7] != result[7]))
 				STATUS[V] = 1;

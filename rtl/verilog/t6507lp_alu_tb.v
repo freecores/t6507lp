@@ -109,7 +109,7 @@ begin
 		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
 		check();
 	end
-
+/*
 	// BCD
 	// LDA
 	alu_a = 0;
@@ -156,21 +156,22 @@ begin
 		if ( BH > 9 ) begin
 			BH = BH - 10;
 		end
-		{C_in,alu_result_expected_temp[3:0]} = AL + BL + alu_status_expected[C];
-		{alu_status_expected[C],alu_result_expected_temp[7:4]} = AH + BH + C_in;
-		if ( alu_result_expected_temp[3:0] > 9 ) begin
-			alu_result_expected[3:0] = alu_result_expected_temp[3:0] - 10;
-			alu_result_expected[7:4] = alu_result_expected_temp[7:4] + 1;
+		{C_in,alu_result_expected[3:0]} = AL + BL + alu_status_expected[C];
+		{alu_status_expected[C],alu_result_expected[7:4]} = AH + BH + C_in;
+		if ( alu_result_expected[3:0] > 9 ) begin
+			alu_result_expected[3:0] = alu_result_expected[3:0] - 10;
+			alu_result_expected[7:4] = alu_result_expected[7:4] + 1;
 		end
-		if ( alu_result_expected_temp[7:4] > 9 ) begin
-			alu_result_expected[7:4] = alu_result_expected_temp[7:4] - 10;
+		if ( alu_result_expected[7:4] > 9 ) begin
+			alu_result_expected[7:4] = alu_result_expected[7:4] - 10;
+			alu_status_expected[C] = 1;
 		end
 		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_result_expected[7];
 		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
 		check();
 	end	
-
+*/
 		
 	// ASL
 	alu_opcode = ASL_ABS;
@@ -238,7 +239,7 @@ begin
 		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
 		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
 		sign = alu_result_expected[7];
-		{alu_status_expected[C], alu_result_expected} = alu_result_expected - alu_a - ~alu_status_expected[C];
+		{alu_status_expected[C], alu_result_expected} = alu_result_expected - alu_a - ( 1 - alu_status_expected[C]);
 		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_result_expected[7];
 		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
