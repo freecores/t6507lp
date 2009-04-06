@@ -242,11 +242,30 @@ unit alu_chk_u {
 				reg_status[5:5] = 1; // this is always one
 			};
 
+			//ROL_ACC: { exec_rol(reg_a); };
+			//ROL_ZPG: { exec_rol(inst.alu_a); };
+			//ROL_ZPX: { exec_rol(inst.alu_a); };
+			//ROL_ABS: { exec_rol(inst.alu_a); };
+			//ROL_ABX: { exec_rol(inst.alu_a); };
+
 			default: {
 				out(inst.alu_opcode);
 				dut_error("unknown opcode");
 			}
 		};
+	};
+
+	exec_rol(arg1 : *byte) is {
+		var oldcarry : bit;
+
+		oldcarry = reg_status[0:0];
+		reg_status[0:0] = arg1[7:7];
+		arg1 = arg1 << 1;
+		arg1[0:0] = oldcarry;
+
+		reg_result = reg_a;
+		update_z(reg_a);
+		update_n(reg_a);
 	};
 
 	exec_or() is {
@@ -343,14 +362,46 @@ unit alu_chk_u {
 
 	exec_sum() is {
 		//out("adding: ", reg_a, " + ", inst.alu_a, " + ", reg_status[0:0]);
-		reg_result = reg_a + inst.alu_a + reg_status[0:0];
-		update_c(reg_a, inst.alu_a, reg_status[0:0]);
-		update_v(reg_a, inst.alu_a, reg_result);
-		update_z(reg_result);
-		update_n(reg_result);
-		reg_a = reg_result;
-		//print me;
-		//dut_error();
+		if (reg_status[3:3] == 1) {
+			var op1 : byte;
+			var op2 : byte;
+
+			op1 = inst.alu_a[3:0];
+			op2 = inst.alu_a[7:4];
+		
+			print op1;
+			print op2;
+
+			op1 = reg_a[3:0] + op1 + reg_status[0:0];
+			op2 = reg_a[7:4] + op2;
+
+			if (op1 >= 10) {
+				op1 = op1 % 10;
+				op2 = op2 + 1;
+			};
+
+			if (op2 >= 10) {
+				op2 = op2 % 10;
+				reg_status[0:0] = 1;
+			}
+			else {
+				reg_status[0:0] = 0;
+			};
+			
+			reg_result[3:0] = op1;
+			reg_result[7:4] = op2;	
+			update_z(reg_result);
+			update_n(reg_result);
+			reg_a = reg_result;
+		}
+		else {
+			reg_result = reg_a + inst.alu_a + reg_status[0:0];
+			update_c(reg_a, inst.alu_a, reg_status[0:0]);
+			update_v(reg_a, inst.alu_a, reg_result);
+			update_z(reg_result);
+			update_n(reg_result);
+			reg_a = reg_result;
+		};
 	};
 
 	update_c(arg1 : byte, arg2 : byte, arg3: bit) is {
