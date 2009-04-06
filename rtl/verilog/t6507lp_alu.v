@@ -318,50 +318,27 @@ always @ (*) begin
 		end
 
 		// ADC - Add with carry
+		// TODO: verify synthesis for % operand
 		ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY : begin
 			if (alu_status[D] == 1) begin
 				bcdl = A[3:0] + alu_a[3:0] + alu_status[C];
 				bcdh = A[7:4] + alu_a[7:4];
 				if (bcdl > 9) begin
-					bcdl = bcdl - 10; // A = A - 10 and A = A + 16
-					bcdh = bcdh + 1; // A = A - 10 and A = A + 16
+					bcdh = bcdh + bcdl[5:4];
+					bcdl = bcdl % 10;
 				end
 				if (bcdh > 9) begin
 					STATUS[C] = 1;
-					bcdh = bcdh - 10;
+					bcdh = bcdh % 10;
 				end
-				/*if (op1[7:4] > 9) begin
-					op1 = op1[7:4] + 6; // A = A - 10 and A = A + 16
-				end
-				if (alu_a[3:0] > 9) begin
-					op2 = alu_a + 6;
-				end
-				if (op2[7:4] > 9) begin
-					op2 = op2[7:4] + 6; // A = A - 10 and A = A + 16
-				end
-				*/
-				result = {bcdh[3:0],bcdl[3:0]};
 			end
-			else begin
+			else
 				{STATUS[C],result} = op1 + op2 + alu_status[C];
-			end
+			
 			if ((op1[7] == op2[7]) && (op1[7] != result[7]))
 				STATUS[V] = 1;
 			else
 				STATUS[V] = 0;
-			//$display("op1 + op2 + C = result + C (V)");
-			//$display("%d  + %d  + %b = %d + %b (%b)", op1, op2, alu_status[C],result,STATUS[C],STATUS[V]);
-			/*
-			if (alu_status[D] == 1) begin
-				if (result[3:0] > 9) begin
-					result = result[3:0] + 6; // A = A - 10 and A = A + 16
-				end
-				if (result[7:4] > 9) begin
-					result = result[7:4] + 6; // A = A - 10 and A = A + 16
-					STATUS[C] = 1;
-				end
-			end
-			*/
 		end
 			
 		// AND - Logical AND
@@ -400,7 +377,7 @@ always @ (*) begin
 
 		// SBC - Subtract with Carry
 		SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY : begin
-			if (alu_status[D] == 1) begin
+/*			if (alu_status[D] == 1) begin
 				bcdl = A[3:0] + alu_a[3:0] + alu_status[C];
 				bcdh = A[7:4] + alu_a[7:4];
 				if (bcdl > 9) begin
@@ -420,6 +397,46 @@ always @ (*) begin
 				STATUS[V] = 1;
 			else
 				STATUS[V] = 0;
+				if (alu_status[D] == 1) begin
+				bcdl = A[3:0] + alu_a[3:0] + alu_status[C];
+				bcdh = A[7:4] + alu_a[7:4];
+				if (bcdl > 9) begin
+					bcdh = bcdh + bcdl[5:4];
+					bcdl = bcdl % 10;
+				end
+				if (bcdh > 9) begin
+					STATUS[C] = 1;
+					bcdh = bcdh % 10;
+				end
+			end
+			else
+				{STATUS[C],result} = op1 + op2 + alu_status[C];
+			
+			if ((op1[7] == op2[7]) && (op1[7] != result[7]))
+				STATUS[V] = 1;
+			else
+				STATUS[V] = 0;
+*/
+			if (alu_status[D] == 1) begin
+				bcdl = A[3:0] + alu_a[3:0] + alu_status[C];
+				bcdh = A[7:4] + alu_a[7:4];
+				if (bcdl > 9) begin
+					bcdh = bcdh + bcdl[5:4];
+					bcdl = bcdl % 10;
+				end
+				if (bcdh > 9) begin
+					STATUS[C] = 1;
+					bcdh = bcdh % 10;
+				end
+			end
+			else
+				{STATUS[C],result} = op1 - op2 - ~alu_status[C];
+			
+			if ((op1[7] == op2[7]) && (op1[7] != result[7]))
+				STATUS[V] = 1;
+			else
+				STATUS[V] = 0;
+
 		end
 
 		// ASL - Arithmetic Shift Left
