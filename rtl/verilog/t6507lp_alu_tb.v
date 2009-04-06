@@ -105,6 +105,36 @@ begin
 		check();
 	end
 
+/*	// BCD
+	// LDA
+	alu_a = 0;
+	alu_opcode = LDA_IMM;
+        //$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+	//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
+	@(negedge clk);
+	alu_result_expected = 8'h00;
+	//                       NV1BDIZC
+    alu_status_expected = 8'b00101010;
+	check();
+
+	// ADC
+	alu_opcode = ADC_IMM;
+	for (i = 0; i < 1000; i = i + 1)
+	begin
+		alu_a = $random;
+		@(negedge clk);
+		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
+		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], DUT.result);
+		sign = alu_result_expected[7];
+		{alu_status_expected[C], alu_result_expected} = alu_a + alu_result_expected + alu_status_expected[C];
+		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
+		alu_status_expected[N] = alu_result_expected[7];
+		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
+		check();
+	end	
+*/
+		
 	// ASL
 	alu_opcode = ASL_ABS;
 	for (i = 0; i < 1000; i = i + 1)
