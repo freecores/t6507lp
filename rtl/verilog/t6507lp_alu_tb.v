@@ -109,7 +109,7 @@ begin
 		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
 		check();
 	end
-/*
+
 	// BCD
 	// LDA
 	alu_a = 0;
@@ -171,7 +171,7 @@ begin
 		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
 		check();
 	end	
-*/
+
 		
 	// ASL
 	alu_opcode = ASL_ABS;

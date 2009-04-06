@@ -325,7 +325,21 @@ always @ (*) begin
 		// TODO: verify synthesis for % operand
 		ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY : begin
 			if (alu_status[D] == 1) begin
+<<<<<<< .mine
+<<<<<<< .mine
+				bcdl = A[3:0] + alu_a[3:0] + alu_status[C];
+				bcdh = A[7:4] + alu_a[7:4];
+
+				$write("1: bcdl %d bcdh %d\n", bcdl, bcdh);
+
+				if (bcdl > 9) begin
+					//$write("\n %d \n", bcdl[6:4]);
+					bcdh = bcdh + bcdl[5:4];
+					bcdl = bcdl % 10;
+=======
+=======
 				$display("MODO DECIMAL");
+>>>>>>> .r165
 				AL = A[3:0] + alu_a[3:0] + alu_status[C];
 				AH = A[7:4] + alu_a[7:4];
 				$display("AL = %h", AL);
@@ -333,15 +347,30 @@ always @ (*) begin
 				if (AL > 9) begin
 					bcdh = AH + (AL / 10);
 					bcdl = AL % 10;
+>>>>>>> .r164
 				end
 				if (AH > 9) begin
 					STATUS[C] = 1;
 					bcdh2 = bcdh % 10;
 				end
+<<<<<<< .mine
+<<<<<<< .mine
+
+				//$write("bcdl %d bcdh %d\n", bcdl, bcdh);
+
+
+				result = {bcdh[3:0],bcdl[3:0]};
+=======
+=======
 				$display("bcdh = %h", bcdh);
 				$display("bcdl = %h", bcdl);
+>>>>>>> .r165
 				result = {bcdh2[3:0],bcdl[3:0]};
+<<<<<<< .mine
+>>>>>>> .r164
+=======
 				$display("result = %h", result);
+>>>>>>> .r165
 			end
 			else begin
 				$display("MODO NORMAL");
