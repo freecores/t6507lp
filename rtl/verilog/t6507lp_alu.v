@@ -444,7 +444,7 @@ always @ (*) begin
 				result = {bcdh[3:0],bcdl[3:0]};
 			end
 			else
-				{STATUS[C],result} = op1 - op2 - ( 1 - alu_status[C]);
+				{STATUS[C],result} = op1 - op2 - ( 1 - alu_status[C] );
 			
 			if ((op1[7] == op2[7]) && (op1[7] != result[7]))
 				STATUS[V] = 1;
