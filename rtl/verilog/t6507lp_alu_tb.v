@@ -19,9 +19,14 @@ reg [7:0] alu_status_expected;
 reg [7:0] alu_x_expected;
 reg [7:0] alu_y_expected;
 
-reg c_aux;
+reg C_in;
 reg [7:0] temp;
 reg sign;
+reg [3:0] AL;
+reg [3:0] AH;
+reg [3:0] BL;
+reg [3:0] BH;
+reg [7:0] alu_result_expected_temp;
 
 t6507lp_alu DUT (
 			.clk		(clk),
@@ -105,7 +110,7 @@ begin
 		check();
 	end
 
-/*	// BCD
+	// BCD
 	// LDA
 	alu_a = 0;
 	alu_opcode = LDA_IMM;
@@ -114,7 +119,13 @@ begin
 	@(negedge clk);
 	alu_result_expected = 8'h00;
 	//                       NV1BDIZC
-    alu_status_expected = 8'b00101010;
+	alu_status_expected[N] = 0;
+	alu_status_expected[Z] = 1;
+	check();
+	// SED
+	alu_opcode = SED_IMP;
+	@(negedge clk);
+	alu_status_expected[D] = 1;
 	check();
 
 	// ADC
@@ -123,17 +134,43 @@ begin
 	begin
 		alu_a = $random;
 		@(negedge clk);
-		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
-		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
-		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], DUT.result);
+		$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+		$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
+		$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], DUT.result);
 		sign = alu_result_expected[7];
-		{alu_status_expected[C], alu_result_expected} = alu_a + alu_result_expected + alu_status_expected[C];
+		AL = alu_a[3:0];
+		AH = alu_a[7:4];
+		BL = alu_result_expected[3:0];
+		BH = alu_result_expected[7:4];
+		if ( AL > 9 ) begin
+			AL = AL - 10;
+			AH = AH + 1;
+		end
+		if (AH > 9) begin
+			AH = AH - 10;
+		end
+		if ( BL > 9 ) begin
+			BL = BL - 10;
+			BH = BH + 1;
+		end
+		if ( BH > 9 ) begin
+			BH = BH - 10;
+		end
+		{C_in,alu_result_expected_temp[3:0]} = AL + BL + alu_status_expected[C];
+		{alu_status_expected[C],alu_result_expected_temp[7:4]} = AH + BH + C_in;
+		if ( alu_result_expected_temp[3:0] > 9 ) begin
+			alu_result_expected[3:0] = alu_result_expected_temp[3:0] - 10;
+			alu_result_expected[7:4] = alu_result_expected_temp[7:4] + 1;
+		end
+		if ( alu_result_expected_temp[7:4] > 9 ) begin
+			alu_result_expected[7:4] = alu_result_expected_temp[7:4] - 10;
+		end
 		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_result_expected[7];
 		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
 		check();
 	end	
-*/
+
 		
 	// ASL
 	alu_opcode = ASL_ABS;

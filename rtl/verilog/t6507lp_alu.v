@@ -68,7 +68,9 @@ reg [7:0] op1;
 reg [7:0] op2;
 reg [7:0] bcdl;
 reg [7:0] bcdh;
-
+reg [7:0] bcdh2;
+reg [7:0] AL;
+reg [7:0] AH;
 
 `include "t6507lp_package.v"
 
@@ -321,17 +323,17 @@ always @ (*) begin
 		// TODO: verify synthesis for % operand
 		ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY : begin
 			if (alu_status[D] == 1) begin
-				bcdl = A[3:0] + alu_a[3:0] + alu_status[C];
-				bcdh = A[7:4] + alu_a[7:4];
-				if (bcdl > 9) begin
-					bcdh = bcdh + bcdl[5:4];
-					bcdl = bcdl % 10;
+				AL = A[3:0] + alu_a[3:0] + alu_status[C];
+				AH = A[7:4] + alu_a[7:4];
+				if (AL > 9) begin
+					bcdh = AH + (AL / 10);
+					bcdl = AL % 10;
 				end
-				if (bcdh > 9) begin
+				if (AH > 9) begin
 					STATUS[C] = 1;
-					bcdh = bcdh % 10;
+					bcdh2 = bcdh % 10;
 				end
-				result = {bcdh[3:0],bcdl[3:0]};
+				result = {bcdh2[3:0],bcdl[3:0]};
 			end
 			else
 				{STATUS[C],result} = op1 + op2 + alu_status[C];
