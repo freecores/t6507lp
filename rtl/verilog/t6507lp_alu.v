@@ -164,7 +164,7 @@ begin
 			begin
 				alu_status[B] <= 1;
 			end
-			PLP_IMP, RTI_IMP :
+			PLP_IMP : //, RTI_IMP :
 			begin
 				alu_status[C] <= alu_a[C];
 				alu_status[Z] <= alu_a[Z];
@@ -247,7 +247,7 @@ always @ (*) begin
 		//end
 	
 		// PLP - Pull Processor Status Register
-		PLP_IMP, RTI_IMP: begin
+		PLP_IMP : begin //, RTI_IMP: begin
 			STATUS = alu_a;
 		end
 		
