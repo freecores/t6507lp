@@ -168,13 +168,13 @@ begin
 			end
 			PLP_IMP, RTI_IMP :
 			begin
-				alu_status[C] <= STATUS[C];
-				alu_status[Z] <= STATUS[Z];
-				alu_status[I] <= STATUS[I];
-				alu_status[D] <= STATUS[D];
-				alu_status[B] <= STATUS[B];
-				alu_status[V] <= STATUS[V];
-				alu_status[N] <= STATUS[N];
+				alu_status[C] <= alu_a[C];
+				alu_status[Z] <= alu_a[Z];
+				alu_status[I] <= alu_a[I];
+				alu_status[D] <= alu_a[D];
+				alu_status[B] <= alu_a[B];
+				alu_status[V] <= alu_a[V];
+				alu_status[N] <= alu_a[N];
 				alu_status[5] <= 1;
 			end
 			BIT_ZPG, BIT_ABS :
@@ -200,6 +200,7 @@ begin
 end
 
 always @ (*) begin
+if (alu_enable == 1) begin
 	op1      = A;
 	op2      = alu_a;
 	result    = alu_result;
@@ -257,6 +258,7 @@ always @ (*) begin
 		//end
 	
 		// PLP - Pull Processor Status Register
+		// RTI - Return from Interrupt
 		PLP_IMP, RTI_IMP: begin
 			STATUS = alu_a;
 		end
@@ -492,6 +494,6 @@ always @ (*) begin
 	STATUS[Z] = (result == 0) ? 1 : 0;
 	STATUS[N] = result[7];
 end
-
+end
 endmodule
 
