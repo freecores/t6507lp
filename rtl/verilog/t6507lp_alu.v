@@ -71,6 +71,8 @@ reg [7:0] bcdh;
 reg [7:0] bcdh2;
 reg [7:0] AL;
 reg [7:0] AH;
+reg C_aux;
+reg sign;
 
 `include "t6507lp_package.v"
 
@@ -173,6 +175,7 @@ begin
 				alu_status[B] <= STATUS[B];
 				alu_status[V] <= STATUS[V];
 				alu_status[N] <= STATUS[N];
+				alu_status[5] <= 1;
 			end
 			BIT_ZPG, BIT_ABS :
 			begin
@@ -187,8 +190,8 @@ begin
 				alu_result <= result;
 				alu_status <= STATUS;
 			end
-			PHP_IMP : begin
-			end
+			//PHP_IMP : begin
+			//end
 			default : begin
 				//$display("ERROR");
 			end
@@ -215,7 +218,7 @@ always @ (*) begin
 	bcdh2 = 0;
 	AL = 0;
 	AH = 0;
-	
+	sign = op2[7];
 
 	case (alu_opcode)
 		// BIT - Bit Test
@@ -448,7 +451,7 @@ always @ (*) begin
 				STATUS[V] = 0;
 */
 			if (alu_status[D] == 1) begin
-				bcdl = A[3:0] - alu_a[3:0] - ~alu_status[C];
+				bcdl = A[3:0] - alu_a[3:0] - ( 1 - alu_status[C] );
 				bcdh = A[7:4] - alu_a[7:4];
 				if (bcdl > 9) begin
 					bcdh = bcdh + bcdl[5:4];
@@ -460,10 +463,14 @@ always @ (*) begin
 				end
 				result = {bcdh[3:0],bcdl[3:0]};
 			end
-			else
-				{STATUS[C],result} = op1 - op2 - ( 1 - alu_status[C] );
+			else begin
+				op2 = ~alu_a;
+				{C_aux,result} = op1 + op2 + alu_status[C];
+				STATUS[C] = ~C_aux;
+			end
+				
 			
-			if ((op1[7] == op2[7]) && (op1[7] != result[7]))
+			if ((op1[7] == sign) && (op1[7] != result[7]))
 				STATUS[V] = 1;
 			else
 				STATUS[V] = 0;
