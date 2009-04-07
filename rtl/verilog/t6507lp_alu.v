@@ -164,7 +164,7 @@ begin
 			begin
 				alu_status[B] <= 1;
 			end
-			PLP_IMP : //, RTI_IMP :
+			PLP_IMP, RTI_IMP :
 			begin
 				alu_status[C] <= alu_a[C];
 				alu_status[Z] <= alu_a[Z];
@@ -210,6 +210,13 @@ always @ (*) begin
 	STATUS[N] = alu_status[N];
 	STATUS[5] = 1;
 
+	bcdl = 0;
+	bcdh = 0;
+	bcdh2 = 0;
+	AL = 0;
+	AH = 0;
+	
+
 	case (alu_opcode)
 		// BIT - Bit Test
 		BIT_ZPG, BIT_ABS: begin
@@ -247,7 +254,7 @@ always @ (*) begin
 		//end
 	
 		// PLP - Pull Processor Status Register
-		PLP_IMP : begin //, RTI_IMP: begin
+		PLP_IMP, RTI_IMP: begin
 			STATUS = alu_a;
 		end
 		
@@ -325,55 +332,36 @@ always @ (*) begin
 		// TODO: verify synthesis for % operand
 		ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS, ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY : begin
 			if (alu_status[D] == 1) begin
-<<<<<<< .mine
-<<<<<<< .mine
-				bcdl = A[3:0] + alu_a[3:0] + alu_status[C];
-				bcdh = A[7:4] + alu_a[7:4];
-
-				$write("1: bcdl %d bcdh %d\n", bcdl, bcdh);
-
-				if (bcdl > 9) begin
-					//$write("\n %d \n", bcdl[6:4]);
-					bcdh = bcdh + bcdl[5:4];
-					bcdl = bcdl % 10;
-=======
-=======
-				$display("MODO DECIMAL");
->>>>>>> .r165
+				//$display("MODO DECIMAL");
 				AL = A[3:0] + alu_a[3:0] + alu_status[C];
 				AH = A[7:4] + alu_a[7:4];
-				$display("AL = %h", AL);
-				$display("AH = %h", AH);
+				//$display("AL = %d", AL);
+				//$display("AH = %d", AH);
 				if (AL > 9) begin
 					bcdh = AH + (AL / 10);
 					bcdl = AL % 10;
->>>>>>> .r164
 				end
-				if (AH > 9) begin
+				else begin
+					bcdh = AH;
+					bcdl = AL;
+				end
+
+				// ok
+
+				if (bcdh > 9) begin
 					STATUS[C] = 1;
 					bcdh2 = bcdh % 10;
 				end
-<<<<<<< .mine
-<<<<<<< .mine
-
-				//$write("bcdl %d bcdh %d\n", bcdl, bcdh);
-
-
-				result = {bcdh[3:0],bcdl[3:0]};
-=======
-=======
-				$display("bcdh = %h", bcdh);
-				$display("bcdl = %h", bcdl);
->>>>>>> .r165
+				else begin
+					STATUS[C] = 0;
+					bcdh2 = bcdh;
+				end
+				//$display("bcdh2 = %d", bcdh2);
+				//$display("bcdl = %d", bcdl);
 				result = {bcdh2[3:0],bcdl[3:0]};
-<<<<<<< .mine
->>>>>>> .r164
-=======
-				$display("result = %h", result);
->>>>>>> .r165
 			end
 			else begin
-				$display("MODO NORMAL");
+				//$display("MODO NORMAL");
 				{STATUS[C],result} = op1 + op2 + alu_status[C];
 			end
 			
@@ -460,7 +448,7 @@ always @ (*) begin
 				STATUS[V] = 0;
 */
 			if (alu_status[D] == 1) begin
-				bcdl = A[3:0] - alu_a[3:0] - ( 1 - alu_status[C] );
+				bcdl = A[3:0] - alu_a[3:0] - ~alu_status[C];
 				bcdh = A[7:4] - alu_a[7:4];
 				if (bcdl > 9) begin
 					bcdh = bcdh + bcdl[5:4];
