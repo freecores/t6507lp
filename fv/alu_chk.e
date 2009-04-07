@@ -242,11 +242,11 @@ unit alu_chk_u {
 				reg_status[5:5] = 1; // this is always one
 			};
 
-			//ROL_ACC: { exec_rol(reg_a); };
-			//ROL_ZPG: { exec_rol(inst.alu_a); };
-			//ROL_ZPX: { exec_rol(inst.alu_a); };
-			//ROL_ABS: { exec_rol(inst.alu_a); };
-			//ROL_ABX: { exec_rol(inst.alu_a); };
+			ROL_ACC: { exec_rol(reg_a); };
+			ROL_ZPG: { exec_rol(inst.alu_a); };
+			ROL_ZPX: { exec_rol(inst.alu_a); };
+			ROL_ABS: { exec_rol(inst.alu_a); };
+			ROL_ABX: { exec_rol(inst.alu_a); };
 
 			default: {
 				out(inst.alu_opcode);
@@ -263,9 +263,9 @@ unit alu_chk_u {
 		arg1 = arg1 << 1;
 		arg1[0:0] = oldcarry;
 
-		reg_result = reg_a;
-		update_z(reg_a);
-		update_n(reg_a);
+		reg_result = arg1;
+		update_z(arg1);
+		update_n(arg1);
 	};
 
 	exec_or() is {
@@ -366,6 +366,8 @@ unit alu_chk_u {
 			var op1 : byte;
 			var op2 : byte;
 
+			out("i am adding ", reg_a, " and ", inst.alu_a, " carry is ", reg_status[0:0]);
+
 			op1 = inst.alu_a[3:0];
 			op2 = inst.alu_a[7:4];
 		
@@ -375,10 +377,16 @@ unit alu_chk_u {
 			op1 = reg_a[3:0] + op1 + reg_status[0:0];
 			op2 = reg_a[7:4] + op2;
 
+			print op1;
+			print op2;
+
 			if (op1 >= 10) {
+				op2 = op2  + op1/ 10;
 				op1 = op1 % 10;
-				op2 = op2 + 1;
 			};
+		
+			print op1;
+			print op2;
 
 			if (op2 >= 10) {
 				op2 = op2 % 10;
