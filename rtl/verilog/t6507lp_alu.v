@@ -410,49 +410,11 @@ always @ (*) begin
 
 		// SBC - Subtract with Carry
 		SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY : begin
-/*			if (alu_status[D] == 1) begin
-				bcdl = A[3:0] + alu_a[3:0] + alu_status[C];
-				bcdh = A[7:4] + alu_a[7:4];
-				if (bcdl > 9) begin
-					bcdl = bcdl - 10; // A = A - 10 and A = A + 16
-					bcdh = bcdh + 1; // A = A - 10 and A = A + 16
-				end
-				if (bcdh > 9) begin
-					STATUS[C] = 1;
-					bcdh = bcdh - 10;
-				end
-				result = {bcdh[3:0],bcdl[3:0]};
-			end
-			else begin
-				{STATUS[C],result} = op1 - op2 - ~alu_status[C];
-			end
-			if ((op1[7] == op2[7]) && (op1[7] != result[7]))
-				STATUS[V] = 1;
-			else
-				STATUS[V] = 0;
-				if (alu_status[D] == 1) begin
-				bcdl = A[3:0] + alu_a[3:0] + alu_status[C];
-				bcdh = A[7:4] + alu_a[7:4];
-				if (bcdl > 9) begin
-					bcdh = bcdh + bcdl[5:4];
-					bcdl = bcdl % 10;
-				end
-				if (bcdh > 9) begin
-					STATUS[C] = 1;
-					bcdh = bcdh % 10;
-				end
-			end
-			else
-				{STATUS[C],result} = op1 + op2 + alu_status[C];
-			
-			if ((op1[7] == op2[7]) && (op1[7] != result[7]))
-				STATUS[V] = 1;
-			else
-				STATUS[V] = 0;
-*/
+			op2 = ~alu_a;
 			if (alu_status[D] == 1) begin
-				bcdl = A[3:0] - alu_a[3:0] - ( 1 - alu_status[C] );
-				bcdh = A[7:4] - alu_a[7:4];
+			
+				bcdl = op1[3:0] + op2[3:0] + alu_status[C];
+				bcdh = op1[7:4] + op2[7:4];
 				if (bcdl > 9) begin
 					bcdh = bcdh + bcdl[5:4];
 					bcdl = bcdl % 10;
@@ -464,9 +426,8 @@ always @ (*) begin
 				result = {bcdh[3:0],bcdl[3:0]};
 			end
 			else begin
-				op2 = ~alu_a;
 				{C_aux,result} = op1 + op2 + alu_status[C];
-				STATUS[C] = ~C_aux;
+				STATUS[C] = ~result[7];
 			end
 				
 			

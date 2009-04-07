@@ -236,14 +236,15 @@ begin
 	begin
 		alu_a = 1;
 		@(negedge clk);
-		$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
-		$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
-		$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
+		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
+		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
 		sign = alu_result_expected[7];
-		{alu_status_expected[C], alu_result_expected} = alu_result_expected - alu_a - ( 1 - alu_status_expected[C]);
+		alu_result_expected = alu_result_expected - alu_a - ( 1 - alu_status_expected[C]);
+		alu_status_expected[C] = ~alu_result_expected[7];
 		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_result_expected[7];
-		$display("alu_a[7] = %b == sign = %b && alu_a[7] = %b != alu_result_expected[7] = %b", alu_a[7], sign, alu_a[7], alu_result_expected[7]);
+		//$display("alu_a[7] = %b == sign = %b && alu_a[7] = %b != alu_result_expected[7] = %b", alu_a[7], sign, alu_a[7], alu_result_expected[7]);
 		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
 		check;
 	end
