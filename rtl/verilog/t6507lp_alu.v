@@ -130,9 +130,14 @@ begin
 			begin
 				alu_status <= STATUS;
 			end
-			PHA_IMP :
-			begin
+			PHA_IMP, STA_ZPG, STA_ZPX, STA_ABS, STA_ABX, STA_ABY, STA_IDX, STA_IDY : begin
 				alu_result <= result;
+			end
+			STX_ZPG, STX_ZPY, STX_ABS : begin
+				alu_x <= result;
+			end
+			STY_ZPG, STY_ZPX, STY_ABS : begin
+				alu_y <= result;
 			end
 			SEC_IMP :
 			begin
@@ -412,11 +417,9 @@ if (alu_enable == 1) begin
 
 		// SBC - Subtract with Carry
 		SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY : begin
-			op2 = ~alu_a;
 			if (alu_status[D] == 1) begin
-			
-				bcdl = op1[3:0] + op2[3:0] + alu_status[C];
-				bcdh = op1[7:4] + op2[7:4];
+				bcdl = op1[3:0] - op2[3:0] - (1 - alu_status[C]);
+				bcdh = op1[7:4] - op2[7:4];
 				if (bcdl > 9) begin
 					bcdh = bcdh + bcdl[5:4];
 					bcdl = bcdl % 10;
@@ -428,7 +431,8 @@ if (alu_enable == 1) begin
 				result = {bcdh[3:0],bcdl[3:0]};
 			end
 			else begin
-				{C_aux,result} = op1 + op2 + alu_status[C];
+				op2 = ~alu_a;
+				result = op1 + op2 + alu_status[C];
 				STATUS[C] = ~result[7];
 			end
 				

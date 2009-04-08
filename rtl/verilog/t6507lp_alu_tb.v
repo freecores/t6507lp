@@ -270,7 +270,8 @@ begin
 	begin
 		alu_a = i;
 		@(negedge clk);
-		alu_x_expected = i;
+		alu_x_expected = alu_a;
+		$display("alu_x_expected = %h", alu_x_expected);
 		//alu_result_expected = i;
 		alu_status_expected[Z] = (alu_x_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_x_expected[7];
@@ -286,7 +287,8 @@ begin
 	begin
 		alu_a = i;
 		@(negedge clk);
-		alu_y_expected = i;
+		alu_y_expected = alu_a;
+		$display("alu_y_expected = %h", alu_y_expected);
 		//alu_result_expected = i;
 		alu_status_expected[Z] = (alu_y_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_y_expected[7];
@@ -305,6 +307,8 @@ begin
 		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
 		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
 		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
+		//alu_result_expected = alu_a;
+		//alu_result_expected = DUT.A;
 		check;
 	end
 
@@ -314,8 +318,9 @@ begin
 	begin
 		alu_a = i;
 		@(negedge clk);
+		$display("alu_x_expected = %h", alu_x_expected);
 		//alu_result_expected = i;
-		//alu_x_expected = i;
+		//alu_x_expected = alu_a;
 		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
 		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
 		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
@@ -328,8 +333,9 @@ begin
 	begin
 		alu_a = i;
 		@(negedge clk);
+		$display("alu_y_expected = %h", alu_y_expected);
 		//alu_result_expected = i;
-		//alu_y_expected = i;
+		//alu_y_expected = alu_a;
 		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
 		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
 		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
@@ -557,14 +563,34 @@ begin
 		alu_status_expected[I] = alu_a[I];
 		check;
 	end
-	
+
+	// PLP
+	alu_opcode = PLP_IMP;
+	for (i = 0; i < 1000; i = i + 1)
+	begin
+		alu_a = i;
+		@(negedge clk);
+		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
+		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
+		alu_status_expected[C] = alu_a[C];
+		alu_status_expected[Z] = alu_a[Z];
+		alu_status_expected[N] = alu_a[N];
+		alu_status_expected[V] = alu_a[V];
+		alu_status_expected[B] = alu_a[B];
+		alu_status_expected[D] = alu_a[D];
+		alu_status_expected[I] = alu_a[I];
+		check;
+	end
+
 	// PHA
 	alu_opcode = PHA_IMP;
 	@(negedge clk);
 	//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
 	//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
 	//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
-	alu_result_expected = DUT.A;
+	//alu_result_expected = DUT.A;
+	alu_result_expected = alu_a;
 	check;
 
 	// PHP
