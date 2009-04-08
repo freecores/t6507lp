@@ -259,9 +259,9 @@ if (alu_enable == 1) begin
 	
 		// PLP - Pull Processor Status Register
 		// RTI - Return from Interrupt
-		PLP_IMP, RTI_IMP: begin
-			STATUS = alu_a;
-		end
+		//PLP_IMP, RTI_IMP: begin
+		//	STATUS = alu_a;
+		//end
 		
 		PLA_IMP : begin
 			result = alu_a;
