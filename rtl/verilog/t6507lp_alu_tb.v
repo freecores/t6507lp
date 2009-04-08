@@ -20,7 +20,9 @@ reg [7:0] alu_x_expected;
 reg [7:0] alu_y_expected;
 
 reg C_in;
-reg [7:0] temp;
+reg C_temp;
+reg [7:0] temp1;
+reg [7:0] temp2;
 reg sign;
 reg [3:0] AL;
 reg [3:0] AH;
@@ -124,6 +126,7 @@ begin
 	check;
 	// SED
 	alu_opcode = SED_IMP;
+	//$display("A = %h B = %h X = %h Y = %h", alu_result, alu_a, alu_x, alu_y);
 	@(negedge clk);
 	alu_status_expected[D] = 1;
 	check;
@@ -133,51 +136,165 @@ begin
 	for (i = 0; i < 1000; i = i + 1)
 	begin
 		alu_a = $random;
+		//$display("A = %h B = %h C = %b X = %h Y = %h", alu_result, alu_a, alu_status_expected[C], alu_x, alu_y);
 		@(negedge clk);
-		$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
-		$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
-		$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], DUT.result);
+		C_temp = 0;
 		sign = alu_result_expected[7];
 		AL = alu_a[3:0];
 		AH = alu_a[7:4];
 		BL = alu_result_expected[3:0];
 		BH = alu_result_expected[7:4];
-		if ( AL > 9 ) begin
+		/*
+		if (AL > 9) begin
 			AL = AL - 10;
 			AH = AH + 1;
 		end
-		if (AH > 9) begin
+		if ( AH > 9 ) begin
 			AH = AH - 10;
+			C_temp = 1;
 		end
-		if ( BL > 9 ) begin
+		if (BL > 9) begin
 			BL = BL - 10;
 			BH = BH + 1;
 		end
 		if ( BH > 9 ) begin
 			BH = BH - 10;
+			C_temp = 1;
 		end
-		{C_in,alu_result_expected[3:0]} = AL + BL + alu_status_expected[C];
-		{alu_status_expected[C],alu_result_expected[7:4]} = AH + BH + C_in;
-		if ( alu_result_expected[3:0] > 9 ) begin
-			alu_result_expected[3:0] = alu_result_expected[3:0] - 10;
-			alu_result_expected[7:4] = alu_result_expected[7:4] + 1;
+		*/
+		//$display("AL = %h BL = %h", AL, BL, );
+		temp1 = AL + BL + alu_status_expected[C];
+		//AH = A[7:4] + alu_a[7:4];
+		temp2 = AH + BH;
+		//$display("temp1 = %h temp2 = %h", temp1, temp2);
+		if (temp1 > 9) begin
+			temp2 = temp2 + (temp1 / 10);
+			temp1 = temp1 % 10;
 		end
-		if ( alu_result_expected[7:4] > 9 ) begin
-			alu_result_expected[7:4] = alu_result_expected[7:4] - 10;
+		if (temp2 > 9) begin
 			alu_status_expected[C] = 1;
+			temp2 = temp2 % 10;
 		end
+		else begin
+			alu_status_expected[C] = 0;
+		end
+		//$display("bcdh2 = %d", bcdh2);
+		//$display("bcdl = %d", bcdl);
+		alu_result_expected = {temp2[3:0],temp1[3:0]};
+		//{C_in,alu_result_expected[3:0]} = AL + BL + alu_status_expected[C];
+		//{alu_status_expected[C],alu_result_expected[7:4]} = AH + BH + C_in;
+		//if ( alu_result_expected[3:0] > 9 ) begin
+		//	alu_result_expected[3:0] = alu_result_expected[3:0] - 10;
+	//		alu_result_expected[7:4] = alu_result_expected[7:4] + 1;
+		//end
+		//if ( alu_result_expected[7:4] > 9 ) begin
+		//	alu_result_expected[7:4] = alu_result_expected[7:4] - 10;
+	//		alu_status_expected[C] = 1;
+		//end
 		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_result_expected[7];
 		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
 		check;
 	end
-	$stop
+	//$stop;
 	// CLD
 	alu_opcode = CLD_IMP;
 	@(negedge clk);
 	alu_status_expected[D] = 0;
 	check;
 
+	// SBC BCD
+	// LDA
+	alu_a = 0;
+	alu_opcode = LDA_IMM;
+        //$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+	//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
+	@(negedge clk);
+	alu_result_expected = 8'h00;
+	//                       NV1BDIZC
+	alu_status_expected[N] = 0;
+	alu_status_expected[Z] = 1;
+	check;
+	// SED
+	alu_opcode = SED_IMP;
+	$display("A = %h B = %h X = %h Y = %h", alu_result, alu_a, alu_x, alu_y);
+	@(negedge clk);
+	alu_status_expected[D] = 1;
+	check;
+
+	// ADC
+	alu_opcode = SBC_IMM;
+	for (i = 0; i < 1000; i = i + 1)
+	begin
+		alu_a = $random;
+		$display("A = %h B = %h C = %b X = %h Y = %h", alu_result, alu_a, alu_status_expected[C], alu_x, alu_y);
+		@(negedge clk);
+		C_temp = 0;
+		sign   = alu_a[7];
+		AL     = alu_a[3:0];
+		AH     = alu_a[7:4];
+		BL     = ~alu_result_expected[3:0];
+		BH     = ~alu_result_expected[7:4];
+		/*
+		if (AL > 9) begin
+			AL = AL - 10;
+			AH = AH + 1;
+		end
+		if ( AH > 9 ) begin
+			AH = AH - 10;
+			C_temp = 1;
+		end
+		if (BL > 9) begin
+			BL = BL - 10;
+			BH = BH + 1;
+		end
+		if ( BH > 9 ) begin
+			BH = BH - 10;
+			C_temp = 1;
+		end
+		*/
+		
+		//$display("AL = %h BL = %h", AL, BL, );
+		temp1 = AL + BL + alu_status_expected[C];
+		//AH = A[7:4] + alu_a[7:4];
+		temp2 = AH + BH;
+		//$display("temp1 = %h temp2 = %h", temp1, temp2);
+		if (temp1 > 9) begin
+			temp2 = temp2 + (temp1 / 10);
+			temp1 = temp1 % 10;
+		end
+		if (temp2 > 9) begin
+			alu_status_expected[C] = 1;
+			temp2 = temp2 % 10;
+		end
+		else begin
+			alu_status_expected[C] = 0;
+		end
+		//$display("bcdh2 = %d", bcdh2);
+		//$display("bcdl = %d", bcdl);
+		alu_result_expected = {temp2[3:0],temp1[3:0]};
+		//{C_in,alu_result_expected[3:0]} = AL + BL + alu_status_expected[C];
+		//{alu_status_expected[C],alu_result_expected[7:4]} = AH + BH + C_in;
+		//if ( alu_result_expected[3:0] > 9 ) begin
+		//	alu_result_expected[3:0] = alu_result_expected[3:0] - 10;
+	//		alu_result_expected[7:4] = alu_result_expected[7:4] + 1;
+		//end
+		//if ( alu_result_expected[7:4] > 9 ) begin
+		//	alu_result_expected[7:4] = alu_result_expected[7:4] - 10;
+	//		alu_status_expected[C] = 1;
+		//end
+		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
+		alu_status_expected[N] = alu_result_expected[7];
+		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
+		check;
+	end
+	$stop;
+	// CLD
+	alu_opcode = CLD_IMP;
+	@(negedge clk);
+	alu_status_expected[D] = 0;
+	check;
+	
 	// ASL
 	alu_opcode = ASL_ABS;
 	for (i = 0; i < 1000; i = i + 1)
@@ -352,9 +469,9 @@ begin
 	begin
 		alu_a = i;
 		@(negedge clk);
-		temp = alu_result_expected - alu_a;
-		alu_status_expected[Z] = (temp == 0) ? 1 : 0;
-		alu_status_expected[N] = temp[7];
+		temp1 = alu_result_expected - alu_a;
+		alu_status_expected[Z] = (temp1 == 0) ? 1 : 0;
+		alu_status_expected[N] = temp1[7];
 		alu_status_expected[C] = (alu_result_expected >= alu_a) ? 1 : 0;
 		//alu_result_expected = i;
 		//alu_y_expected = i;
@@ -370,9 +487,9 @@ begin
 	begin
 		alu_a = i;
 		@(negedge clk);
-		temp = alu_x_expected - alu_a;
-		alu_status_expected[Z] = (temp == 0) ? 1 : 0;
-		alu_status_expected[N] = temp[7];
+		temp1 = alu_x_expected - alu_a;
+		alu_status_expected[Z] = (temp1 == 0) ? 1 : 0;
+		alu_status_expected[N] = temp1[7];
 		alu_status_expected[C] = (alu_x_expected >= alu_a) ? 1 : 0;
 		//alu_result_expected = i;
 		//alu_y_expected = i;
@@ -388,9 +505,9 @@ begin
 	begin
 		alu_a = i;
 		@(negedge clk);
-		temp = alu_y_expected - alu_a;
-		alu_status_expected[Z] = (temp == 0) ? 1 : 0;
-		alu_status_expected[N] = temp[7];
+		temp1 = alu_y_expected - alu_a;
+		alu_status_expected[Z] = (temp1 == 0) ? 1 : 0;
+		alu_status_expected[N] = temp1[7];
 		alu_status_expected[C] = (alu_y_expected >= alu_a) ? 1 : 0;
 		//alu_result_expected = i;
 		//alu_y_expected = i;
@@ -594,7 +711,7 @@ begin
 	//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
 	//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
 	//alu_result_expected = DUT.A;
-	alu_result_expected = alu_a;
+	//alu_result_expected = alu_a;
 	check;
 
 	// PHP
