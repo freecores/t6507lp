@@ -9,7 +9,7 @@ unit alu_bfm_u {
 
 	reset_needed : bool;
 	keep reset_needed == TRUE;
-	
+
 	event done;
 	event main_clk;
 
@@ -25,12 +25,18 @@ unit alu_bfm_u {
 				reset_needed = FALSE;
 			};
 		};
-	
-		emit data.T1_cover_event;
+
+		if (data.test_kind == REGULAR) {
+			emit data.T1_cover_event;
+			alu_opcode$ = data.rand_op;
+		}
+		else {
+			emit data.T2_cover_event;
+			alu_opcode$ = data.alu_opcode.as_a(byte);
+		};			
 
 		reset_n$ = data.reset_n;
 		alu_enable$ = data.alu_enable;
-		alu_opcode$ = data.alu_opcode.as_a(byte);
 		alu_a$ = data.alu_a;
 
 		agent.chk.store(data);

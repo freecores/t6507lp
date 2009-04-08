@@ -17,9 +17,17 @@ unit alu_chk_u {
 	last_a : byte;
 	last_status : byte;
 	last_result : byte;
+	rst_counter : byte;
 
 	keep first_cycle == TRUE;
 	keep count_cycles == 0;
+	keep rst_counter == 0;
+
+	event T3_cover_event;
+	cover T3_cover_event is {
+		item rst_counter; // using num_of_buckets=100;
+	};
+
 
 	store(input : alu_input_s) is {
 		count_cycles = count_cycles + 1;
@@ -52,21 +60,26 @@ unit alu_chk_u {
 			reg_result = 0;
 		}
 		else {
-			//out ("CYCLE ", count_cycles, " COMPARE:");
-			//print inst;
+			out ("CYCLE ", count_cycles, " COMPARE:");
+			print inst;
 
 			if (count_cycles == 99999) {
 				out("ENOUGH!");
 				stop_run();
 			};
 
+			if (inst.input_kind == RESET) {
+				rst_counter = rst_counter + 1;
+			}
+			else {
+				emit T3_cover_event;
+				rst_counter = 0;
+			};
+
 			case inst.input_kind {
 				ENABLED_VALID: {
 					//out("CYCLE ", count_cycles, ": executing and comparing");
 					execute();
-				};
-				DISABLED_VALID: { 
-					//out("CYCLE ", count_cycles, ": just comparing");
 				};
 				RESET: {
 					reg_x = 0;
@@ -77,8 +90,10 @@ unit alu_chk_u {
 					
 					return;
 				};
+				ENABLED_RAND: {
+					execute();
+				};
 				default: {
-					dut_error("error at e code");
 				};
 			};
 			
@@ -276,23 +291,22 @@ unit alu_chk_u {
 			STA_ABY: { reg_result = reg_a; };
 			STA_IDX: { reg_result = reg_a; };
 			STA_IDY: { reg_result = reg_a; };
-			//STX_ZPG: { reg_result = reg_x; };
-			//STX_ZPY: { reg_result = reg_x; };
-			//STX_ABS: { reg_result = reg_x; };
-			//STY_ZPG: { reg_result = reg_y; };
-			//STY_ZPX: { reg_result = reg_y; };
-			//STY_ABS: { reg_result = reg_y; };
+			STX_ZPG: { };
+			STX_ZPY: { };
+			STX_ABS: { };
+			STY_ZPG: { };
+			STY_ZPX: { };
+			STY_ABS: { };
 
-			//TAX_IMP: { exec_transfer(reg_a, reg_x); };
-			//TAY_IMP: { exec_transfer(reg_a, reg_y); };
-			//TSX_IMP: { exec_transfer(inst.alu_a, reg_x); };
-			//TXA_IMP: { exec_transfer(reg_x, reg_a); };
-			//TXS_IMP: { };
-			//TYA_IMP: { exec_transfer(reg_y, reg_a); };
+			TAX_IMP: { exec_transfer(reg_a, reg_x); };
+			TAY_IMP: { exec_transfer(reg_a, reg_y); };
+			TSX_IMP: { exec_transfer(inst.alu_a, reg_x); };
+			TXA_IMP: { exec_transfer(reg_x, reg_a); };
+			TXS_IMP: { };
+			TYA_IMP: { exec_transfer(reg_y, reg_a); reg_result = reg_y; }; // A = Y
 
 			default: {
-				out(inst.alu_opcode);
-				dut_error("unknown opcode");
+				// all the random generated opcodes will fall here
 			}
 		};
 	};
@@ -324,9 +338,10 @@ unit alu_chk_u {
 				op1 = -(op1 % 10);
 			};
 
+			reg_status[0:0] = 1;
+			
 			if (op2 >= 10) {	
 				op2 = op2 % 10;
-				reg_status[0:0] = 1;
 			}
 			else if (op2 < 0) {
 				op2 = op2 + 10;

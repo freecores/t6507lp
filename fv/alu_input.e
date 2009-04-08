@@ -1,20 +1,25 @@
 alu_input.e
 <'
 import alu_components.e;
-type alu_input_t: [ENABLED_VALID, DISABLED_VALID, RESET]; 
+type alu_input_t: [ENABLED_VALID, DISABLED_VALID, RESET, ENABLED_RAND, DISABLED_RAND];
+type alu_test_type: [REGULAR, RAND]; 
 
 struct alu_input_s {
 	input_kind : alu_input_t;
-	
+	test_kind : alu_test_type;
 	reset_n: bool;
 	alu_enable: bool;
 	alu_opcode: valid_opcodes;
 	alu_a: byte;
 
-	keep soft input_kind == select {
-		45: ENABLED_VALID;
-		45: DISABLED_VALID;
-		10: RESET;
+	keep test_kind == RAND;
+	
+	when REGULAR'test_kind alu_input_s {
+		keep soft input_kind == select {
+			45: ENABLED_VALID;
+			45: DISABLED_VALID;
+			10: RESET;
+		};
 	};
 
 	when ENABLED_VALID'input_kind alu_input_s {
@@ -31,7 +36,10 @@ struct alu_input_s {
 
 	when RESET'input_kind alu_input_s {
 		keep reset_n == FALSE; // remember this is active low 
-		//keep alu_enable in [FALSE, TRUE];
+		keep soft alu_enable == select {
+			50: FALSE;
+			50: TRUE;
+		};
 		keep alu_a in [0..255];
 		//keep alu_opcode in [0..255];
 	};
@@ -43,7 +51,40 @@ struct alu_input_s {
 		cross input_kind, alu_opcode;
 		//item alu_a;
 	};
+};
 
+
+extend alu_input_s {
+	rand_op : byte;
+
+	when RAND'test_kind alu_input_s {
+		keep soft input_kind == select {
+			45: ENABLED_RAND;
+			45: DISABLED_RAND;
+			10: RESET;
+		};
+	};
+
+	when ENABLED_RAND'input_kind alu_input_s {
+		keep reset_n == TRUE; // remember this is active low 
+		keep alu_enable == TRUE;
+		keep alu_a in [0..255];
+		keep rand_op in [0..255];
+	};
+
+	when DISABLED_RAND'input_kind alu_input_s {
+		keep reset_n == TRUE; // remember this is active low 
+		keep alu_enable == TRUE;
+		keep alu_a in [0..255];
+		keep rand_op in [0..255];
+	};
+
+	event T2_cover_event;
+	cover T2_cover_event is {
+		item alu_enable using no_collect=TRUE;
+		item rand_op using num_of_buckets=256, radix=HEX, no_collect=TRUE;
+		cross alu_enable, rand_op;
+	};
 };
 '>
 
