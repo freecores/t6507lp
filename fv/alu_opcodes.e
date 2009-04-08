@@ -18,9 +18,8 @@ type valid_opcodes : [
 	ROL_ABS = 8'h2E, ROL_ABX = 8'h3E, ROR_ACC = 8'h6A, ROR_ZPG = 8'h66, ROR_ZPX = 8'h76, ROR_ABS = 8'h6E, ROR_ABX = 8'h7E, RTI_IMP = 8'h40, 
 	RTS_IMP = 8'h60, SBC_IMM = 8'hE9, SBC_ZPG = 8'hE5, SBC_ZPX = 8'hF5, SBC_ABS = 8'hED, SBC_ABX = 8'hFD, SBC_ABY = 8'hF9, SBC_IDX = 8'hE1,
 	SBC_IDY = 8'hF1, SEC_IMP = 8'h38, SED_IMP = 8'hF8, SEI_IMP = 8'h78, STA_ZPG = 8'h85, STA_ZPX = 8'h95, STA_ABS = 8'h8D, STA_ABX = 8'h9D,
-	STA_ABY = 8'h99, STA_IDX = 8'h81, STA_IDY = 8'h91];//, STX_ZPG = 8'h86, STX_ZPY = 8'h96, STX_ABS = 8'h8E, STY_ZPG = 8'h84, STY_ZPX = 8'h94, 
-//	STY_ABS = 8'h8C, TAX_IMP = 8'hAA, TAY_IMP = 8'hA8, TSX_IMP = 8'hBA, TXA_IMP = 8'h8A, TXS_IMP = 8'h9A, TYA_IMP = 8'h98 ];
-
+	STA_ABY = 8'h99, STA_IDX = 8'h81, STA_IDY = 8'h91, STX_ZPG = 8'h86, STX_ZPY = 8'h96, STX_ABS = 8'h8E, STY_ZPG = 8'h84, STY_ZPX = 8'h94, 
+	STY_ABS = 8'h8C, TAX_IMP = 8'hAA, TAY_IMP = 8'hA8, TSX_IMP = 8'hBA, TXA_IMP = 8'h8A, TXS_IMP = 8'h9A, TYA_IMP = 8'h98 ];
 '>
 
 
