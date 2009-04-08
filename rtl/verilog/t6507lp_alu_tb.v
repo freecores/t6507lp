@@ -110,7 +110,6 @@ begin
 		check;
 	end
 
-/*
 	// BCD
 	// LDA
 	alu_a = 0;
@@ -171,9 +170,14 @@ begin
 		alu_status_expected[N] = alu_result_expected[7];
 		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
 		check;
-	end	
-*/
-		
+	end
+	$stop
+	// CLD
+	alu_opcode = CLD_IMP;
+	@(negedge clk);
+	alu_status_expected[D] = 0;
+	check;
+
 	// ASL
 	alu_opcode = ASL_ABS;
 	for (i = 0; i < 1000; i = i + 1)
@@ -210,11 +214,11 @@ begin
 		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
 		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
 		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
-		$display("result_expected = %d",alu_result_expected);
+		//$display("result_expected = %d",alu_result_expected);
 		alu_result_expected = alu_a ^ alu_result_expected;
 		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_result_expected[7];
-		$display("result_expected = %d", alu_result_expected);
+		//$display("result_expected = %d", alu_result_expected);
 		check;
 	end
 
@@ -271,7 +275,7 @@ begin
 		alu_a = i;
 		@(negedge clk);
 		alu_x_expected = alu_a;
-		$display("alu_x_expected = %h", alu_x_expected);
+		//$display("alu_x_expected = %h", alu_x_expected);
 		//alu_result_expected = i;
 		alu_status_expected[Z] = (alu_x_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_x_expected[7];
@@ -288,7 +292,7 @@ begin
 		alu_a = i;
 		@(negedge clk);
 		alu_y_expected = alu_a;
-		$display("alu_y_expected = %h", alu_y_expected);
+		//$display("alu_y_expected = %h", alu_y_expected);
 		//alu_result_expected = i;
 		alu_status_expected[Z] = (alu_y_expected == 0) ? 1 : 0;
 		alu_status_expected[N] = alu_y_expected[7];
@@ -318,7 +322,7 @@ begin
 	begin
 		alu_a = i;
 		@(negedge clk);
-		$display("alu_x_expected = %h", alu_x_expected);
+		//$display("alu_x_expected = %h", alu_x_expected);
 		//alu_result_expected = i;
 		//alu_x_expected = alu_a;
 		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
@@ -333,7 +337,7 @@ begin
 	begin
 		alu_a = i;
 		@(negedge clk);
-		$display("alu_y_expected = %h", alu_y_expected);
+		//$display("alu_y_expected = %h", alu_y_expected);
 		//alu_result_expected = i;
 		//alu_y_expected = alu_a;
 		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);

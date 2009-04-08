@@ -418,6 +418,32 @@ if (alu_enable == 1) begin
 		// SBC - Subtract with Carry
 		SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY : begin
 			if (alu_status[D] == 1) begin
+				op2 = ~op2;
+				AL = A[3:0] + alu_a[3:0] + alu_status[C];
+				AH = A[7:4] + alu_a[7:4];
+				if (AL > 9) begin
+					bcdh = AH + (AL / 10);
+					bcdl = AL % 10;
+				end
+				else begin
+					bcdh = AH;
+					bcdl = AL;
+				end
+				if (bcdh > 9) begin
+					STATUS[C] = 1;
+					bcdh2 = bcdh % 10;
+				end
+				else begin
+					STATUS[C] = 0;
+					bcdh2 = bcdh;
+				end
+				result = {bcdh2[3:0],bcdl[3:0]};
+			end
+			else begin
+				//$display("MODO NORMAL");
+				{STATUS[C],result} = op1 + op2 + alu_status[C];
+			end
+/*			if (alu_status[D] == 1) begin
 				bcdl = op1[3:0] - op2[3:0] - (1 - alu_status[C]);
 				bcdh = op1[7:4] - op2[7:4];
 				if (bcdl > 9) begin
@@ -435,7 +461,7 @@ if (alu_enable == 1) begin
 				result = op1 + op2 + alu_status[C];
 				STATUS[C] = ~result[7];
 			end
-				
+*/				
 			
 			if ((op1[7] == sign) && (op1[7] != result[7]))
 				STATUS[V] = 1;
