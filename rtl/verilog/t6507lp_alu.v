@@ -58,7 +58,7 @@ output reg [7:0] alu_status;
 output reg [7:0] alu_x;
 output reg [7:0] alu_y;
 
-//reg [7:0] A;
+reg [7:0] A;
 //reg [7:0] X;
 //reg [7:0] Y;
 
@@ -88,7 +88,7 @@ begin
 		alu_status[I] <= 0;
 		alu_status[B] <= 0;
 		alu_status[D] <= 0;
-		//A <= 0;
+		A <= 0;
 		//X <= 0;
 		//Y <= 0;
 		alu_x <= 0;
@@ -104,7 +104,7 @@ begin
 			SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY, LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS,
 			LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY, PLA_IMP, TXA_IMP, TYA_IMP :
 			begin
-				//A          <= result;
+				A          <= result;
 				alu_result <= result;
 				alu_status <= STATUS;
 			end
@@ -207,7 +207,7 @@ end
 always @ (*) begin
 if (alu_enable == 1) begin
 	//op1      = A;
-	op1      = alu_result;
+	op1      = A;
 	op2      = alu_a;
 	result    = alu_result;
 	STATUS[N] = alu_status[N];
@@ -230,7 +230,7 @@ if (alu_enable == 1) begin
 		// BIT - Bit Test
 		BIT_ZPG, BIT_ABS: begin
 			//result = A & alu_a;
-			result = alu_result & alu_a;
+			result = A & alu_a;
 		end
 
 		// BRK - Force Interrupt
@@ -279,7 +279,7 @@ if (alu_enable == 1) begin
 		// TAY - Transfer Accumulator to Y
 		TAX_IMP, TAY_IMP, PHA_IMP, STA_ZPG, STA_ZPX, STA_ABS, STA_ABX, STA_ABY, STA_IDX, STA_IDY : begin
 			//result = A;
-			result = alu_result;
+			result = A;
 		end
 
 		// STX - Store X Register
@@ -394,20 +394,20 @@ if (alu_enable == 1) begin
 		// AND - Logical AND
 		AND_IMM, AND_ZPG, AND_ZPX, AND_ABS, AND_ABX, AND_ABY, AND_IDX, AND_IDY : begin
 			//result = A & alu_a;
-			result = alu_result & alu_a;
+			result = A & alu_a;
 		end
 
 		// CMP - Compare
 		CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY : begin
 			//result = A - alu_a;
-			result = alu_result - alu_a;
+			result = A - alu_a;
 			//STATUS[C] = (A >= alu_a) ? 1 : 0;
-			STATUS[C] = (alu_result >= alu_a) ? 1 : 0;
+			STATUS[C] = (A >= alu_a) ? 1 : 0;
 		end
 
 		// EOR - Exclusive OR
 		EOR_IMM, EOR_ZPG, EOR_ZPX, EOR_ABS, EOR_ABX, EOR_ABY, EOR_IDX, EOR_IDY : begin
-			result = alu_result ^ alu_a;
+			result = A ^ alu_a;
 			//result = A ^ alu_a;
 			//$display("op1 ^ op2 = result");
 			//$display("%d  ^ %d  = %d", op1, op2, result);
@@ -427,14 +427,13 @@ if (alu_enable == 1) begin
 		// ORA - Logical OR
 		ORA_IMM, ORA_ZPG, ORA_ZPX, ORA_ABS, ORA_ABX, ORA_ABY, ORA_IDX, ORA_IDY : begin
 			//result = A | alu_a;
-			result = alu_result | alu_a;
+			result = A | alu_a;
 		end
 
 		// SBC - Subtract with Carry
 		SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY : begin
-			op2 = ~op2;
 			if (alu_status[D] == 1) begin
-				//AL = A[3:0] + alu_a[3:0] + alu_status[C];
+/*				//AL = A[3:0] + alu_a[3:0] + alu_status[C];
 				AL = op1[3:0] + op2[3:0] + alu_status[C];
 				//AH = A[7:4] + alu_a[7:4];
 				AH = op1[7:4] + op2[7:4];
@@ -454,9 +453,23 @@ if (alu_enable == 1) begin
 					STATUS[C] = 0;
 					bcdh2 = bcdh;
 				end
-				result = {bcdh2[3:0],bcdl[3:0]};
+				result = {bcdh2[3:0],bcdl[3:0]};*/
+	//C := P_In(Flag_C) or not Op(0);
+				AL = {op1[3:0],alu_status[C]} - {op2[3:0],1'b1};
+				AH = {op1[7:4],1'b0} - {op2[7:4],AL[5]};
+
+				if (AL[5] == 1) begin
+					bcdl[5:1] = AL[5:1] - 6;
+				end
+				AH = {op1[7:4],1'b0} - {op2[7:4],bcdl[6]};
+				if (AH[5] == 1) begin
+					bcdh[5:1] = AH[5:1] - 6;
+				end
+				result = {bcdh[4:1],bcdl[4:1]};
+				STATUS[C] = ~result[7];
 			end
 			else begin
+				op2 = ~op2;
 				//$display("MODO NORMAL");
 				result = op1 + op2 + alu_status[C];
 				STATUS[C] = ~result[7];
@@ -492,7 +505,7 @@ if (alu_enable == 1) begin
 		ASL_ACC : begin
 			//{STATUS[C],result} = A << 1;
 			//{STATUS[C],result} = {A,1'b0};
-			{STATUS[C],result} = {alu_result,1'b0};
+			{STATUS[C],result} = {A,1'b0};
 		end
 		ASL_ZPG, ASL_ZPX, ASL_ABS, ASL_ABX : begin
 			//{STATUS[C],result} = alu_a << 1;
@@ -503,7 +516,7 @@ if (alu_enable == 1) begin
 		LSR_ACC: begin
 			//{result, STATUS[C]} = A >> 1;
 			//{result,STATUS[C]} = {1'b0,A};
-			{result,STATUS[C]} = {1'b0,alu_result};
+			{result,STATUS[C]} = {1'b0,A};
 		end
 		LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX : begin
 			//{result, STATUS[C]} = alu_a >> 1;
@@ -513,7 +526,7 @@ if (alu_enable == 1) begin
 		// ROL - Rotate Left
 		ROL_ACC : begin
 			//{STATUS[C],result} = {A,alu_status[C]};
-			{STATUS[C],result} = {alu_result,alu_status[C]};
+			{STATUS[C],result} = {A,alu_status[C]};
 		end
 		ROL_ZPG, ROL_ZPX, ROL_ABS, ROL_ABX : begin
 			{STATUS[C],result} = {alu_a,alu_status[C]};
@@ -522,7 +535,7 @@ if (alu_enable == 1) begin
 		// ROR - Rotate Right
 		ROR_ACC : begin
 			//{result,STATUS[C]} = {alu_status[C],A};
-			{result,STATUS[C]} = {alu_status[C],alu_result};
+			{result,STATUS[C]} = {alu_status[C],A};
 		end
 		ROR_ZPG, ROR_ZPX, ROR_ABS, ROR_ABX : begin
 			{result, STATUS[C]} = {alu_status[C], alu_a};

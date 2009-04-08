@@ -288,7 +288,7 @@ begin
 		alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
 		check;
 	end
-	$stop;
+	//$stop;
 	// CLD
 	alu_opcode = CLD_IMP;
 	@(negedge clk);
