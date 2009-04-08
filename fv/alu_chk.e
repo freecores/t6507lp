@@ -242,11 +242,53 @@ unit alu_chk_u {
 				reg_status[5:5] = 1; // this is always one
 			};
 
-			ROL_ACC: { exec_rol(reg_a); };
-			ROL_ZPG: { exec_rol(inst.alu_a); };
-			ROL_ZPX: { exec_rol(inst.alu_a); };
-			ROL_ABS: { exec_rol(inst.alu_a); };
-			ROL_ABX: { exec_rol(inst.alu_a); };
+			ROL_ACC: { exec_rot(TRUE, reg_a); };
+			ROL_ZPG: { exec_rot(TRUE, inst.alu_a); };
+			ROL_ZPX: { exec_rot(TRUE, inst.alu_a); };
+			ROL_ABS: { exec_rot(TRUE, inst.alu_a); };
+			ROL_ABX: { exec_rot(TRUE, inst.alu_a); };
+			ROR_ACC: { exec_rot(FALSE, reg_a); };
+			ROR_ZPG: { exec_rot(FALSE, inst.alu_a); };
+			ROR_ZPX: { exec_rot(FALSE, inst.alu_a); };
+			ROR_ABS: { exec_rot(FALSE, inst.alu_a); };
+			ROR_ABX: { exec_rot(FALSE, inst.alu_a); };
+
+			RTI_IMP: { reg_status = inst.alu_a; reg_status[5:5] = 1; };
+			RTS_IMP: { };
+
+			SBC_IMM: { exec_sub(); }; // A,Z,C,N = A-M-(1-C)
+			SBC_ZPG: { exec_sub(); };
+			SBC_ZPX: { exec_sub(); };
+			SBC_ABS: { exec_sub(); };
+			SBC_ABX: { exec_sub(); };
+			SBC_ABY: { exec_sub(); };
+			SBC_IDX: { exec_sub(); };
+			SBC_IDY: { exec_sub(); };
+
+			SEC_IMP: { reg_status[0:0] = 1; };
+			SED_IMP: { reg_status[3:3] = 1; };
+			SEI_IMP: { reg_status[2:2] = 1; };
+
+			STA_ZPG: { reg_result = reg_a; };
+			STA_ZPX: { reg_result = reg_a; };
+			STA_ABS: { reg_result = reg_a; };
+			STA_ABX: { reg_result = reg_a; };
+			STA_ABY: { reg_result = reg_a; };
+			STA_IDX: { reg_result = reg_a; };
+			STA_IDY: { reg_result = reg_a; };
+			//STX_ZPG: { reg_result = reg_x; };
+			//STX_ZPY: { reg_result = reg_x; };
+			//STX_ABS: { reg_result = reg_x; };
+			//STY_ZPG: { reg_result = reg_y; };
+			//STY_ZPX: { reg_result = reg_y; };
+			//STY_ABS: { reg_result = reg_y; };
+
+			//TAX_IMP: { exec_transfer(reg_a, reg_x); };
+			//TAY_IMP: { exec_transfer(reg_a, reg_y); };
+			//TSX_IMP: { exec_transfer(inst.alu_a, reg_x); };
+			//TXA_IMP: { exec_transfer(reg_x, reg_a); };
+			//TXS_IMP: { };
+			//TYA_IMP: { exec_transfer(reg_y, reg_a); };
 
 			default: {
 				out(inst.alu_opcode);
@@ -255,13 +297,79 @@ unit alu_chk_u {
 		};
 	};
 
-	exec_rol(arg1 : *byte) is {
+	exec_transfer(source : byte, dest : *byte) is {
+		dest = source;
+		update_z(dest);
+		update_n(dest);
+	};
+
+	exec_sub() is {
+		if (reg_status[3:3] == 1) {
+			var op1 : int;
+			var op2 : int;
+
+			//out("i am subtracting ", reg_a, " and ", inst.alu_a, " carry is ", reg_status[0:0]);
+
+			op1 = inst.alu_a[3:0];
+			op2 = inst.alu_a[7:4];
+		
+			op1 = reg_a[3:0] - op1 -1 + reg_status[0:0];
+			op2 = reg_a[7:4] - op2;
+
+			if (op1 >= 10) {
+				op2 = op2  + op1/10;
+				op1 = op1 % 10;
+			} else if (op1 < 0) {
+				op2 = op2 - op1/10;
+				op1 = -(op1 % 10);
+			};
+
+			if (op2 >= 10) {	
+				op2 = op2 % 10;
+				reg_status[0:0] = 1;
+			}
+			else if (op2 < 0) {
+				op2 = op2 + 10;
+				reg_status[0:0] = 0;
+			};	
+			
+			reg_result[3:0] = op1;
+			reg_result[7:4] = op2;	
+		}
+		else {
+			reg_result = reg_a - inst.alu_a - 1 + reg_status[0:0];
+			if (reg_result[7:7] == 1) {
+				reg_status[0:0] = 0;
+			}
+			else {
+				reg_status[0:0] = 1;
+			};
+		};
+
+		update_z(reg_result);
+		update_n(reg_result);
+		update_v(reg_a, inst.alu_a, reg_result);
+		
+	
+		reg_a = reg_result;
+
+	};
+
+	exec_rot(left : bool, arg1 : *byte) is {
 		var oldcarry : bit;
 
-		oldcarry = reg_status[0:0];
-		reg_status[0:0] = arg1[7:7];
-		arg1 = arg1 << 1;
-		arg1[0:0] = oldcarry;
+		if (left) {
+			oldcarry = reg_status[0:0];
+			reg_status[0:0] = arg1[7:7];
+			arg1 = arg1 << 1;
+			arg1[0:0] = oldcarry;
+		}
+		else {
+			oldcarry = reg_status[0:0];
+			reg_status[0:0] = arg1[0:0];
+			arg1 = arg1 >> 1;
+			arg1[7:7] = oldcarry;
+		};
 
 		reg_result = arg1;
 		update_z(arg1);
@@ -366,28 +474,19 @@ unit alu_chk_u {
 			var op1 : byte;
 			var op2 : byte;
 
-			out("i am adding ", reg_a, " and ", inst.alu_a, " carry is ", reg_status[0:0]);
+			//out("i am adding ", reg_a, " and ", inst.alu_a, " carry is ", reg_status[0:0]);
 
 			op1 = inst.alu_a[3:0];
 			op2 = inst.alu_a[7:4];
 		
-			print op1;
-			print op2;
-
 			op1 = reg_a[3:0] + op1 + reg_status[0:0];
 			op2 = reg_a[7:4] + op2;
-
-			print op1;
-			print op2;
 
 			if (op1 >= 10) {
 				op2 = op2  + op1/ 10;
 				op1 = op1 % 10;
 			};
 		
-			print op1;
-			print op2;
-
 			if (op2 >= 10) {
 				op2 = op2 % 10;
 				reg_status[0:0] = 1;
@@ -400,6 +499,7 @@ unit alu_chk_u {
 			reg_result[7:4] = op2;	
 			update_z(reg_result);
 			update_n(reg_result);
+			update_v(reg_a, inst.alu_a, reg_result);
 			reg_a = reg_result;
 		}
 		else {
