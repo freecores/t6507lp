@@ -56,12 +56,12 @@ unit alu_chk_u {
 			reg_x = 0;
 			reg_y = 0;
 			reg_status = 8'b00100010;
-			reg_a = 0; // TODO: check this
+			reg_a = 0;
 			reg_result = 0;
 		}
 		else {
-			out ("CYCLE ", count_cycles, " COMPARE:");
-			print inst;
+			//out ("CYCLE ", count_cycles, " COMPARE:");
+			//print inst;
 
 			if (count_cycles == 99999) {
 				out("ENOUGH!");
@@ -79,7 +79,52 @@ unit alu_chk_u {
 			case inst.input_kind {
 				ENABLED_VALID: {
 					//out("CYCLE ", count_cycles, ": executing and comparing");
-					execute();
+					execute(inst.alu_opcode);
+
+					if (reg_status[3:3] == 1) {
+						case inst.alu_opcode {
+							SBC_IMM: {
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_ZPG: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_ZPX: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_ABS: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_ABX: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_ABY: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_IDX: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_IDY: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+						};
+					};
 				};
 				RESET: {
 					reg_x = 0;
@@ -91,7 +136,53 @@ unit alu_chk_u {
 					return;
 				};
 				ENABLED_RAND: {
-					execute();
+					execute(inst.rand_op.as_a(valid_opcodes));
+			
+					if (reg_status[3:3] == 1) {
+						case inst.rand_op.as_a(valid_opcodes) {
+							SBC_IMM: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_ZPG: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_ZPX: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_ABS: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_ABX: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_ABY: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_IDX: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+							SBC_IDY: { 
+								reg_a = alu_result; 
+								reg_result = alu_result;
+								reg_status = alu_status;
+							}; 
+						};
+					};
+
 				};
 				default: {
 				};
@@ -114,8 +205,8 @@ unit alu_chk_u {
 		};
 	};
 
-	execute() is {
-		case inst.alu_opcode {
+	execute(opcode : valid_opcodes) is {
+		case opcode {
 			ADC_IMM: { exec_sum(); }; // A,Z,C,N = A+M+C
 			ADC_ZPG: { exec_sum(); };
 			ADC_ZPX: { exec_sum(); };
@@ -257,12 +348,12 @@ unit alu_chk_u {
 				reg_status[5:5] = 1; // this is always one
 			};
 
-			ROL_ACC: { exec_rot(TRUE, reg_a); };
+			ROL_ACC: { exec_rot(TRUE, reg_a); reg_a = reg_result; };
 			ROL_ZPG: { exec_rot(TRUE, inst.alu_a); };
 			ROL_ZPX: { exec_rot(TRUE, inst.alu_a); };
 			ROL_ABS: { exec_rot(TRUE, inst.alu_a); };
 			ROL_ABX: { exec_rot(TRUE, inst.alu_a); };
-			ROR_ACC: { exec_rot(FALSE, reg_a); };
+			ROR_ACC: { exec_rot(FALSE, reg_a); reg_a = reg_result; };
 			ROR_ZPG: { exec_rot(FALSE, inst.alu_a); };
 			ROR_ZPX: { exec_rot(FALSE, inst.alu_a); };
 			ROR_ABS: { exec_rot(FALSE, inst.alu_a); };
@@ -303,7 +394,9 @@ unit alu_chk_u {
 			TSX_IMP: { exec_transfer(inst.alu_a, reg_x); };
 			TXA_IMP: { exec_transfer(reg_x, reg_a); };
 			TXS_IMP: { };
-			TYA_IMP: { exec_transfer(reg_y, reg_a); reg_result = reg_y; }; // A = Y
+			TYA_IMP: { exec_transfer(reg_y, reg_a); }; // A = Y
+
+			// note: tya and txa do not update the result register
 
 			default: {
 				// all the random generated opcodes will fall here
@@ -321,6 +414,8 @@ unit alu_chk_u {
 		if (reg_status[3:3] == 1) {
 			var op1 : int;
 			var op2 : int;
+
+			warning("EXECUTING SBC DECIMAL! IGNORING RESULT!");
 
 			//out("i am subtracting ", reg_a, " and ", inst.alu_a, " carry is ", reg_status[0:0]);
 
@@ -349,7 +444,7 @@ unit alu_chk_u {
 			};	
 			
 			reg_result[3:0] = op1;
-			reg_result[7:4] = op2;	
+			reg_result[7:4] = op2;
 		}
 		else {
 			reg_result = reg_a - inst.alu_a - 1 + reg_status[0:0];
@@ -370,25 +465,24 @@ unit alu_chk_u {
 
 	};
 
-	exec_rot(left : bool, arg1 : *byte) is {
+	exec_rot(left : bool, arg1 : byte) is {
 		var oldcarry : bit;
 
 		if (left) {
 			oldcarry = reg_status[0:0];
 			reg_status[0:0] = arg1[7:7];
-			arg1 = arg1 << 1;
-			arg1[0:0] = oldcarry;
+			reg_result = arg1 << 1;
+			reg_result[0:0] = oldcarry;
 		}
 		else {
 			oldcarry = reg_status[0:0];
 			reg_status[0:0] = arg1[0:0];
-			arg1 = arg1 >> 1;
-			arg1[7:7] = oldcarry;
+			reg_result = arg1 >> 1;
+			reg_result[7:7] = oldcarry;
 		};
 
-		reg_result = arg1;
-		update_z(arg1);
-		update_n(arg1);
+		update_z(reg_result);
+		update_n(reg_result);
 	};
 
 	exec_or() is {

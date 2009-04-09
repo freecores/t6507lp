@@ -28,12 +28,14 @@ unit alu_bfm_u {
 
 		if (data.test_kind == REGULAR) {
 			emit data.T1_cover_event;
-			alu_opcode$ = data.rand_op;
+			alu_opcode$ = data.alu_opcode.as_a(byte);
 		}
 		else {
 			emit data.T2_cover_event;
-			alu_opcode$ = data.alu_opcode.as_a(byte);
-		};			
+			alu_opcode$ = data.rand_op;
+		};		
+
+			
 
 		reset_n$ = data.reset_n;
 		alu_enable$ = data.alu_enable;

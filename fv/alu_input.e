@@ -12,7 +12,7 @@ struct alu_input_s {
 	alu_opcode: valid_opcodes;
 	alu_a: byte;
 
-	keep test_kind == RAND;
+//	keep test_kind == RAND;
 	
 	when REGULAR'test_kind alu_input_s {
 		keep soft input_kind == select {
@@ -46,7 +46,7 @@ struct alu_input_s {
 
 	event T1_cover_event;
 	cover T1_cover_event is {
-		item input_kind using no_collect=TRUE;
+		item input_kind using no_collect=TRUE, ignore = (input_kind == ENABLED_RAND || input_kind == DISABLED_RAND);
 		item alu_opcode using num_of_buckets=256, radix=HEX, no_collect=TRUE;
 		cross input_kind, alu_opcode;
 		//item alu_a;
@@ -74,7 +74,7 @@ extend alu_input_s {
 
 	when DISABLED_RAND'input_kind alu_input_s {
 		keep reset_n == TRUE; // remember this is active low 
-		keep alu_enable == TRUE;
+		keep alu_enable == FALSE;
 		keep alu_a in [0..255];
 		keep rand_op in [0..255];
 	};
