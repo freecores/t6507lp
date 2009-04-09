@@ -71,7 +71,7 @@ reg [7:0] bcdh;
 reg [7:0] bcdh2;
 reg [7:0] AL;
 reg [7:0] AH;
-//reg C_aux;
+reg C_aux;
 reg sign;
 
 `include "t6507lp_package.v"
@@ -89,8 +89,6 @@ begin
 		alu_status[B] <= 0;
 		alu_status[D] <= 0;
 		A <= 0;
-		//X <= 0;
-		//Y <= 0;
 		alu_x <= 0;
 		alu_y <= 0;
 	end
@@ -110,13 +108,11 @@ begin
 			end
 			LDX_IMM, LDX_ZPG, LDX_ZPY, LDX_ABS, LDX_ABY, TAX_IMP, TSX_IMP, INX_IMP, DEX_IMP :
 			begin
-				//X          <= result;
 				alu_x      <= result;
 				alu_status <= STATUS;
 			end
 			TXS_IMP :
 			begin
-				//X          <= result;
 				alu_x      <= result;
 			end
 			TXA_IMP, TYA_IMP :
@@ -126,7 +122,6 @@ begin
 			end
 			LDY_IMM, LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX, TAY_IMP, INY_IMP, DEY_IMP :
 			begin
-				//Y          <= result;
 				alu_y      <= result;
 				alu_status <= STATUS;
 			end
@@ -200,10 +195,7 @@ begin
 				alu_result <= result;
 				alu_status <= STATUS;
 			end
-			//PHP_IMP : begin
-			//end
 			default : begin
-				//$display("ERROR");
 			end
 		endcase
 	end
@@ -211,7 +203,6 @@ end
 
 always @ (*) begin
 if (alu_enable == 1) begin
-	//op1      = A;
 	op1      = A;
 	op2      = alu_a;
 	result    = alu_result;
@@ -234,7 +225,6 @@ if (alu_enable == 1) begin
 	case (alu_opcode)
 		// BIT - Bit Test
 		BIT_ZPG, BIT_ABS: begin
-			//result = A & alu_a;
 			result = A & alu_a;
 		end
 
@@ -283,7 +273,6 @@ if (alu_enable == 1) begin
 		// TAX - Transfer Accumulator to X
 		// TAY - Transfer Accumulator to Y
 		TAX_IMP, TAY_IMP, PHA_IMP, STA_ZPG, STA_ZPX, STA_ABS, STA_ABX, STA_ABY, STA_IDX, STA_IDY : begin
-			//result = A;
 			result = A;
 		end
 
@@ -291,14 +280,12 @@ if (alu_enable == 1) begin
 		// TXA - Transfer X to Accumulator
 		// TXS - Transfer X to Stack pointer
 		STX_ZPG, STX_ZPY, STX_ABS, TXA_IMP, TXS_IMP : begin
-			//result = X;
 			result = alu_x;
 		end
 			
 		// STY - Store Y Register
 		// TYA - Transfer Y to Accumulator
 		STY_ZPG, STY_ZPX, STY_ABS, TYA_IMP : begin
-			//result = Y;
 			result = alu_y;
 		end
 
@@ -324,13 +311,11 @@ if (alu_enable == 1) begin
 
 		// INX - Increment X Register
 		INX_IMP: begin
-			//result = X + 1;
 			result = alu_x + 1;
 		end
 
 		// INY - Increment Y Register
 		INY_IMP : begin
-			//result = Y + 1;
 			result = alu_y + 1;
 		end
 
@@ -341,13 +326,11 @@ if (alu_enable == 1) begin
 
 		// DEX - Decrement X register
 		DEX_IMP: begin
-			//result = X - 1;
 			result = alu_x - 1;
 		end
 
 		// DEY - Decrement Y Register
 		DEY_IMP: begin
-			//result = Y - 1;
 			result = alu_y - 1;
 		end
 
@@ -358,31 +341,19 @@ if (alu_enable == 1) begin
 				//$display("MODO DECIMAL");
 				//AL = A[3:0] + alu_a[3:0] + alu_status[C];
 				AL = op1[3:0] + op2[3:0] + alu_status[C];
+				//$display("op1[3:0] + op2[3:0] + alu_status[C]",op1[3:0], op2[3:0], alu_status[C]);
 				//AH = A[7:4] + alu_a[7:4];
-				AH = op1[7:4] + op2[7:4];
-				$display("AL = %d", AL);
-				$display("AH = %d", AH);
-				if (AL > 9) begin
-					bcdh = AH + (AL / 10);
-					bcdl = AL % 10;
-				end
-				else begin
-					bcdh = AH;
-					bcdl = AL;
-				end
-
-				// ok
-
-				if (bcdh > 9) begin
-					STATUS[C] = 1;
-					bcdh2 = bcdh % 10;
-				end
-				else begin
-					STATUS[C] = 0;
-					bcdh2 = bcdh;
-				end
+				AH = op1[7:4] + op2[7:4] + AL[4];
+				//$display("op1[7:4] + op2[7:4] + AL[4]",op1[7:4], op2[7:4], AL[4]);
+				if (AL > 9) bcdl = AL + 6;
+				else bcdl = AL;
+				STATUS[Z] = 
+				if (bcdh > 9)
+					bcdh2 = bcdh + 6;
+				else bcdh2 = bcdh;
 				//$display("bcdh2 = %d", bcdh2);
 				//$display("bcdl = %d", bcdl);
+				STATUS[C] = AH[4];
 				result = {bcdh2[3:0],bcdl[3:0]};
 			end
 			else begin
@@ -398,24 +369,18 @@ if (alu_enable == 1) begin
 			
 		// AND - Logical AND
 		AND_IMM, AND_ZPG, AND_ZPX, AND_ABS, AND_ABX, AND_ABY, AND_IDX, AND_IDY : begin
-			//result = A & alu_a;
 			result = A & alu_a;
 		end
 
 		// CMP - Compare
 		CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY, CMP_IDX, CMP_IDY : begin
-			//result = A - alu_a;
 			result = A - alu_a;
-			//STATUS[C] = (A >= alu_a) ? 1 : 0;
 			STATUS[C] = (A >= alu_a) ? 1 : 0;
 		end
 
 		// EOR - Exclusive OR
 		EOR_IMM, EOR_ZPG, EOR_ZPX, EOR_ABS, EOR_ABX, EOR_ABY, EOR_IDX, EOR_IDY : begin
 			result = A ^ alu_a;
-			//result = A ^ alu_a;
-			//$display("op1 ^ op2 = result");
-			//$display("%d  ^ %d  = %d", op1, op2, result);
 		end
 
 		// LDA - Load Accumulator

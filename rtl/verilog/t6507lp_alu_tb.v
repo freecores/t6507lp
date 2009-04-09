@@ -112,6 +112,66 @@ begin
 		check;
 	end
 
+	// CLC
+	alu_opcode = CLC_IMP;
+	@(negedge clk);
+	alu_status_expected[C] = 0;
+	check;
+	
+	// SED
+	alu_opcode = SED_IMP;
+	//$display("A = %h B = %h X = %h Y = %h", alu_result, alu_a, alu_x, alu_y);
+	@(negedge clk);
+	alu_status_expected[D] = 1;
+	check;
+	//Corner Case 12 + 88 decimal mode
+	// LDA
+	alu_a = 8'h88;
+	alu_opcode = LDA_IMM;
+	@(negedge clk);
+	alu_result_expected = 8'h88;
+	alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
+	alu_status_expected[N] = alu_result_expected[7];
+	check;
+
+	// ADC
+	alu_opcode = ADC_IMM;
+	alu_a = 8'h12;
+	$display("A = %h B = %h X = %h Y = %h", alu_result, alu_a, alu_x, alu_y);
+	@(negedge clk);
+	sign = alu_result_expected[7];
+	AL = alu_a[3:0] + alu_result_expected[3:0] + alu_status_expected[C];
+	$display("AL = %b", AL);
+	AH = alu_a[7:4] + alu_result_expected[7:4] + AL[4];
+	$display("AH = %b", AH);
+	if (AL > 9) begin
+	  temp1 = AL - 6;
+	end
+	else begin
+	  temp1 = AL;
+	end
+	$display("temp1 = %b", temp1);
+	alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
+	alu_status_expected[N] = alu_result_expected[7];
+	alu_status_expected[V] = ((alu_a[7] == sign) && (alu_a[7] != alu_result_expected[7]));
+	if (AH > 9) begin
+	  temp2 = AH - 6;
+	end
+	else begin
+	  temp2 = AH;
+	end
+	$display("temp2 = %b", temp2);
+	alu_status_expected[C] = (temp2 > 15) ? 1 : 0;
+	alu_result_expected = {temp2[3:0],temp1[3:0]};
+	$display("A = %b PS = %b", alu_result_expected, alu_status_expected);
+	check;
+
+	// CLD
+	alu_opcode = CLD_IMP;
+	@(negedge clk);
+	alu_status_expected[D] = 0;
+	check;
+        $stop;
 	// BCD
 	// LDA
 	alu_a = 0;
@@ -138,12 +198,18 @@ begin
 		alu_a = $random;
 		//$display("A = %h B = %h C = %b X = %h Y = %h", alu_result, alu_a, alu_status_expected[C], alu_x, alu_y);
 		@(negedge clk);
-		C_temp = 0;
-		sign = alu_result_expected[7];
-		AL = alu_a[3:0];
-		AH = alu_a[7:4];
-		BL = alu_result_expected[3:0];
-		BH = alu_result_expected[7:4];
+		AL = alu_result_expected[3:0] + alu_a[3:0] + alu_status_expected[C];
+		AH = alu_result_expected[7:4] + alu_a[7:4] + AL[4];
+		if (AL > 9) AL = AL + 6;
+		if (AH > 9) AH = AH + 6;
+		alu_status_expected[C] = AH[4];
+		alu_result_expected = {AH[3:0],AL[3:0]};
+		//C_temp = 0;
+		//sign = alu_result_expected[7];
+		//AL = alu_a[3:0];
+		//AH = alu_a[7:4];
+		//BL = alu_result_expected[3:0];
+		//BH = alu_result_expected[7:4];
 		/*
 		if (AL > 9) begin
 			AL = AL - 10;
@@ -163,24 +229,24 @@ begin
 		end
 		*/
 		//$display("AL = %h BL = %h", AL, BL, );
-		temp1 = AL + BL + alu_status_expected[C];
+		//temp1 = AL + BL + alu_status_expected[C];
 		//AH = A[7:4] + alu_a[7:4];
-		temp2 = AH + BH;
+		//temp2 = AH + BH + temp1[4];
 		//$display("temp1 = %h temp2 = %h", temp1, temp2);
-		if (temp1 > 9) begin
-			temp2 = temp2 + (temp1 / 10);
-			temp1 = temp1 % 10;
-		end
-		if (temp2 > 9) begin
-			alu_status_expected[C] = 1;
-			temp2 = temp2 % 10;
-		end
-		else begin
-			alu_status_expected[C] = 0;
-		end
+		//if (temp1 > 9) begin
+		//	temp2 = temp2 + (temp1 / 10);
+	//		temp1 = temp1 % 10;
+		//end
+		//if (temp2 > 9) begin
+		//	alu_status_expected[C] = 1;
+		//	temp2 = temp2 % 10;
+		//end
+		//else begin
+		//	alu_status_expected[C] = 0;
+		//end
 		//$display("bcdh2 = %d", bcdh2);
 		//$display("bcdl = %d", bcdl);
-		alu_result_expected = {temp2[3:0],temp1[3:0]};
+		//alu_result_expected = {temp2[3:0],temp1[3:0]};
 		//{C_in,alu_result_expected[3:0]} = AL + BL + alu_status_expected[C];
 		//{alu_status_expected[C],alu_result_expected[7:4]} = AH + BH + C_in;
 		//if ( alu_result_expected[3:0] > 9 ) begin
@@ -294,6 +360,40 @@ begin
 		check;
 	end
 
+	// ROL
+	alu_opcode = ROL_ABS;
+	for (i = 0; i < 1000; i = i + 1)
+	begin
+		alu_a = i;
+		$display("A = %b", alu_a);
+		@(negedge clk);
+		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
+		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
+		{alu_status_expected[C], alu_result_expected} = {alu_a,alu_status_expected[C]};
+		$display("R = %b", alu_result);
+		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
+		alu_status_expected[N] = alu_result_expected[7];
+		check;
+	end	
+	
+	// ROR
+	alu_opcode = ROR_ABS;
+	for (i = 0; i < 1000; i = i + 1)
+	begin
+		alu_a = i;
+		$display("A = %b", alu_a);
+		@(negedge clk);
+		//$display("i = %d alu_opcode = %h alu_enable = %d", i, alu_opcode, alu_enable);
+		//$display("DUT.A = %h DUT.X = %h DUT.Y = %h", DUT.A, DUT.X, DUT.Y);
+		//$display("op1 = %d op2 = %d  c = %d d = %d n = %d v = %d result = %d", alu_a, DUT.A, alu_status[C], alu_status[D], alu_status[N], alu_status[V], alu_result);
+		{alu_result_expected, alu_status_expected[C]} = {alu_status_expected[C],alu_a};
+		$display("R = %b", alu_result);
+		alu_status_expected[Z] = (alu_result_expected == 0) ? 1 : 0;
+		alu_status_expected[N] = alu_result_expected[7];
+		check;
+	end	
+	
 	// LDA
 	alu_a = 137;
 	alu_opcode = LDA_IMM;
