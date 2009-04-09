@@ -102,7 +102,7 @@ begin
 			EOR_IDY, LSR_ACC, ORA_IMM, ORA_ZPG, ORA_ZPX, ORA_ABS, ORA_ABX, ORA_ABY,
 			ORA_IDX, ORA_IDY, ROL_ACC, ROR_ACC, SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS,
 			SBC_ABX, SBC_ABY, SBC_IDX, SBC_IDY, LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS,
-			LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY, PLA_IMP, TXA_IMP, TYA_IMP :
+			LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY, PLA_IMP :
 			begin
 				A          <= result;
 				alu_result <= result;
@@ -118,6 +118,11 @@ begin
 			begin
 				//X          <= result;
 				alu_x      <= result;
+			end
+			TXA_IMP, TYA_IMP :
+			begin
+				A          <= result;
+				alu_status <= STATUS;
 			end
 			LDY_IMM, LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX, TAY_IMP, INY_IMP, DEY_IMP :
 			begin

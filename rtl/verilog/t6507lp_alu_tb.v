@@ -203,6 +203,7 @@ begin
 	alu_status_expected[D] = 0;
 	check;
 
+/*
 	// SBC BCD
 	// LDA
 	alu_a = 0;
@@ -222,7 +223,7 @@ begin
 	alu_status_expected[D] = 1;
 	check;
 
-	// ADC
+	// SBC
 	alu_opcode = SBC_IMM;
 	for (i = 0; i < 1000; i = i + 1)
 	begin
@@ -235,24 +236,6 @@ begin
 		AH     = alu_a[7:4];
 		BL     = ~alu_result_expected[3:0];
 		BH     = ~alu_result_expected[7:4];
-		/*
-		if (AL > 9) begin
-			AL = AL - 10;
-			AH = AH + 1;
-		end
-		if ( AH > 9 ) begin
-			AH = AH - 10;
-			C_temp = 1;
-		end
-		if (BL > 9) begin
-			BL = BL - 10;
-			BH = BH + 1;
-		end
-		if ( BH > 9 ) begin
-			BH = BH - 10;
-			C_temp = 1;
-		end
-		*/
 		
 		//$display("AL = %h BL = %h", AL, BL, );
 		temp1 = AL + BL + alu_status_expected[C];
@@ -294,7 +277,8 @@ begin
 	@(negedge clk);
 	alu_status_expected[D] = 0;
 	check;
-	
+*/
+
 	// ASL
 	alu_opcode = ASL_ABS;
 	for (i = 0; i < 1000; i = i + 1)
