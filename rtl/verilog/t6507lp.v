@@ -8,8 +8,8 @@
 //// Description							////
 //// Implementation of a 6507-compatible microprocessor			////
 ////									////
-//// To Do:								////
-//// - Everything							////
+//// TODO:								////
+//// - Nothing								////
 ////									////
 //// Author(s):								////
 //// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
@@ -88,9 +88,9 @@ module t6507lp(clk, reset_n, data_in, rw_mem, data_out, address);
 		.alu_enable	(alu_enable)
 	);
 
-	T6507LP_ALU T6507LP_ALU (
+	t6507lp_alu t6507lp_alu (
 		.clk		(clk),
-		.rst_n  	(reset_n),
+		.reset_n  	(reset_n),
 		.alu_enable	(alu_enable),
 		.alu_result	(alu_result),
 		.alu_status	(alu_status),
