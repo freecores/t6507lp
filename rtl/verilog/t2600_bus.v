@@ -9,7 +9,7 @@
 //// Bus controller for linking the t6507, t6532 and txxx. TODO		////
 ////									////
 //// TODO:								////
-//// - Everything							////
+//// - Nothing								////
 ////									////
 //// Author(s):								////
 //// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
