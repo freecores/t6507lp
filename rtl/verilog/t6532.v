@@ -1,15 +1,15 @@
 ////////////////////////////////////////////////////////////////////////////
 ////									////
-//// t2600 IP Core	 						////
+//// t6532 IP Core	 						////
 ////									////
 //// This file is part of the t2600 project				////
 //// http://www.opencores.org/cores/t2600/				////
 ////									////
 //// Description							////
-//// Top level for the entire system					////
+//// 6532 top level					 		////
 ////									////
 //// TODO:								////
-//// - Instantiate all modules						////
+//// - Add the timer, ram and i/o					////
 ////									////
 //// Author(s):								////
 //// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
@@ -44,7 +44,18 @@
 
 `include "timescale.v"
 
-// CPU
-// RIOT
-// VIDEO
-// BUS CONTROLLER
+module t6532(clk, io_lines, enable, address, data);
+	parameter [3:0] DATA_SIZE = 4'd8;
+	parameter [3:0] ADDR_SIZE = 4'd7; // this is the *local* addr_size
+
+	localparam [3:0] DATA_SIZE_ = DATA_SIZE - 4'd1;
+	localparam [3:0] ADDR_SIZE_ = ADDR_SIZE - 4'd1;
+
+
+	input clk;
+	input [15:0] io_lines;
+	input enable;
+	input [ADDR_SIZE_:0] address;
+	inout [DATA_SIZE_:0] data;
+	
+endmodule
