@@ -44,18 +44,50 @@
 
 `include "timescale.v"
 
-module t6532(clk, io_lines, enable, address, data);
+module t6532(clk, io_lines, enable, rw_mem, address, data);
 	parameter [3:0] DATA_SIZE = 4'd8;
 	parameter [3:0] ADDR_SIZE = 4'd7; // this is the *local* addr_size
 
 	localparam [3:0] DATA_SIZE_ = DATA_SIZE - 4'd1;
 	localparam [3:0] ADDR_SIZE_ = ADDR_SIZE - 4'd1;
 
-
 	input clk;
 	input [15:0] io_lines;
 	input enable;
+	input rw_mem;
 	input [ADDR_SIZE_:0] address;
 	inout [DATA_SIZE_:0] data;
+
+	wire [DATA_SIZE_:0] ram [127:0];
+	wire [DATA_SIZE_:0] io_ports [3:0]; // porta, portaddr, portb, portbddr
+
+	reg [DATA_SIZE_:0] data_drv;
+
+	assign data = (rw_mem) ? 8'bZ: data_drv; // if i am writing the bus receives the data from cpu  
+
+	t6532_io t6532_io (
+		.clk		(clk),
+		.io_lines	(io_lines),
+		.ddra		(io_ports[1]),
+		.A		(io_ports[0]),
+		.B		(io_ports[2])
+	);
+
+	always @(clk) begin
+		if (enable && rw_mem) begin 
+			case (address) 
+				8'h80: data_drv <= io_ports[0];
+				default: ;
+			endcase
+		end  	
+	end
+
+	always @(*) begin
+		io_ports [3] = 8'h00; // portb ddr is always input
+	end
+
+	// io
+	// timer
+	// ram
 	
 endmodule

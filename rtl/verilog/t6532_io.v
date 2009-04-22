@@ -1,15 +1,15 @@
 ////////////////////////////////////////////////////////////////////////////
 ////									////
-//// t2600 IP Core	 						////
+//// t6532 IP Core	 						////
 ////									////
 //// This file is part of the t2600 project				////
 //// http://www.opencores.org/cores/t2600/				////
 ////									////
 //// Description							////
-//// Top level for the entire system					////
+//// 6532 i/o						 		////
 ////									////
 //// TODO:								////
-//// - Instantiate all modules						////
+//// - Code the	i/o							////
 ////									////
 //// Author(s):								////
 //// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
@@ -44,35 +44,40 @@
 
 `include "timescale.v"
 
-module t2600(clk, reset_n);
-	parameter [3:0] DATA_SIZE = 4'd8;
-	parameter [3:0] ADDR_SIZE = 4'd13;
-	localparam [3:0] RIOT_ADDR_SIZE = 4'd7;
-	localparam [3:0] TIA_ADDR_SIZE = 4'd6;
+// iolines[0]  = B.D0
+// iolines[15] = A.D7
+// check the spec
 
+module t6532_io(clk, io_lines, ddra, A, B);
 	input clk;
-	input reset_n;
+	input [15:0] io_lines;
+	input [15:0] ddra;
+	output reg [7:0] A; // this is hex 280.
+	output reg [7:0] B; // console switches. input port only. this is hex 282.
 
-	t6507lp #(DATA_SIZE, ADDR_SIZE) t6507lp (
-		.clk		(clk),
-		.reset_n	(reset_n),
-		.data_in	(data_in),
-		.rw_mem		(rw_mem),
-		.data_out	(data_out),
-		.address	(address)
-	);
-	
-	t6532 #(DATA_SIZE, RIOT_ADDR_SIZE) t6532 (
-		.clk		(clk),
-		.io_lines	(io_lines),
-		.enable		(enable),
-		.address	(address),
-		.data		(data)
-	);
+	always @ (clk) begin
+		B[0] <= ~io_lines[0]; // these two are not actually switches
+		B[1] <= ~io_lines[1];  
+		
+		if (io_lines[3]) begin // these are.
+			B[3] <= !B[3];
+		end 
+		if (io_lines[6]) begin
+			B[6] <= !B[6];
+		end 
+		if (io_lines[7]) begin
+			B[7] <= !B[7];
+		end
 
-
-// VIDEO
-// BUS CONTROLLER
+		A[0] <= (ddra[0] == 0) ? io_lines[8] : A[0]; 
+		A[1] <= (ddra[1] == 0) ? io_lines[9] : A[1]; 
+		A[2] <= (ddra[2] == 0) ? io_lines[10] : A[2]; 
+		A[3] <= (ddra[3] == 0) ? io_lines[11] : A[3]; 
+		A[4] <= (ddra[4] == 0) ? io_lines[12] : A[4]; 
+		A[5] <= (ddra[5] == 0) ? io_lines[13] : A[5]; 
+		A[6] <= (ddra[6] == 0) ? io_lines[14] : A[6]; 
+		A[7] <= (ddra[7] == 0) ? io_lines[15] : A[7]; 
+	end
 
 endmodule
 
