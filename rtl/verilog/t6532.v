@@ -62,8 +62,12 @@ module t6532(clk, io_lines, enable, rw_mem, address, data);
 	reg [DATA_SIZE_:0] port_a;
 	reg [DATA_SIZE_:0] port_b;
 	reg [DATA_SIZE_:0] ddra;
-	wire [DATA_SIZE_:0] ddrb;
-
+	reg [DATA_SIZE_:0] timer;
+	reg [DATA_SIZE_:0] 1c_timer;
+	reg [DATA_SIZE_:0] 8c_timer;
+	reg [DATA_SIZE_:0] 64c_timer;
+	reg [DATA_SIZE_:0] 1024c_timer;
+	
 	reg [DATA_SIZE_:0] data_drv;
 
 	assign data = (rw_mem) ? 8'bZ: data_drv; // if i am writing the bus receives the data from cpu, else local data.  
@@ -91,13 +95,13 @@ module t6532(clk, io_lines, enable, rw_mem, address, data);
 		port_a[6] <= (ddra[6] == 0) ? io_lines[14] : port_a[6]; 
 		port_a[7] <= (ddra[7] == 0) ? io_lines[15] : port_a[7]; 
 
-		if (enable && rw_mem) begin 
+		if (enable && rw_mem == 0) begin // reading! 
 			case (address) 
 				8'h80: data_drv = port_a;
 				8'h81: data_drv = ddra;
 				8'h82: data_drv = port_b;
-				8'h83: data_drv = ddrb;
-				8'h84: ;
+				8'h83: data_drv = 8'h00; // portb ddr is always input
+				8'h84: data_drv = timer;
 				8'h94: ;
 				8'h95: ;
 				8'h96: ;
@@ -107,12 +111,6 @@ module t6532(clk, io_lines, enable, rw_mem, address, data);
 		end  	
 	end
 
-	always @(*) begin
-		io_ports[3] = 8'h00; // portb ddr is always input
-		io_ports[1] = ddra;
-	end
-
-	// io
 	// timer
 	// ram
 	

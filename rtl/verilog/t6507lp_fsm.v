@@ -240,14 +240,14 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 				in this state the opcode is already known so truly execution begins.
 				all instructions execute this cycle.
 				*/
-				FETCH_LOW: begin 		
+				FETCH_LOW: begin
 					if (accumulator || implied || txs || tsx) begin
 						pc <= pc; // is this better?
 						address <= pc;
 						mem_rw <= MEM_READ;
 		
 						if (txs) begin
-							sp[7:0] <= data_in; 
+							sp[7:0] <= alu_x;
 						end
 						//alu_a
 					end
@@ -259,7 +259,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 					end
 					else if (absolute || absolute_indexed || jump_indirect) begin
 						pc <= next_pc;
-						address <= next_pc;					
+						address <= next_pc;
 						mem_rw <= MEM_READ; 
 						temp_addr <= {{5{1'b0}},data_in};
 						temp_data <= 8'h00;
@@ -525,6 +525,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 				PUSH_STATUS: begin
 					address <= 13'hFFFE;
 					mem_rw <= MEM_READ;
+					sp <= sp_minus_one;
 				end
 				FETCH_PCL: begin
 					pc[7:0] <= data_in;
