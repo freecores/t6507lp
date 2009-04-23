@@ -58,32 +58,58 @@ module t6532(clk, io_lines, enable, rw_mem, address, data);
 	input [ADDR_SIZE_:0] address;
 	inout [DATA_SIZE_:0] data;
 
-	wire [DATA_SIZE_:0] ram [127:0];
-	wire [DATA_SIZE_:0] io_ports [3:0]; // porta, portaddr, portb, portbddr
+	reg [DATA_SIZE_:0] ram [127:0];
+	reg [DATA_SIZE_:0] port_a;
+	reg [DATA_SIZE_:0] port_b;
+	reg [DATA_SIZE_:0] ddra;
+	wire [DATA_SIZE_:0] ddrb;
 
 	reg [DATA_SIZE_:0] data_drv;
 
-	assign data = (rw_mem) ? 8'bZ: data_drv; // if i am writing the bus receives the data from cpu  
-
-	t6532_io t6532_io (
-		.clk		(clk),
-		.io_lines	(io_lines),
-		.ddra		(io_ports[1]),
-		.A		(io_ports[0]),
-		.B		(io_ports[2])
-	);
+	assign data = (rw_mem) ? 8'bZ: data_drv; // if i am writing the bus receives the data from cpu, else local data.  
 
 	always @(clk) begin
+		port_b[0] <= ~io_lines[0]; // these two are not actually switches
+		port_b[1] <= ~io_lines[1];  
+		
+		if (io_lines[3]) begin // these are.
+			port_b[3] <= !port_b[3];
+		end 
+		if (io_lines[6]) begin
+			port_b[6] <= !port_b[6];
+		end 
+		if (io_lines[7]) begin
+			port_b[7] <= !port_b[7];
+		end
+
+		port_a[0] <= (ddra[0] == 0) ? io_lines[8] : port_a[0]; 
+		port_a[1] <= (ddra[1] == 0) ? io_lines[9] : port_a[1]; 
+		port_a[2] <= (ddra[2] == 0) ? io_lines[10] : port_a[2]; 
+		port_a[3] <= (ddra[3] == 0) ? io_lines[11] : port_a[3]; 
+		port_a[4] <= (ddra[4] == 0) ? io_lines[12] : port_a[4]; 
+		port_a[5] <= (ddra[5] == 0) ? io_lines[13] : port_a[5]; 
+		port_a[6] <= (ddra[6] == 0) ? io_lines[14] : port_a[6]; 
+		port_a[7] <= (ddra[7] == 0) ? io_lines[15] : port_a[7]; 
+
 		if (enable && rw_mem) begin 
 			case (address) 
-				8'h80: data_drv <= io_ports[0];
+				8'h80: data_drv = port_a;
+				8'h81: data_drv = ddra;
+				8'h82: data_drv = port_b;
+				8'h83: data_drv = ddrb;
+				8'h84: ;
+				8'h94: ;
+				8'h95: ;
+				8'h96: ;
+				8'h97: ;
 				default: ;
 			endcase
 		end  	
 	end
 
 	always @(*) begin
-		io_ports [3] = 8'h00; // portb ddr is always input
+		io_ports[3] = 8'h00; // portb ddr is always input
+		io_ports[1] = ddra;
 	end
 
 	// io

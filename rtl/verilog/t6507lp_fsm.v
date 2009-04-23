@@ -143,7 +143,9 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 	reg php;
 	reg pla;	
 	reg plp;
-	reg jsr;	
+	reg jsr;
+	reg tsx;
+	reg txs;	
 
 	wire [ADDR_SIZE_:0] next_pc;	 // a simple logic to add one to the PC
 	assign next_pc = pc + 13'b0000000000001;
@@ -204,7 +206,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		if (reset_n == 1'b0) begin
 			// all registers must assume default values
 			pc <= 0; // TODO: this is written somewhere. something about a reset vector. must be checked.
-			sp <= 9'b000000000; // the default is 'h100 
+			sp <= 9'b111111111; // the default is 'h1FF 
 			ir <= 8'h00;
 			temp_addr <= 13'h0000;
 			temp_data <= 8'h00;
@@ -221,7 +223,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			case (state)
 				RESET: begin	// The processor was reset
 					rst_counter <= rst_counter + 1;
-					sp <= 9'b100000000; // this prevents flipflops with different drivers
+					//sp <= 9'b111111111; // this prevents flipflops with different drivers
 					//$write("under reset"); 
 				end
 				/*
@@ -242,7 +244,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 					if (accumulator || implied) begin
 						pc <= pc; // is this better?
 						address <= pc;
-						mem_rw <= MEM_READ; 
+						mem_rw <= MEM_READ;
+		
+						if (txs) begin
+							sp[7:0] <= data_in; 
+						end
+						//alu_a
 					end
 					else if (immediate || relative) begin
 						pc <= next_pc;
@@ -601,7 +608,11 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 				if (accumulator  || implied) begin
 					alu_opcode = ir;
 					alu_enable = 1'b1;
-					next_state = FETCH_OP; 
+					next_state = FETCH_OP;
+					
+					if (tsx) begin
+						alu_a = sp[7:0]; 
+					end
 				end
 				else if (immediate) begin
 					next_state = FETCH_OP_CALC_PARAM;
@@ -880,10 +891,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		pla = 1'b0;
 		plp = 1'b0;
 		jsr = 1'b0;
+		tsx = 1'b0;
+		txs = 1'b0;
 
 		case (ir)
 			CLC_IMP, CLD_IMP, CLI_IMP, CLV_IMP, DEX_IMP, DEY_IMP, INX_IMP, INY_IMP, NOP_IMP, 
-			SEC_IMP, SED_IMP, SEI_IMP, TAX_IMP, TAY_IMP, TSX_IMP, TXA_IMP, TXS_IMP, TYA_IMP: begin
+			SEC_IMP, SED_IMP, SEI_IMP, TAX_IMP, TAY_IMP, TXA_IMP, TYA_IMP: begin
 				implied = 1'b1;
 			end
 			ASL_ACC, LSR_ACC, ROL_ACC, ROR_ACC: begin
@@ -1044,6 +1057,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			end
 			JSR_ABS: begin
 				jsr = 1'b1;
+			end
+			TSX_IMP: begin
+				tsx = 1'b1;
+			end
+			TXS_IMP: begin
+				txs = 1'b1;
 			end
 			default: begin
 				//$write("state : %b", state);
