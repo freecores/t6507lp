@@ -241,7 +241,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 				all instructions execute this cycle.
 				*/
 				FETCH_LOW: begin 		
-					if (accumulator || implied) begin
+					if (accumulator || implied || txs || tsx) begin
 						pc <= pc; // is this better?
 						address <= pc;
 						mem_rw <= MEM_READ;
@@ -605,14 +605,16 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 				alu_a = temp_data;
 			end
 			FETCH_LOW: begin
-				if (accumulator  || implied) begin
+				if (accumulator  || implied || txs) begin
 					alu_opcode = ir;
 					alu_enable = 1'b1;
 					next_state = FETCH_OP;
-					
-					if (tsx) begin
-						alu_a = sp[7:0]; 
-					end
+				end
+				else if (tsx) begin
+					alu_opcode = ir;
+					alu_enable = 1'b1;
+					next_state = FETCH_OP;
+					alu_a = sp[7:0]; 
 				end
 				else if (immediate) begin
 					next_state = FETCH_OP_CALC_PARAM;
