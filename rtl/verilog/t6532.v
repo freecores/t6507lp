@@ -44,21 +44,22 @@
 
 `include "timescale.v"
 
-module t6532(clk, io_lines, enable, rw_mem, address, data);
+module t6532(clk, reset_n, io_lines, enable, rw_mem, address, data);
 	parameter [3:0] DATA_SIZE = 4'd8;
-	parameter [3:0] ADDR_SIZE = 4'd7; // this is the *local* addr_size
+	parameter [3:0] ADDR_SIZE = 4'd10; // this is the *local* addr_size
 
 	localparam [3:0] DATA_SIZE_ = DATA_SIZE - 4'd1;
 	localparam [3:0] ADDR_SIZE_ = ADDR_SIZE - 4'd1;
 
 	input clk; // master clock signal, 1.19mhz
+	input reset_n;
 	input [15:0] io_lines; // inputs from the keyboard controller
 	input enable; // since the address bus is shared an enable signal is used
 	input rw_mem; // read == 0, write == 1
 	input [ADDR_SIZE_:0] address; // system address bus
 	inout [DATA_SIZE_:0] data; // controler <=> riot data bus
 
-	reg [DATA_SIZE_:0] ram [8'h80:8'hFF]; // the ram itself. TODO: test the memory compiler
+	reg [DATA_SIZE_:0] ram [8'hFF:8'h80]; // the ram itself. TODO: test the memory compiler
 	reg [DATA_SIZE_:0] port_a;
 	reg [DATA_SIZE_:0] port_b;
 	reg [DATA_SIZE_:0] ddra;
@@ -76,130 +77,148 @@ module t6532(clk, io_lines, enable, rw_mem, address, data);
 	
 	reg [DATA_SIZE_:0] data_drv; // wrapper for the data bus
 
-	assign data = (rw_mem) ? 8'bZ: data_drv; // if under writing the bus receives the data from cpu, else local data.  
+	assign data = (rw_mem || !reset_n) ? 8'bZ : data_drv; // if under writing the bus receives the data from cpu, else local data.  
 
-	always @(posedge clk) begin // I/O handling
-		port_b[0] <= ~io_lines[0]; // these two are not actually switches
-		port_b[1] <= ~io_lines[1];  
-		
-		if (io_lines[3]) begin // these are.
-			port_b[3] <= !port_b[3];
-		end 
-		if (io_lines[6]) begin
-			port_b[6] <= !port_b[6];
-		end 
-		if (io_lines[7]) begin
-			port_b[7] <= !port_b[7];
+	always @(posedge clk or negedge reset_n) begin // I/O handling
+		if (reset_n == 1'b0) begin
+			port_a <= 8'h00;
+			port_b <= 8'h00;
+			ddra <= 8'h00;
 		end
-
-		port_a[0] <= (ddra[0] == 0) ? io_lines[8] : port_a[0]; 
-		port_a[1] <= (ddra[1] == 0) ? io_lines[9] : port_a[1]; 
-		port_a[2] <= (ddra[2] == 0) ? io_lines[10] : port_a[2]; 
-		port_a[3] <= (ddra[3] == 0) ? io_lines[11] : port_a[3]; 
-		port_a[4] <= (ddra[4] == 0) ? io_lines[12] : port_a[4]; 
-		port_a[5] <= (ddra[5] == 0) ? io_lines[13] : port_a[5]; 
-		port_a[6] <= (ddra[6] == 0) ? io_lines[14] : port_a[6]; 
-		port_a[7] <= (ddra[7] == 0) ? io_lines[15] : port_a[7]; 
+		else begin
+			port_b[0] <= ~io_lines[0]; // these two are not actually switches
+			port_b[1] <= ~io_lines[1];  
+			
+			if (io_lines[3]) begin // these are.
+				port_b[3] <= !port_b[3];
+			end 
+			if (io_lines[6]) begin
+				port_b[6] <= !port_b[6];
+			end 
+			if (io_lines[7]) begin
+				port_b[7] <= !port_b[7];
+			end
 	
-	end
-
-	always @(posedge clk) begin // R/W register/memory handling
-		if (reading) begin // reading! 
-			case (address) 
-				10'h280: data_drv <= port_a;
-				10'h281: data_drv <= ddra;
-				10'h282: data_drv <= port_b;
-				10'h283: data_drv <= 8'h00; // portb ddr is always input
-				10'h284: data_drv <= timer;
-				default: data_drv <= ram[address];
-			endcase
-		end  	
-		else if (writing) begin // writing! 
-			case (address) 
-				10'h294: begin
-					c1_timer <= 1;
-					c8_timer <= 0;
-					c64_timer <= 0;
-					c1024_timer <= 0;
-					timer <= data;
-					flipped <= 0;
-					counter <= 1;
-				end
-				10'h295: begin
-					c1_timer <= 0;
-					c8_timer <= 1;
-					c64_timer <= 0;
-					c1024_timer <= 0;
-					timer <= data;
-					flipped <= 0;
-					counter <= 8;
-				end
-				10'h296: begin
-					c1_timer <= 0;
-					c8_timer <= 0;
-					c64_timer <= 1;
-					c1024_timer <= 0;
-					timer <= data;
-					flipped <= 0;
-					counter <= 64;
-				end
-				10'h297: begin
-					c1_timer <= 0;
-					c8_timer <= 0;
-					c64_timer <= 0;
-					c1024_timer <= 1;
-					timer <= data;
-					flipped <= 0;
-					counter <= 1024;
-				end
-				default: begin
-					ram[address] <= data;
-				end
-			endcase
+			port_a[0] <= (ddra[0] == 1'b0) ? io_lines[8] : port_a[0]; 
+			port_a[1] <= (ddra[1] == 1'b0) ? io_lines[9] : port_a[1]; 
+			port_a[2] <= (ddra[2] == 1'b0) ? io_lines[10] : port_a[2]; 
+			port_a[3] <= (ddra[3] == 1'b0) ? io_lines[11] : port_a[3]; 
+			port_a[4] <= (ddra[4] == 1'b0) ? io_lines[12] : port_a[4]; 
+			port_a[5] <= (ddra[5] == 1'b0) ? io_lines[13] : port_a[5]; 
+			port_a[6] <= (ddra[6] == 1'b0) ? io_lines[14] : port_a[6]; 
+			port_a[7] <= (ddra[7] == 1'b0) ? io_lines[15] : port_a[7]; 
 		end
 	end
 
-	always @(posedge clk) begin // timer!
-		if (!writing_at_timer) begin
-			if (counter == 0) begin
-				timer <= timer - 1;
-
-				if (timer == 0) begin
-					flipped <= 1'b1;
-				end
- 
-				if (c1_timer || flipped) begin
-					counter <= 1;
-				end
-				if (c8_timer) begin
-					counter <= 8;
-				end
-				if (c64_timer) begin
-					counter <= 64;
-				end
-				if (c1024_timer) begin
-					counter <= 1024;
-				end
+	always @(posedge clk  or negedge reset_n) begin // R/W register/memory handling
+		if (reset_n == 1'b0) begin
+			data_drv <= 8'h00;
+			c1_timer <= 1'b0;
+			c8_timer <= 1'b0;
+			c64_timer <= 1'b0;
+			c1024_timer <= 1'b0;
+			timer <= 8'h00;
+			flipped <= 1'b0;
+			counter <= 11'd0;
+		end
+		else begin
+			if (reading) begin // reading! 
+				case (address) 
+					10'h280: data_drv <= port_a;
+					10'h281: data_drv <= ddra;
+					10'h282: data_drv <= port_b;
+					10'h283: data_drv <= 8'h00; // portb ddr is always input
+					10'h284: data_drv <= timer;
+					default: data_drv <= ram[address[6:0]];
+				endcase
+			end  	
+			else if (writing) begin // writing! 
+				case (address) 
+					10'h294: begin
+						c1_timer <= 1'b1;
+						c8_timer <= 1'b0;
+						c64_timer <= 1'b0;
+						c1024_timer <= 1'b0;
+						timer <= data;
+						flipped <= 1'b0;
+						counter <= 11'd1;
+					end
+					10'h295: begin
+						c1_timer <= 1'b0;
+						c8_timer <= 1'b1;
+						c64_timer <= 1'b0;
+						c1024_timer <= 1'b0;
+						timer <= data;
+						flipped <= 1'b0;
+						counter <= 11'd8;
+					end
+					10'h296: begin
+						c1_timer <= 1'b0;
+						c8_timer <= 1'b0;
+						c64_timer <= 1'b1;
+						c1024_timer <= 1'b0;
+						timer <= data;
+						flipped <= 1'b0;
+						counter <= 11'd64;
+					end
+					10'h297: begin
+						c1_timer <= 1'b0;
+						c8_timer <= 1'b0;
+						c64_timer <= 1'b0;
+						c1024_timer <= 1'b1;
+						timer <= data;
+						flipped <= 1'b0;
+						counter <= 11'd1024;
+					end
+					default: begin
+						ram[address[6:0]] <= data;
+					end
+				endcase
 			end
-			else begin
-				counter <= counter - 1;
+		
+			if (!writing_at_timer) begin
+				if (counter == 11'd0) begin
+					timer <= timer - 8'd1;
+	
+					if (timer == 8'd0) begin
+						flipped <= 1'b1;
+					end
+	 
+					if (c1_timer || flipped) begin
+						counter <= 11'd1;
+					end
+					if (c8_timer) begin
+						counter <= 11'd8;
+					end
+					if (c64_timer) begin
+						counter <= 11'd64;
+					end
+					if (c1024_timer) begin
+						counter <= 11'd1024;
+					end
+				end
+				else begin
+					counter <= counter - 11'd1;
+				end
 			end
 		end
 	end
-
-	always @(*) begin// logic for easier controlling
+	
+	always @(*) begin // logic for easier controlling
 		reading = 1'b0;
 		writing = 1'b0;
 		writing_at_timer = 1'b0;
 
-		if (enable && rw_mem == 0) begin
-			reading = 1'b1;
-		end
-		else if (enable && rw_mem) begin
-			writing = 1'b1;
+		if (enable && reset_n) begin
+			if (rw_mem == 1'b0) begin
+				reading = 1'b1;
+			end
+			else begin
+				writing = 1'b1;
 
-			if (address == 10'h294 || address == 10'h295 || address == 10'h296 || address == 10'h297) begin
-				writing_at_timer = 1'b1;
+				if ( (address == 10'h294) || (address == 10'h295) || (address == 10'h296) || (address == 10'h297) ) begin
+					writing_at_timer = 1'b1;
+				end
 			end
 		end
 	end
