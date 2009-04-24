@@ -51,28 +51,34 @@ module t6532(clk, io_lines, enable, rw_mem, address, data);
 	localparam [3:0] DATA_SIZE_ = DATA_SIZE - 4'd1;
 	localparam [3:0] ADDR_SIZE_ = ADDR_SIZE - 4'd1;
 
-	input clk;
-	input [15:0] io_lines;
-	input enable;
-	input rw_mem;
-	input [ADDR_SIZE_:0] address;
-	inout [DATA_SIZE_:0] data;
+	input clk; // master clock signal, 1.19mhz
+	input [15:0] io_lines; // inputs from the keyboard controller
+	input enable; // since the address bus is shared an enable signal is used
+	input rw_mem; // read == 0, write == 1
+	input [ADDR_SIZE_:0] address; // system address bus
+	inout [DATA_SIZE_:0] data; // controler <=> riot data bus
 
-	reg [DATA_SIZE_:0] ram [127:0];
+	reg [DATA_SIZE_:0] ram [8'h80:8'hFF]; // the ram itself. TODO: test the memory compiler
 	reg [DATA_SIZE_:0] port_a;
 	reg [DATA_SIZE_:0] port_b;
 	reg [DATA_SIZE_:0] ddra;
-	reg [DATA_SIZE_:0] timer;
-	reg [DATA_SIZE_:0] 1c_timer;
-	reg [DATA_SIZE_:0] 8c_timer;
-	reg [DATA_SIZE_:0] 64c_timer;
-	reg [DATA_SIZE_:0] 1024c_timer;
+	reg [DATA_SIZE_:0] timer; // the timer
+	reg c1_timer; // 1 clock cycle counter enable
+	reg c8_timer; // 8 clock cycles counter enable
+	reg c64_timer; // 64 clock cycles counter enable
+	reg c1024_timer; // 1024 clock cycles counter enable
+	reg [10:0] counter; // also called the prescaler
+	reg flipped; // a flag to remember if the timer already flipped
+
+	reg reading; // combinational logic for easing the control over timers
+	reg writing;
+	reg writing_at_timer;
 	
-	reg [DATA_SIZE_:0] data_drv;
+	reg [DATA_SIZE_:0] data_drv; // wrapper for the data bus
 
-	assign data = (rw_mem) ? 8'bZ: data_drv; // if i am writing the bus receives the data from cpu, else local data.  
+	assign data = (rw_mem) ? 8'bZ: data_drv; // if under writing the bus receives the data from cpu, else local data.  
 
-	always @(clk) begin
+	always @(posedge clk) begin // I/O handling
 		port_b[0] <= ~io_lines[0]; // these two are not actually switches
 		port_b[1] <= ~io_lines[1];  
 		
@@ -94,24 +100,108 @@ module t6532(clk, io_lines, enable, rw_mem, address, data);
 		port_a[5] <= (ddra[5] == 0) ? io_lines[13] : port_a[5]; 
 		port_a[6] <= (ddra[6] == 0) ? io_lines[14] : port_a[6]; 
 		port_a[7] <= (ddra[7] == 0) ? io_lines[15] : port_a[7]; 
-
-		if (enable && rw_mem == 0) begin // reading! 
-			case (address) 
-				8'h80: data_drv = port_a;
-				8'h81: data_drv = ddra;
-				8'h82: data_drv = port_b;
-				8'h83: data_drv = 8'h00; // portb ddr is always input
-				8'h84: data_drv = timer;
-				8'h94: ;
-				8'h95: ;
-				8'h96: ;
-				8'h97: ;
-				default: ;
-			endcase
-		end  	
+	
 	end
 
-	// timer
-	// ram
+	always @(posedge clk) begin // R/W register/memory handling
+		if (reading) begin // reading! 
+			case (address) 
+				10'h280: data_drv <= port_a;
+				10'h281: data_drv <= ddra;
+				10'h282: data_drv <= port_b;
+				10'h283: data_drv <= 8'h00; // portb ddr is always input
+				10'h284: data_drv <= timer;
+				default: data_drv <= ram[address];
+			endcase
+		end  	
+		else if (writing) begin // writing! 
+			case (address) 
+				10'h294: begin
+					c1_timer <= 1;
+					c8_timer <= 0;
+					c64_timer <= 0;
+					c1024_timer <= 0;
+					timer <= data;
+					flipped <= 0;
+					counter <= 1;
+				end
+				10'h295: begin
+					c1_timer <= 0;
+					c8_timer <= 1;
+					c64_timer <= 0;
+					c1024_timer <= 0;
+					timer <= data;
+					flipped <= 0;
+					counter <= 8;
+				end
+				10'h296: begin
+					c1_timer <= 0;
+					c8_timer <= 0;
+					c64_timer <= 1;
+					c1024_timer <= 0;
+					timer <= data;
+					flipped <= 0;
+					counter <= 64;
+				end
+				10'h297: begin
+					c1_timer <= 0;
+					c8_timer <= 0;
+					c64_timer <= 0;
+					c1024_timer <= 1;
+					timer <= data;
+					flipped <= 0;
+					counter <= 1024;
+				end
+				default: begin
+					ram[address] <= data;
+				end
+			endcase
+		end
+	end
+
+	always @(posedge clk) begin // timer!
+		if (!writing_at_timer) begin
+			if (counter == 0) begin
+				timer <= timer - 1;
+
+				if (timer == 0) begin
+					flipped <= 1'b1;
+				end
+ 
+				if (c1_timer || flipped) begin
+					counter <= 1;
+				end
+				if (c8_timer) begin
+					counter <= 8;
+				end
+				if (c64_timer) begin
+					counter <= 64;
+				end
+				if (c1024_timer) begin
+					counter <= 1024;
+				end
+			end
+			else begin
+				counter <= counter - 1;
+			end
+		end
+	end
+
+	always @(*) begin// logic for easier controlling
+		reading = 1'b0;
+		writing = 1'b0;
+		writing_at_timer = 1'b0;
+
+		if (enable && rw_mem == 0) begin
+			reading = 1'b1;
+		end
+		else if (enable && rw_mem) begin
+			writing = 1'b1;
+
+			if (address == 10'h294 || address == 10'h295 || address == 10'h296 || address == 10'h297) begin
+				writing_at_timer = 1'b1;
+			end
+		end
+	end
 	
 endmodule
