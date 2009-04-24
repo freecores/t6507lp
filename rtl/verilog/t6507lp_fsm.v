@@ -150,11 +150,11 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 	wire [ADDR_SIZE_:0] next_pc;	 // a simple logic to add one to the PC
 	assign next_pc = pc + 13'b0000000000001;
 
-	wire [8:0] sp_plus_one;		// simple adder and subtracter for the stack pointer
-	assign sp_plus_one = sp + 9'b000000001;
+	wire [DATA_SIZE:0] sp_plus_one;		// simple adder and subtracter for the stack pointer
+	assign sp_plus_one = {1'b1, sp[7:0] + 8'b000000001};
 
-	wire [8:0] sp_minus_one;
-	assign sp_minus_one = sp - 9'b000000001;
+	wire [DATA_SIZE:0] sp_minus_one;
+	assign sp_minus_one = {1'b1, sp[7:0] - 8'b000000001};
 
 	reg [ADDR_SIZE_:0] address_plus_index; 	// this two registers are used when the instruction uses indexing.
 	reg page_crossed;			// address_plus_index always adds index to address and page_crossed asserts when the sum creates a carry.
@@ -163,10 +163,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 
 	// this is the combinational logic related to indexed instructions
 	always @(*) begin
-		address_plus_index = 8'h00;
+		address_plus_index = 13'h000;
 		page_crossed = 1'b0;
 
-		if (state == READ_MEM_CALC_INDEX || state == READ_MEM_FIX_ADDR || state == FETCH_HIGH_CALC_INDEX) begin
+		if ( (state == READ_MEM_CALC_INDEX) || (state == READ_MEM_FIX_ADDR) || (state == FETCH_HIGH_CALC_INDEX) ) begin
 			{page_crossed, address_plus_index[7:0]} = temp_addr[7:0] + index;
 			address_plus_index[12:8] = temp_addr[12:8] + page_crossed;
 		end
@@ -182,7 +182,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 				address_plus_index[12:8] = 5'b00000;
 			end
 			else if (jump_indirect) begin
-				address_plus_index[7:0] = temp_addr[7:0] + 8'h01; // temp_addr should be 7:0?
+				address_plus_index[7:0] = temp_addr[7:0] + 8'h01;
 				address_plus_index[12:8] = 5'b00000;
 			end
 			else begin // indirecty falls here
@@ -205,7 +205,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 	always @ (posedge clk or negedge reset_n) begin // sequencial always block
 		if (reset_n == 1'b0) begin
 			// all registers must assume default values
-			pc <= 0; // TODO: this is written somewhere. something about a reset vector. must be checked.
+			pc <= 13'h0; // TODO: this is written somewhere. something about a reset vector. must be checked.
 			sp <= 9'b111111111; // the default is 'h1FF 
 			ir <= 8'h00;
 			temp_addr <= 13'h0000;
@@ -215,14 +215,14 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			address <= 13'h0000;
 			mem_rw <= MEM_READ;
 			data_out <= 8'h00;
-			rst_counter <= 0;
+			rst_counter <= 3'h0;
 		end
 		else begin
 			state <= next_state;
 
 			case (state)
 				RESET: begin	// The processor was reset
-					rst_counter <= rst_counter + 1;
+					rst_counter <= rst_counter + 3'b001;
 					//sp <= 9'b111111111; // this prevents flipflops with different drivers
 					//$write("under reset"); 
 				end
@@ -592,7 +592,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 
 		case (state)
 			RESET: begin
-				if (rst_counter == 6) begin
+				if (rst_counter == 3'd6) begin
 					next_state = FETCH_OP;
 				end
 			end
