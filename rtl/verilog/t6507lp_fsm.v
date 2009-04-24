@@ -523,13 +523,13 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 					end
 				end
 				PUSH_STATUS: begin
-					address <= 13'hFFFE;
+					address <= 13'h1FFE;
 					mem_rw <= MEM_READ;
 					sp <= sp_minus_one;
 				end
 				FETCH_PCL: begin
 					pc[7:0] <= data_in;
-					address <= 13'hFFFF;
+					address <= 13'h1FFF;
 					mem_rw <= MEM_READ;
 				end
 				FETCH_PCH: begin
