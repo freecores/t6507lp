@@ -834,9 +834,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			end
 			PULL_PCL: begin
 				next_state = PULL_PCH;
-				alu_opcode = ir;
-				alu_enable = 1'b1;
-				alu_a = temp_data;
+
+				if (rti) begin
+					alu_opcode = ir;
+					alu_enable = 1'b1;
+					alu_a = temp_data;
+				end
 			end
 			PULL_PCH: begin
 				if (rti) begin
