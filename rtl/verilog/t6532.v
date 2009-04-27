@@ -82,14 +82,17 @@ module t6532(clk, reset_n, io_lines, enable, mem_rw, address, data);
 	always @(posedge clk or negedge reset_n) begin // I/O handling
 		if (reset_n == 1'b0) begin
 			port_a <= 8'h00;
-			port_b <= 8'h00;
+			port_b <= 8'b00001000; // D3=1, color!
 			ddra <= 8'h00;
 		end
 		else begin
-			port_b[0] <= ~io_lines[0]; // these two are not actually switches
-			port_b[1] <= ~io_lines[1];  
-			
-			if (io_lines[3]) begin // these are.
+			if (io_lines[0]) begin // these are switches
+				port_b[0] <= !port_b[0];
+			end
+			if (io_lines[1]) begin
+				port_b[1] <= !port_b[1];
+			end 
+			if (io_lines[3]) begin
 				port_b[3] <= !port_b[3];
 			end 
 			if (io_lines[6]) begin
@@ -129,11 +132,14 @@ module t6532(clk, reset_n, io_lines, enable, mem_rw, address, data);
 					10'h282: data_drv <= port_b;
 					10'h283: data_drv <= 8'h00; // portb ddr is always input
 					10'h284: data_drv <= timer;
-					default: data_drv <= ram[address[6:0]];
+					default: data_drv <= ram[address];
 				endcase
 			end  	
 			else if (writing) begin // writing! 
-				case (address) 
+				case (address)
+					10'h281: begin
+						ddra <= data;
+					end 
 					10'h294: begin
 						c1_timer <= 1'b1;
 						c8_timer <= 1'b0;
@@ -150,7 +156,7 @@ module t6532(clk, reset_n, io_lines, enable, mem_rw, address, data);
 						c1024_timer <= 1'b0;
 						timer <= data;
 						flipped <= 1'b0;
-						counter <= 11'd8;
+						counter <= 11'd7;
 					end
 					10'h296: begin
 						c1_timer <= 1'b0;
@@ -159,7 +165,7 @@ module t6532(clk, reset_n, io_lines, enable, mem_rw, address, data);
 						c1024_timer <= 1'b0;
 						timer <= data;
 						flipped <= 1'b0;
-						counter <= 11'd64;
+						counter <= 11'd63;
 					end
 					10'h297: begin
 						c1_timer <= 1'b0;
@@ -168,37 +174,40 @@ module t6532(clk, reset_n, io_lines, enable, mem_rw, address, data);
 						c1024_timer <= 1'b1;
 						timer <= data;
 						flipped <= 1'b0;
-						counter <= 11'd1024;
+						counter <= 11'd1023;
 					end
 					default: begin
-						ram[address[6:0]] <= data;
+						ram[address] <= data;
 					end
 				endcase
 			end
 		
 			if (!writing_at_timer) begin
-				if (counter == 11'd0) begin
+				if (flipped || timer == 8'd0) begin // finished counting
+					counter <= 11'd0;
 					timer <= timer - 8'd1;
-	
-					if (timer == 8'd0) begin
-						flipped <= 1'b1;
-					end
-	 
-					if (c1_timer || flipped) begin
-						counter <= 11'd1;
-					end
-					if (c8_timer) begin
-						counter <= 11'd8;
-					end
-					if (c64_timer) begin
-						counter <= 11'd64;
-					end
-					if (c1024_timer) begin
-						counter <= 11'd1024;
-					end
+					flipped <= 1'b1;
 				end
 				else begin
-					counter <= counter - 11'd1;
+					if (counter == 11'd0) begin
+						timer <= timer - 8'd1;
+	
+						if (c1_timer) begin
+							counter <= 11'd0;
+						end
+						if (c8_timer) begin
+							counter <= 11'd7;
+						end
+						if (c64_timer) begin
+							counter <= 11'd63;
+						end
+						if (c1024_timer) begin
+							counter <= 11'd1023;
+						end
+					end
+					else begin
+						counter <= counter - 11'd1;
+					end
 				end
 			end
 		end

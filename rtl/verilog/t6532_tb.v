@@ -83,16 +83,71 @@ module t6532_tb();
 	initial begin
 		clk = 1'b0;
 		reset_n = 1'b0;
-		io_lines = 15'd0;
+		io_lines = 16'd0;
 		enable = 1'b0;
 		mem_rw = MEM_READ;
 		address = 0;
 		
 		@(negedge clk) // will wait for next negative edge of the clock (t=20)
 		reset_n=1'b1;
-	
 
-		#4000;
+		@(negedge clk) // testing the port_b. all switches must change!
+		io_lines = 16'h00FF;
+
+		@(negedge clk) // testing the port_b. all switches must change!
+		io_lines = 16'h00FF;
+
+		@(negedge clk) // testing the port_a. all switches must change since ddra = 0. (0 == input)
+		io_lines = 16'hFF00;
+
+		@(negedge clk) // setting ddra = FF. (output)
+		enable = 1'b1;
+		io_lines = 16'hFF00;
+		address = 10'h281;
+		mem_rw = MEM_WRITE;
+		data_drv = 8'hFF;
+
+		@(negedge clk) // testing port_a again. no switching this time!
+		enable = 1'b0;
+		io_lines = 16'h0000;
+		address = 0;
+		mem_rw = MEM_READ;
+
+		@(negedge clk) // writing at the memory
+		enable = 1'b1;
+		address = 10'd255;
+		mem_rw = MEM_WRITE;
+		data_drv = 8'h11;
+
+		@(negedge clk) // reading memory (output)
+		enable = 1'b1;
+		address = 10'd255;
+		mem_rw = MEM_READ;
+
+		@(negedge clk) // using the timer to count 100*1 cycle.
+		enable = 1'b1;
+		address = 10'h294;
+		mem_rw = MEM_WRITE;
+		data_drv = 8'd100;
+
+		@(negedge clk);
+		mem_rw = MEM_READ;
+		enable = 1'b0;
+		#2040; 
+
+		@(negedge clk) // using the timer to count 10*8 cycles.
+		enable = 1'b1;
+		address = 10'h295;
+		mem_rw = MEM_WRITE;
+		data_drv = 8'd10;
+
+		@(negedge clk);
+		mem_rw = MEM_READ;
+		enable = 1'b0;
+		#1640; 
+
+
+
 		$finish; // to shut down the simulation
 	end //initial
 
