@@ -145,7 +145,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 	reg plp;
 	reg jsr;
 	reg tsx;
-	reg txs;	
+	reg txs;
+	reg nop;	
 
 	wire [ADDR_SIZE_:0] next_pc;	 // a simple logic to add one to the PC
 	assign next_pc = pc + 13'b0000000000001;
@@ -607,8 +608,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			end
 			FETCH_LOW: begin
 				if (accumulator  || implied || txs) begin
-					alu_opcode = ir;
-					alu_enable = 1'b1;
+					if (!nop) begin
+						alu_opcode = ir;
+						alu_enable = 1'b1;
+					end
 					next_state = FETCH_OP;
 				end
 				else if (tsx) begin
@@ -899,12 +902,17 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		jsr = 1'b0;
 		tsx = 1'b0;
 		txs = 1'b0;
+		nop = 1'b0;
 
 		case (ir)
-			CLC_IMP, CLD_IMP, CLI_IMP, CLV_IMP, DEX_IMP, DEY_IMP, INX_IMP, INY_IMP, NOP_IMP, 
-			SEC_IMP, SED_IMP, SEI_IMP, TAX_IMP, TAY_IMP, TXA_IMP, TYA_IMP: begin
+			CLC_IMP, CLD_IMP, CLI_IMP, CLV_IMP, DEX_IMP, DEY_IMP, INX_IMP, INY_IMP, SEC_IMP, SED_IMP, SEI_IMP, TAX_IMP,
+			TAY_IMP, TXA_IMP, TYA_IMP: begin
 				implied = 1'b1;
 			end
+			NOP_IMP: begin
+				implied = 1'b1;
+				nop = 1'b1;
+			end 
 			ASL_ACC, LSR_ACC, ROL_ACC, ROR_ACC: begin
 				accumulator = 1'b1;
 			end
