@@ -44,7 +44,7 @@
 
 `include "timescale.v"
 
-module t6532(clk, reset_n, io_lines, enable, rw_mem, address, data);
+module t6532(clk, reset_n, io_lines, enable, mem_rw, address, data);
 	parameter [3:0] DATA_SIZE = 4'd8;
 	parameter [3:0] ADDR_SIZE = 4'd10; // this is the *local* addr_size
 
@@ -55,7 +55,7 @@ module t6532(clk, reset_n, io_lines, enable, rw_mem, address, data);
 	input reset_n;
 	input [15:0] io_lines; // inputs from the keyboard controller
 	input enable; // since the address bus is shared an enable signal is used
-	input rw_mem; // read == 0, write == 1
+	input mem_rw; // read == 0, write == 1
 	input [ADDR_SIZE_:0] address; // system address bus
 	inout [DATA_SIZE_:0] data; // controler <=> riot data bus
 
@@ -77,7 +77,7 @@ module t6532(clk, reset_n, io_lines, enable, rw_mem, address, data);
 	
 	reg [DATA_SIZE_:0] data_drv; // wrapper for the data bus
 
-	assign data = (rw_mem || !reset_n) ? 8'bZ : data_drv; // if under writing the bus receives the data from cpu, else local data.  
+	assign data = (mem_rw || !reset_n) ? 8'bZ : data_drv; // if under writing the bus receives the data from cpu, else local data.  
 
 	always @(posedge clk or negedge reset_n) begin // I/O handling
 		if (reset_n == 1'b0) begin
@@ -210,7 +210,7 @@ module t6532(clk, reset_n, io_lines, enable, rw_mem, address, data);
 		writing_at_timer = 1'b0;
 
 		if (enable && reset_n) begin
-			if (rw_mem == 1'b0) begin
+			if (mem_rw == 1'b0) begin
 				reading = 1'b1;
 			end
 			else begin

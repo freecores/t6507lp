@@ -1,15 +1,12 @@
 ////////////////////////////////////////////////////////////////////////////
 ////									////
-//// t2600 IP Core	 						////
+//// T6532 IP Core	 						////
 ////									////
-//// This file is part of the t2600 project				////
+//// This file is part of the T2600 project				////
 //// http://www.opencores.org/cores/t2600/				////
 ////									////
 //// Description							////
-//// Bus controller testbench				 		////
-////									////
-//// TODO:								////
-//// - Nothing								////
+//// 6532 testbench							////
 ////									////
 //// Author(s):								////
 //// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
@@ -43,90 +40,60 @@
 ////////////////////////////////////////////////////////////////////////////
 
 `include "timescale.v"
-module t2600_bus_tb();
+
+module t6532_tb();
+	// mem_rw signals
+	localparam MEM_READ = 1'b0;
+	localparam MEM_WRITE = 1'b1;
+
 	parameter [3:0] DATA_SIZE = 4'd8;
-	parameter [3:0] ADDR_SIZE = 4'd13;
+	parameter [3:0] ADDR_SIZE = 4'd10; // this is the *local* addr_size
 
 	localparam [3:0] DATA_SIZE_ = DATA_SIZE - 4'd1;
 	localparam [3:0] ADDR_SIZE_ = ADDR_SIZE - 4'd1;
-	localparam [3:0] RIOT_ADDR_SIZE_ = 4'd6;
-	localparam [3:0] TIA_ADDR_SIZE_ = 4'd5;
 
-	// these 3 registers are kind of drivers/wrappers for the tristate ones
-	reg [DATA_SIZE_:0] riot_data_drvr; 
-	reg [DATA_SIZE_:0] rom_data_drvr; 
-	reg [DATA_SIZE_:0] tia_data_drvr; 
-
-	// list of all the inputs/outputs of the bus controller
+	reg clk; // regs are inputs
+	reg reset_n;
+	reg [15:0] io_lines;
+	reg enable;
+	reg mem_rw;
 	reg [ADDR_SIZE_:0] address;
-	reg [DATA_SIZE_:0] data_from_cpu;
-	reg cpu_rw_mem;
-	tri [DATA_SIZE_:0] riot_data = riot_data_drvr;
-	tri [DATA_SIZE_:0] rom_data = rom_data_drvr;
-	tri [DATA_SIZE_:0] tia_data = tia_data_drvr;
-	wire [RIOT_ADDR_SIZE_:0] address_riot;
-	wire [ADDR_SIZE_:0] address_rom;
-	wire [TIA_ADDR_SIZE_:0] address_tia;
-	wire[DATA_SIZE_:0] data_to_cpu;
-	wire enable_riot;
-	wire enable_rom;
-	wire enable_tia;
-	wire rw_mem;
 
-	t2600_bus t2600_bus (
+	reg [DATA_SIZE_:0] data_drv;
+	tri [DATA_SIZE_:0] data = data_drv;
+
+	t6532 #(DATA_SIZE, ADDR_SIZE) t6532(
+		.clk		(clk),
+		.reset_n	(reset_n),
+		.io_lines	(io_lines),
+		.enable		(enable),
+		.mem_rw		(mem_rw),
 		.address	(address),
-		.data_from_cpu	(data_from_cpu),
-		.cpu_rw_mem	(cpu_rw_mem),
-		.riot_data	(riot_data),
-		.rom_data	(rom_data),
-		.tia_data	(tia_data),
-		.address_riot	(address_riot),
-		.address_rom	(address_rom),
-		.address_tia	(address_tia),
-		.data_to_cpu	(data_to_cpu),
-		.enable_riot	(enable_riot),
-		.enable_rom	(enable_rom),
-		.enable_tia	(enable_tia),
-		.rw_mem		(rw_mem)
+		.data		(data)
 	);
 
+	always #10 clk = ~clk;
+
 	always @(*) begin
-		if (cpu_rw_mem == 1'b1) begin
-			tia_data_drvr = 8'hZ;
-			riot_data_drvr = 8'hZ;
-			rom_data_drvr = 8'hZ;
+		if (mem_rw == MEM_READ) begin
+			data_drv = 8'hZ;
 		end
 	end 
 
-	// this block is clockless so I cannot use @(negedge clk)
 	initial begin
-		address = 13'b0;
-		data_from_cpu = 8'h01;
-		cpu_rw_mem = 1'b0; // READ
-	
-		#10;
-		address = 13'd8; // this is a TIA adress
-
-		#10;
-		address = 13'd128; // this is a RIOT adress
-
-		#10;
-		address = 13'd4096; // this is a ROM adress
-
-		#10;
-		cpu_rw_mem = 1'b1; // from now on I will be writing
-		riot_data_drvr = 8'h02;
-		rom_data_drvr = 8'h03;
-		tia_data_drvr = 8'h04;
-		address = 13'd8; // this is a TIA adress
-
-		#10;
-		address = 13'd128; // this is a RIOT adress
-
-		#10;
-		address = 13'd4096; // this is a ROM adress
+		clk = 1'b0;
+		reset_n = 1'b0;
+		io_lines = 15'd0;
+		enable = 1'b0;
+		mem_rw = MEM_READ;
+		address = 0;
 		
-		#10;
-		$finish();
-	end
+		@(negedge clk) // will wait for next negative edge of the clock (t=20)
+		reset_n=1'b1;
+	
+
+		#4000;
+		$finish; // to shut down the simulation
+	end //initial
+
 endmodule
