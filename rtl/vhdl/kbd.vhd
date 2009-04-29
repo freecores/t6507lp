@@ -1,39 +1,45 @@
-------------------------------------------------------------------------
---     Keyboard.vhd -- Demonstrate basic keyboard function
-------------------------------------------------------------------------
--- Author:  Ken Nelson
---          Copyright 2004 Digilent, Inc.
-------------------------------------------------------------------------
--- DESCRIPTION
-------------------------------------------------------------------------
--- Revision History:
---	 06/14/04 (Created) KenN
---  07/01/04 (Optomized) DanP
-------------------------------------------------------------------------
+----------------------------------------------------------------------------
+----									----
+---- T2600 IP Core	 						----
+----									----
+---- This file is part of the t2600 project				----
+---- http://www.opencores.org/cores/t2600/				----
+----									----
+---- Description							----
+---- t2600 keyboard controller						----
+----									----
+---- TODO:								----
+---- - Add the desired keys						----
+----									----
+---- Author(s):								----
+---- - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			----
+---- - Samuel Nascimento Pagliarini (creep), snpagliarini@gmail.com	----
+----									----
+----------------------------------------------------------------------------
+----									----
+---- Copyright (C) Digilent						----
+----									----
+---- This source was originally copyrighted by Digilent. The authors 	----
+---- just did some extra code to fit their needs. Several commented	----
+---- lines are from the original file.					----
+---- This file may be used as long as it not for commercial purposes.	----
+----									----
+----------------------------------------------------------------------------
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-
 entity keyboardVhdl is
 	Port (	CLK, RST, KD, KC: in std_logic;
-		an: out std_logic_vector (3 downto 0);
-		sseg: out std_logic_vector (6 downto 0);
+		--an: out std_logic_vector (3 downto 0);
+		--sseg: out std_logic_vector (6 downto 0);
 		io_lines: out std_logic_vector (15 downto 0)
 	);
-
-
 end keyboardVhdl;
 
-
 architecture Behavioral of keyboardVhdl is
-
-	------------------------------------------------------------------------
-	-- Component Declarations
-	------------------------------------------------------------------------
-
 	------------------------------------------------------------------------
 	-- Signal Declarations
 	------------------------------------------------------------------------
@@ -76,7 +82,6 @@ architecture Behavioral of keyboardVhdl is
 
 	--Shift Registers used to clock in scan codes from PS2--
 	Process(KDI, KCI, RST) --DFF2 carries KD and DFF4, and DFF4 carries KC
-	begin																					  
 		if (RST = '1') then
 			ShiftRegSig1 <= "00000000000";
 			ShiftRegSig2 <= "0000000000";
@@ -104,31 +109,45 @@ architecture Behavioral of keyboardVhdl is
 
 	MUXOUT <=  WaitReg(7 downto 4) when sclk = '1' else WaitReg(3 downto 0);
 				  
-	io_lines(15) <= when WaitReg = x;
+	io_lines(15) <= '1' when WaitReg = x"74" else '0'; -- right
+	io_lines(14) <= '1' when WaitReg = x"6b" else '0'; -- left
+	io_lines(13) <= '1' when WaitReg = x"72" else '0'; -- down
+	io_lines(12) <= '1' when WaitReg = x"75" else '0'; -- up
+	io_lines(11) <= '1' when WaitReg = x"23" else '0'; -- d
+	io_lines(10) <= '1' when WaitReg = x"1c" else '0'; -- a
+	io_lines(9) <= '1' when WaitReg = x"1b" else '0'; -- s
+	io_lines(8) <= '1' when WaitReg = x"1d" else '0'; -- w
+	io_lines(7) <= '1' when WaitReg = x"05" else '0'; -- F1, p1 dif
+	io_lines(6) <= '1' when WaitReg = x"06" else '0'; -- F2, p0 dif
+	--io_lines(5) <= '1' when WaitReg = x"72" else '0'; -- not used
+	--io_lines(4) <= '1' when WaitReg = x"75" else '0'; -- not used
+	io_lines(3) <= '1' when WaitReg = x"04" else '0'; -- F3, color
+	--io_lines(2) <= '1' when WaitReg = x"1c" else '0'; -- not used
+	io_lines(1) <= '1' when WaitReg = x"0c" else '0'; -- F4, game select
+	io_lines(0) <= '1' when WaitReg = x"03" else '0'; -- F5, game select
 
 
 	--Seven Segment Decoder--
-	sseg <=	"1000000" when MUXOUT = "0000" else
-			"1111001" when MUXOUT = "0001" else
-			"0100100" when MUXOUT = "0010" else
-			"0110000" when MUXOUT = "0011" else
-			"0011001" when MUXOUT = "0100" else
-			"0010010" when MUXOUT = "0101" else
-			"0000010" when MUXOUT = "0110" else
-			"1111000" when MUXOUT = "0111" else
-			"0000000" when MUXOUT = "1000" else
-			"0010000" when MUXOUT = "1001" else
-			"0001000" when MUXOUT = "1010" else
-			"0000011" when MUXOUT = "1011" else
-			"1000110" when MUXOUT = "1100" else
-			"0100001" when MUXOUT = "1101" else
-			"0000110" when MUXOUT = "1110" else
-			"0001110" when MUXOUT = "1111" else
-			"1111111";
+	--sseg <=	"1000000" when MUXOUT = "0000" else
+	--		"1111001" when MUXOUT = "0001" else
+	--		"0100100" when MUXOUT = "0010" else
+	--		"0110000" when MUXOUT = "0011" else
+	--		"0011001" when MUXOUT = "0100" else
+	--		"0010010" when MUXOUT = "0101" else
+	--		"0000010" when MUXOUT = "0110" else
+	--		"1111000" when MUXOUT = "0111" else
+	--		"0000000" when MUXOUT = "1000" else
+	--		"0010000" when MUXOUT = "1001" else
+	--		"0001000" when MUXOUT = "1010" else
+	--		"0000011" when MUXOUT = "1011" else
+	--		"1000110" when MUXOUT = "1100" else
+	--		"0100001" when MUXOUT = "1101" else
+	--		"0000110" when MUXOUT = "1110" else
+	--		"0001110" when MUXOUT = "1111" else
+	--		"1111111";
 
 	--Anode Driver--
-	an(3) <= '1'; an(2) <= '1'; --disable first two seven-segment decoders.
-	an(1 downto 0) <= "10" when sclk = '1' else "01";
-
+	--an(3) <= '1'; an(2) <= '1'; --disable first two seven-segment decoders.
+	--an(1 downto 0) <= "10" when sclk = '1' else "01";
 				
 end Behavioral;
