@@ -31,15 +31,15 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-entity keyboardVhdl is
+entity t2600_kb is
 	Port (	CLK, RST, KD, KC: in std_logic;
 		--an: out std_logic_vector (3 downto 0);
 		--sseg: out std_logic_vector (6 downto 0);
 		io_lines: out std_logic_vector (15 downto 0)
 	);
-end keyboardVhdl;
+end t2600_kb;
 
-architecture Behavioral of keyboardVhdl is
+architecture Behavioral of t2600_kb is
 	------------------------------------------------------------------------
 	-- Signal Declarations
 	------------------------------------------------------------------------
@@ -58,10 +58,14 @@ architecture Behavioral of keyboardVhdl is
 
 	begin
 	--Divide the master clock down to a lower frequency--
-	CLKDivider: Process (CLK)
+	CLKDivider: Process (CLK, RST)
 	begin
-		if (CLK = '1' and CLK'Event) then 
-			clkDiv <= clkDiv +1; 
+		if (RST = '1') then
+			clkDiv <= "0000000000000";
+		else									
+			if (CLK = '1' and CLK'Event) then 
+				clkDiv <= clkDiv +1; 
+			end if;
 		end if;	
 	end Process;
 
@@ -82,6 +86,7 @@ architecture Behavioral of keyboardVhdl is
 
 	--Shift Registers used to clock in scan codes from PS2--
 	Process(KDI, KCI, RST) --DFF2 carries KD and DFF4, and DFF4 carries KC
+	begin
 		if (RST = '1') then
 			ShiftRegSig1 <= "00000000000";
 			ShiftRegSig2 <= "0000000000";
