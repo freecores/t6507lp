@@ -134,6 +134,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 	reg write;
 	reg jump;
 	reg jump_indirect;
+	reg index_is_x;
+	reg index_is_branch;
 
 	// regs for the special instructions
 	reg brk;
@@ -141,12 +143,12 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 	reg rts;
 	reg pha;
 	reg php;
-	reg pla;	
+	reg pla;
 	reg plp;
 	reg jsr;
 	reg tsx;
 	reg txs;
-	reg nop;	
+	reg nop;
 
 	wire [ADDR_SIZE_:0] next_pc;	 // a simple logic to add one to the PC
 	assign next_pc = pc + 13'b0000000000001;
@@ -167,38 +169,45 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		address_plus_index = 13'h000;
 		page_crossed = 1'b0;
 
-		if ( (state == READ_MEM_CALC_INDEX) || (state == READ_MEM_FIX_ADDR) || (state == FETCH_HIGH_CALC_INDEX) ) begin
-			{page_crossed, address_plus_index[7:0]} = temp_addr[7:0] + index;
-			address_plus_index[12:8] = temp_addr[12:8] + page_crossed;
-		end
-		else if (branch) begin
-			if (state == FETCH_OP_FIX_PC || state == FETCH_OP_EVAL_BRANCH) begin
-				{page_crossed, address_plus_index[7:0]} = pc[7:0] + index;
-				address_plus_index[12:8] = pc[12:8] + page_crossed;	// warning: pc might feed these lines twice and cause branch failure
-			end								// solution: add a temp reg i guess
-		end
-		else if (state == READ_FROM_POINTER) begin
-			if (indirectx) begin
-				{page_crossed, address_plus_index[7:0]} = temp_data + index;
-				address_plus_index[12:8] = 5'b00000;
+		case (state) 
+			READ_MEM_FIX_ADDR, FETCH_HIGH_CALC_INDEX, READ_FROM_POINTER_X1: begin
+				{page_crossed, address_plus_index[7:0]} = temp_addr[7:0] + index;
+				address_plus_index[12:8] = temp_addr[12:8] + page_crossed;
 			end
-			else if (jump_indirect) begin
-				address_plus_index[7:0] = temp_addr[7:0] + 8'h01;
-				address_plus_index[12:8] = 5'b00000;
+			
+			FETCH_OP_FIX_PC, FETCH_OP_EVAL_BRANCH: begin
+				if (branch) begin
+					{page_crossed, address_plus_index[7:0]} = pc[7:0] + index;
+					address_plus_index[12:8] = pc[12:8] + page_crossed;
+					// warning: pc might feed these lines twice and cause branch failure
+				end	// solution: add a temp reg i guess
 			end
-			else begin // indirecty falls here
-				address_plus_index[7:0] = temp_data + 8'h01;
-				address_plus_index[12:8] = 5'b00000;
+			
+			READ_FROM_POINTER: begin
+				if (indirectx) begin
+					{page_crossed, address_plus_index[7:0]} = temp_data + index;
+					//address_plus_index[12:8] = 5'b00000; // already assigned earlier at this block
+				end
+				else if (jump_indirect) begin
+					address_plus_index[7:0] = temp_addr[7:0] + 8'h01;
+					//address_plus_index[12:8] = 5'b00000;
+				end
+				else begin // indirecty falls here
+					address_plus_index[7:0] = temp_data + 8'h01;
+					//address_plus_index[12:8] = 5'b00000;
+				end
 			end
-		end
-		else if (state == READ_FROM_POINTER_X) begin
-			{page_crossed, address_plus_index[7:0]} = temp_data + index + 8'h01;
-			address_plus_index[12:8] = 5'b00000;
-		end
-		else if (state == READ_FROM_POINTER_X1) begin
-			{page_crossed, address_plus_index[7:0]} = temp_addr[7:0] + index;
-			address_plus_index[12:8] = temp_addr[12:8] + page_crossed;
-		end
+	
+			READ_FROM_POINTER_X: begin
+				{page_crossed, address_plus_index[7:0]} = temp_data + index + 8'h01;
+				//address_plus_index[12:8] = 5'b00000;
+			end
+
+			READ_MEM_CALC_INDEX: begin
+				{page_crossed, address_plus_index[7:0]} = temp_addr[7:0] + index;
+				//address_plus_index[12:8] = 5'b00000;
+			end
+		endcase
 	end
 
 	reg [2:0] rst_counter; // a counter to preserve the cpu idle for six cycles
@@ -217,6 +226,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			mem_rw <= MEM_READ;
 			data_out <= 8'h00;
 			rst_counter <= 3'h0;
+			index <= 8'h00;
 		end
 		else begin
 			state <= next_state;
@@ -242,6 +252,18 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 				all instructions execute this cycle.
 				*/
 				FETCH_LOW: begin
+					//$display("index_is_x = %b",index_is_x);
+					if (index_is_x == 1'b1) begin
+						index <= alu_x;
+						//$display("alu_x = %d",alu_x);
+					end
+					else begin
+						index <= alu_y;
+						//$display("alu_y = %d",alu_y);
+					end
+					if (index_is_branch) begin
+						index <= temp_data;
+					end
 					if (accumulator || implied || txs || tsx) begin
 						pc <= pc; // is this better?
 						address <= pc;
@@ -882,8 +904,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		relative = 1'b0;
 		zero_page = 1'b0;
 		zero_page_indexed = 1'b0;
+		//index_is_x = 1'b1;
+		index_is_branch = 1'b0;
 	
-		index = 8'h00;
+		//index = 8'h00;
 
 		read = 1'b0;
 		read_modify_write = 1'b0;
@@ -926,15 +950,18 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			ADC_ZPX, AND_ZPX, ASL_ZPX, CMP_ZPX, DEC_ZPX, EOR_ZPX, INC_ZPX, LDA_ZPX, LDY_ZPX, LSR_ZPX, ORA_ZPX, ROL_ZPX, ROR_ZPX,
 			SBC_ZPX, STA_ZPX, STY_ZPX: begin
 				zero_page_indexed = 1'b1;
-				index = alu_x;
+				index_is_x = 1'b1;
+				//index = alu_x;
 			end
 			LDX_ZPY, STX_ZPY: begin
 				zero_page_indexed = 1'b1;
-				index = alu_y;
+				index_is_x = 1'b0;
+				//index = alu_y;
 			end
 			BCC_REL: begin
 				relative = 1'b1;
-				index = temp_data;
+				index_is_branch = 1'b1;
+				//index = temp_data;
 				
 				if (!alu_status[C]) begin
 					branch = 1'b1;
@@ -945,7 +972,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			end
 			BCS_REL: begin
 				relative = 1'b1;
-				index = temp_data;
+				index_is_branch = 1'b1;
+				//index = temp_data;
 
 				if (alu_status[C]) begin
 					branch = 1'b1;
@@ -956,7 +984,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			end
 			BEQ_REL: begin
 				relative = 1'b1;
-				index = temp_data;
+				index_is_branch = 1'b1;
+				//index = temp_data;
 				
 				if (alu_status[Z]) begin
 					branch = 1'b1;
@@ -967,7 +996,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			end
 			BNE_REL: begin
 				relative = 1'b1;
-				index = temp_data;
+				index_is_branch = 1'b1;
+				//index = temp_data;
 				
 				if (alu_status[Z] == 1'b0) begin
 					branch = 1'b1;
@@ -978,7 +1008,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			end
 			BPL_REL: begin
 				relative = 1'b1;
-				index = temp_data;
+				index_is_branch = 1'b1;
+				//index = temp_data;
 				
 				if (!alu_status[N]) begin
 					branch = 1'b1;
@@ -989,7 +1020,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			end
 			BMI_REL: begin
 				relative = 1'b1;
-				index = temp_data;
+				index_is_branch = 1'b1;
+				//index = temp_data;
 				
 				if (alu_status[N]) begin
 					branch = 1'b1;
@@ -1000,7 +1032,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			end
 			BVC_REL: begin
 				relative = 1'b1;
-				index = temp_data;
+				index_is_branch = 1'b1;
+				//index = temp_data;
 				
 				if (!alu_status[V]) begin
 					branch = 1'b1;
@@ -1011,7 +1044,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			end
 			BVS_REL: begin
 				relative = 1'b1;
-				index = temp_data;
+				index_is_branch = 1'b1;
+				//index = temp_data;
 				
 				if (alu_status[V]) begin
 					branch = 1'b1;
@@ -1027,19 +1061,23 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			ADC_ABX, AND_ABX, ASL_ABX, CMP_ABX, DEC_ABX, EOR_ABX, INC_ABX, LDA_ABX, LDY_ABX, LSR_ABX, ORA_ABX, ROL_ABX, ROR_ABX,
 			SBC_ABX, STA_ABX: begin
 				absolute_indexed = 1'b1;
-				index = alu_x;
+				index_is_x = 1'b1;
+				//index = alu_x;
 			end
 			ADC_ABY, AND_ABY, CMP_ABY, EOR_ABY, LDA_ABY, LDX_ABY, ORA_ABY, SBC_ABY, STA_ABY: begin
 				absolute_indexed = 1'b1;
-				index = alu_y;
+				index_is_x = 1'b0;
+				//index = alu_y;
 			end
 			ADC_IDX, AND_IDX, CMP_IDX, EOR_IDX, LDA_IDX, ORA_IDX, SBC_IDX, STA_IDX: begin
 				indirectx = 1'b1;
-				index = alu_x;
+				index_is_x = 1'b1;
+				//index = alu_x;
 			end
 			ADC_IDY, AND_IDY, CMP_IDY, EOR_IDY, LDA_IDY, ORA_IDY, SBC_IDY, STA_IDY: begin 
 				indirecty = 1'b1;
-				index = alu_y;	
+				index_is_x = 1'b0;
+				//index = alu_y;	
 			end
 			JMP_ABS: begin
 				absolute = 1'b1;
@@ -1079,6 +1117,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 				txs = 1'b1;
 			end
 			default: begin
+				index_is_x = 1'b1;
 				//$write("state : %b", state);
 				if (reset_n == 1'b1 && state != FETCH_OP_FIX_PC) begin // the processor is NOT being reset neither it is fixing the pc
 					//$write("\nunknown OPCODE!!!!! 0x%h\n", ir);

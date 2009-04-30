@@ -23,6 +23,8 @@ unit fsm_bfm_u {
 	
 	on main_clk {
 		var data : fsm_input_s;
+		var last_X : byte;
+		var last_Y : byte;
 		gen data;
 
 		--print mem[i];
@@ -51,8 +53,15 @@ unit fsm_bfm_u {
 		data_in$    = mem[i].as_a(byte);
 		data.data_in = mem[i].as_a(byte);
 		--data_in$    = 8'hF8;
-		alu_x$      = data.alu_x;
-		alu_y$      = data.alu_y;
+		--print me.agent.chk.old_state;
+		--if (me.agent.chk.old_state == CYCLE_1) {
+		--	last_X = data.alu_x;
+		--	last_Y = data.alu_y;
+		--};
+		--alu_x$      = last_X;
+		--alu_y$      = last_Y;
+		alu_x$ = data.alu_x;
+		alu_y$ = data.alu_y;
 		
 		if (data.reset_n == 1) {
 			i = i + 1;
