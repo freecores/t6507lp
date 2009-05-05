@@ -70,9 +70,36 @@ module t2600(clk, reset_n);
 		.data		(data)
 	);
 
+	t2600_bus t2600_bus (
+		.address	(address),
+		.data_from_cpu	(data_from_cpu),
+		.cpu_rw_mem	(cpu_rw_mem),
+		.riot_data	(riot_data),
+		.rom_data	(rom_data),
+		.tia_data	(tia_data),
+		.address_riot	(address_riot),
+		.address_rom	(address_rom),
+		.address_tia	(address_tia),
+		.data_to_cpu	(data_to_cpu),
+		.enable_riot	(enable_riot),
+		.enable_rom	(enable_rom),
+		.enable_tia	(enable_tia),
+		.rw_mem		(rw_mem)
+	);
+
+	T2600_KB T2600_KB (
+		.CLK		(clk),
+		.RST		(reset_n),
+		.io_lines	(io_lines),
+		.KC		(kc),
+		.KD		(kd)
+	);
+
+
+
+
 
 // VIDEO
-// BUS CONTROLLER
 
 endmodule
 

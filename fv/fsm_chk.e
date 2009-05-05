@@ -14,6 +14,8 @@ unit fsm_chk_u {
 //	  keep soft SP == 9'b100000000;
 	!SP : byte;
 	  keep soft SP == 0;
+	!pointer : byte;
+	  keep soft pointer == 0;
 
 	!more_cycles : bool;
 	  keep soft more_cycles == FALSE;
@@ -150,8 +152,6 @@ unit fsm_chk_u {
 				CYCLE_2 : {
 					X = input.alu_x;
 					Y = input.alu_y;
-					print X, Y;
-					outf("CYCLE_1\n");
 					case {
 						(
 						  instruction == BRK_IMP ||
@@ -225,15 +225,7 @@ unit fsm_chk_u {
 						  instruction == DEC_ZPX ||
 						  instruction == STA_ZPX ||
 						  instruction == STX_ZPY ||
-						  instruction == STY_ZPX
-						) : {
-							new_state = CYCLE_3;
-							PCL = input.data_in;
-							--print X, Y;
-							--print input.alu_x, input.alu_y;
-							--print 't6507lp_fsm.index';
-						};
-						(
+						  instruction == STY_ZPX ||
 						  instruction == LDA_ABX ||
 						  instruction == LDA_ABY ||
 						  instruction == LDX_ABY ||
@@ -249,16 +241,29 @@ unit fsm_chk_u {
 						  instruction == SBC_ABX ||
 						  instruction == SBC_ABY ||
 						  instruction == CMP_ABX ||
-						  instruction == CMP_ABY
+						  instruction == CMP_ABY ||
+						  instruction == ASL_ABX ||
+						  instruction == LSR_ABX ||
+						  instruction == ROL_ABX ||
+						  instruction == ROR_ABX ||
+						  instruction == INC_ABX ||
+						  instruction == DEC_ABX
 						) : {
 							new_state = CYCLE_3;
 							PCL = input.data_in;
-							--X = input.alu_x;
-							--Y = input.alu_y;
-							--print X, Y;
-							--print input.alu_x, input.alu_y;
-							--print 't6507lp_fsm.index';
-							--outf("CYCLE_2\n");
+						};
+						(
+						  instruction == LDA_IDX ||
+						  instruction == STA_IDX ||
+						  instruction == ORA_IDX ||
+						  instruction == EOR_IDX ||
+						  instruction == AND_IDX ||
+						  instruction == ADC_IDX ||
+						  instruction == CMP_IDX ||
+						  instruction == SBC_IDX
+						) : {
+							new_state = CYCLE_3;
+							pointer = input.data_in;
 						};
 						(
 						  instruction == TXS_IMP
@@ -273,6 +278,10 @@ unit fsm_chk_u {
 				};
 				CYCLE_3 : {
 					case {
+						//JSR_ABS : {
+						//	new_state = CYCLE_4;
+						//	PCH = input.data_in;
+						//};
 						(
 						  instruction == BRK_IMP ||
 						  instruction == PLA_IMP ||
@@ -284,15 +293,7 @@ unit fsm_chk_u {
 						  instruction == ROL_ZPG ||
 						  instruction == ROR_ZPG ||
 						  instruction == INC_ZPG ||
-						  instruction == DEC_ZPG
-						) : {
-							new_state = CYCLE_4;
-						};
-						//JSR_ABS : {
-						//	new_state = CYCLE_4;
-						//	PCH = input.data_in;
-						//};
-						(
+						  instruction == DEC_ZPG ||
 						  instruction == LDA_ZPX ||
 						  instruction == LDX_ZPY ||
 						  instruction == LDY_ZPX ||
@@ -310,14 +311,17 @@ unit fsm_chk_u {
 						  instruction == DEC_ZPX ||
 						  instruction == STA_ZPX ||
 						  instruction == STX_ZPY ||
-						  instruction == STY_ZPX
+						  instruction == STY_ZPX ||
+						  instruction == LDA_IDX ||
+						  instruction == STA_IDX ||
+						  instruction == ORA_IDX ||
+						  instruction == EOR_IDX ||
+						  instruction == AND_IDX ||
+						  instruction == ADC_IDX ||
+						  instruction == CMP_IDX ||
+						  instruction == SBC_IDX
 						) : {
 							new_state = CYCLE_4;
-							--X = input.alu_x;
-							--Y = input.alu_y;
-							--print X, Y;
-							--print input.alu_x, input.alu_y;
-							--print 't6507lp_fsm.index';
 						};
 						(
 						  instruction == ADC_ABS ||
@@ -354,16 +358,16 @@ unit fsm_chk_u {
 						  instruction == SBC_ABX ||
 						  instruction == SBC_ABY ||
 						  instruction == CMP_ABX ||
-						  instruction == CMP_ABY
+						  instruction == CMP_ABY ||
+						  instruction == ASL_ABX ||
+						  instruction == LSR_ABX ||
+						  instruction == ROL_ABX ||
+						  instruction == ROR_ABX ||
+						  instruction == INC_ABX ||
+						  instruction == DEC_ABX
 						) : {
 							new_state = CYCLE_4;
 							PCH = input.data_in;
-							--X = input.alu_x;
-							--Y = input.alu_y;
-							--print X, Y;
-							--print input.alu_x, input.alu_y;
-							--print 't6507lp_fsm.index';
-							--outf("CYCLE_3\n");
 						};
 						(
 						  instruction == JMP_ABS
@@ -408,6 +412,12 @@ unit fsm_chk_u {
 						  instruction == ROR_ZPX ||
 						  instruction == INC_ZPX ||
 						  instruction == DEC_ZPX ||
+						  instruction == ASL_ABX ||
+						  instruction == LSR_ABX ||
+						  instruction == ROL_ABX ||
+						  instruction == ROR_ABX ||
+						  instruction == INC_ABX ||
+						  instruction == DEC_ABX ||
 						  (
 						  	more_cycles == TRUE &&
 							(
@@ -430,13 +440,20 @@ unit fsm_chk_u {
 							)
 						  )
 						) : {
-							--X = input.alu_x;
-							--Y = input.alu_y;
-							--print X, Y;
-							--print input.alu_x, input.alu_y;
-							--print 't6507lp_fsm.index';
-							--outf("CYCLE_4\n");
 							new_state = CYCLE_5;
+						};
+						(
+						  instruction == LDA_IDX ||
+						  instruction == STA_IDX ||
+						  instruction == ORA_IDX ||
+						  instruction == EOR_IDX ||
+						  instruction == AND_IDX ||
+						  instruction == ADC_IDX ||
+						  instruction == CMP_IDX ||
+						  instruction == SBC_IDX
+						) : {
+							new_state = CYCLE_5;
+							PCL = input.data_in;
 						};
 						default : {
 							new_state = CYCLE_1;
@@ -473,62 +490,29 @@ unit fsm_chk_u {
 						  instruction == ROL_ZPX ||
 						  instruction == ROR_ZPX ||
 						  instruction == INC_ZPX ||
-						  instruction == DEC_ZPX
+						  instruction == DEC_ZPX ||
+						  instruction == ASL_ABX ||
+						  instruction == LSR_ABX ||
+						  instruction == ROL_ABX ||
+						  instruction == ROR_ABX ||
+						  instruction == INC_ABX ||
+						  instruction == DEC_ABX
 						) : {
 							new_state = CYCLE_6;
 						};
 						(
-  						  instruction == LDA_ABX ||
-						  instruction == LDA_ABY ||
-						  instruction == LDX_ABY ||
-						  instruction == LDY_ABX ||
-						  instruction == EOR_ABX ||
-						  instruction == EOR_ABY ||
-						  instruction == AND_ABX ||
-						  instruction == AND_ABY ||
-						  instruction == ORA_ABX ||
-						  instruction == ORA_ABY ||
-						  instruction == ADC_ABX ||
-						  instruction == ADC_ABY ||
-						  instruction == SBC_ABX ||
-						  instruction == SBC_ABY ||
-						  instruction == CMP_ABX ||
-						  instruction == CMP_ABY
+						  instruction == LDA_IDX ||
+						  instruction == STA_IDX ||
+						  instruction == ORA_IDX ||
+						  instruction == EOR_IDX ||
+						  instruction == AND_IDX ||
+						  instruction == ADC_IDX ||
+						  instruction == CMP_IDX ||
+						  instruction == SBC_IDX
 						) : {
-							new_state = CYCLE_1;
-							--X = input.alu_x;
-							--Y = input.alu_y;
-							--print X, Y;
-							--print input.alu_x, input.alu_y;
-							--print 't6507lp_fsm.index';
-							--outf("CYCLE_5\n");
+							new_state = CYCLE_6;
+							PCH = input.data_in;
 						};
-						--(
-						--  instruction == LDA_ZPX ||
-						--  instruction == LDX_ZPY ||
-						--  instruction == LDY_ZPX ||
-						--  instruction == EOR_ZPX ||
-						--  instruction == AND_ZPX ||
-						--  instruction == ORA_ZPX ||
-						--  instruction == ADC_ZPX ||
-						--  instruction == SBC_ZPX ||
-						--  instruction == CMP_ZPX ||
-						--  instruction == ASL_ZPX ||
-						--  instruction == LSR_ZPX ||
-						--  instruction == ROL_ZPX ||
-						--  instruction == ROR_ZPX ||
-						--  instruction == INC_ZPX ||
-						--  instruction == DEC_ZPX ||
-						--  instruction == STA_ZPX ||
-						--  instruction == STX_ZPY ||
-						--  instruction == STY_ZPX
-						--) : {
-						--	new_state = CYCLE_1;
-							--X = input.alu_x;
-							--Y = input.alu_y;
-							--print input.alu_x, input.alu_y;
-
-						--};
 						default : {
 							new_state = CYCLE_1;
 						};
@@ -548,20 +532,32 @@ unit fsm_chk_u {
 							new_state = CYCLE_1;
 							PCH = input.data_in;
 						};
+						(
+						  instruction == ASL_ABX ||
+						  instruction == LSR_ABX ||
+						  instruction == ROL_ABX ||
+						  instruction == ROR_ABX ||
+						  instruction == INC_ABX ||
+						  instruction == DEC_ABX
+						) : {
+							new_state = CYCLE_7;
+						};
 						default : {
 							new_state = CYCLE_1;
 						};
 					};
 				};
 				CYCLE_7 : {
-					//case (instruction) {
-					//	BRK_IMP : {
-					//		new_state = CYCLE_6;
-					//	};
-					//	default :
-						new_state = CYCLE_1;
-						PCH = input.data_in
+					case (instruction) {
+						BRK_IMP : {
+							new_state = CYCLE_1;
+							PCH = input.data_in;
+						};
+						default : {
+							new_state = CYCLE_1;
+						};
 					};
+				};
 			};
 			old_input = new_input;
 			new_input = input;
@@ -581,8 +577,6 @@ unit fsm_chk_u {
 				print addr;
 				last_instruction = instructions;
 				instructions = instruction;
-				//print instructions;
-				//print last_instruction;
 				if (mem_rw != 0) {
 					dut_error("Mem_rw is Wrong!");
 				};
@@ -646,10 +640,16 @@ unit fsm_chk_u {
 						  last_instruction == SBC_ABX ||
 						  last_instruction == SBC_ABY ||
 						  last_instruction == CMP_ABX ||
-						  last_instruction == CMP_ABY
+						  last_instruction == CMP_ABY ||
+						  last_instruction == LDA_IDX ||
+						  last_instruction == ORA_IDX ||
+						  last_instruction == EOR_IDX ||
+						  last_instruction == AND_IDX ||
+						  last_instruction == ADC_IDX ||
+						  last_instruction == CMP_IDX ||
+						  last_instruction == SBC_IDX
 						) : {
 							if (alu_opcode != last_instruction) {
-								--print addr[7:0],X + PCL;
 								dut_error("alu_opcode is Wrong!");
 							};
 							if (alu_enable != 1) {
@@ -659,11 +659,23 @@ unit fsm_chk_u {
 								dut_error("Address is Wrong!");
 							};
 						};
+						--(
+						--) : {
+						--	if (alu_opcode != last_instruction) {
+						--		dut_error("alu_opcode is Wrong!");
+						--	};
+						--	if (alu_enable != 1) {
+						--		dut_error("alu_enable is Wrong!");
+						--	};
+						--	if (addr[7:0] != PCL) {
+						--		dut_error("Address is Wrong!");
+						--	};
+						--	if (addr[12:8] != PCH[4:0]) {
+						--		dut_error("Address is Wrong!");
+						--	};
+						--};
 						default : {
 							if (alu_opcode.as_a(byte) != 0) {
-								--print alu_enable;
-								--print alu_opcode;
-								--print last_instruction;
 								dut_error("alu_opcode is Wrong!");
 							};
 							if (alu_enable != 0) {
@@ -784,7 +796,21 @@ unit fsm_chk_u {
 					  instructions == SBC_ABX ||
 					  instructions == SBC_ABY ||
 					  instructions == CMP_ABX ||
-					  instructions == CMP_ABY
+					  instructions == CMP_ABY ||
+					  instructions == ASL_ABX ||
+					  instructions == LSR_ABX ||
+					  instructions == ROL_ABX ||
+					  instructions == ROR_ABX ||
+					  instructions == INC_ABX ||
+					  instructions == DEC_ABX ||
+					  instructions == LDA_IDX ||
+					  instructions == STA_IDX ||
+					  instructions == ORA_IDX ||
+					  instructions == EOR_IDX ||
+					  instructions == AND_IDX ||
+					  instructions == ADC_IDX ||
+					  instructions == CMP_IDX ||
+					  instructions == SBC_IDX
 					) : {
 						if (alu_opcode.as_a(byte) != 0) {
 							dut_error("Opcode is Wrong!");
@@ -842,6 +868,7 @@ unit fsm_chk_u {
 					  instructions == LSR_ACC ||
 					  instructions == PHA_IMP ||
 					  instructions == ROL_ACC ||
+					  instructions == ROR_ACC ||
 					  instructions == SEC_IMP ||
 					  instructions == SED_IMP ||
 					  instructions == SEI_IMP ||
@@ -1019,6 +1046,29 @@ unit fsm_chk_u {
 						};
 					};
 					(
+					  instructions == LDA_IDX ||
+					  instructions == STA_IDX ||
+					  instructions == ORA_IDX ||
+					  instructions == EOR_IDX ||
+					  instructions == AND_IDX ||
+					  instructions == ADC_IDX ||
+					  instructions == CMP_IDX ||
+					  instructions == SBC_IDX
+					) : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (alu_enable != 0) {
+							dut_error("ASL_ACC is Wrong!");
+						};
+						if (mem_rw != 0) {
+							dut_error("MEM_RW should be 0 (WRITE)");
+						};
+						if (addr != pointer) {
+							dut_error("ADDR should be equal SP!");
+						};
+					};
+					(
 					  instructions == ADC_ABS ||
 					  instructions == AND_ABS ||
 					  instructions == ASL_ABS ||
@@ -1045,7 +1095,13 @@ unit fsm_chk_u {
 					  instructions == ORA_ABX ||
 					  instructions == ADC_ABX ||
 					  instructions == SBC_ABX ||
-					  instructions == CMP_ABX
+					  instructions == CMP_ABX ||
+					  instructions == ASL_ABX ||
+					  instructions == LSR_ABX ||
+					  instructions == ROL_ABX ||
+					  instructions == ROR_ABX ||
+					  instructions == INC_ABX ||
+					  instructions == DEC_ABX
 					) : {
 						if (alu_opcode.as_a(byte) != 0) {
 							dut_error("Opcode is Wrong!");
@@ -1233,9 +1289,15 @@ unit fsm_chk_u {
 							dut_error("MEM_RW should be 0 (WRITE)");
 						};
 						--TODO: Isn`t it suppose to have ADDRH == 0????
-						if (addr != PCL + X) {
-							print addr[7:0], PCL+X, PCL, X, 't6507lp_fsm.index';
-							dut_error("ADDR should be equal SP!");
+						if (PCL + X > 255) {
+							if (addr[7:0] != PCL + X - 256) {
+								dut_error("ADDR should be equal SP!");
+							};
+						}
+						else {
+							if (addr[7:0] != PCL + X) {
+								dut_error("ADDR should be equal SP!");
+							};
 						};
 					};
 					(
@@ -1246,7 +1308,13 @@ unit fsm_chk_u {
 					  instructions == ORA_ABX ||
 					  instructions == ADC_ABX ||
 					  instructions == SBC_ABX ||
-					  instructions == CMP_ABX
+					  instructions == CMP_ABX ||
+					  instructions == ASL_ABX ||
+					  instructions == LSR_ABX ||
+					  instructions == ROL_ABX ||
+					  instructions == ROR_ABX ||
+					  instructions == INC_ABX ||
+					  instructions == DEC_ABX
 					) : {
 						if (alu_opcode.as_a(byte) != 0) {
 							dut_error("Opcode is Wrong!");
@@ -1260,13 +1328,42 @@ unit fsm_chk_u {
 						if (PCL + X > 255) {
 							more_cycles = TRUE;
 							if (addr[7:0] != PCL + X - 256) {
-								--print addr[7:0], PCL + X - 256;
 								dut_error("ADDR should be equal SP!");
 							};
 						}
 						else {
 							if (addr[7:0] != PCL + X) {
 								dut_error("ADDR should be equal SP!");
+							};
+						};
+					};
+					(
+					  instructions == LDA_IDX ||
+					  instructions == STA_IDX ||
+					  instructions == ORA_IDX ||
+					  instructions == EOR_IDX ||
+					  instructions == AND_IDX ||
+					  instructions == ADC_IDX ||
+					  instructions == CMP_IDX ||
+					  instructions == SBC_IDX
+					) : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (alu_enable != 0) {
+							dut_error("ASL_ACC is Wrong!");
+						};
+						if (mem_rw != 0) {
+							dut_error("MEM_RW should be 0 (WRITE)");
+						};
+						if (pointer + X > 255) {
+							if (addr[7:0] != pointer + X - 256) {
+								dut_error("ADDR is wrong");
+							};
+						}
+						else {
+							if (addr[7:0] != pointer + X) {
+								dut_error("ADDR is wrong");
 							};
 						};
 					};
@@ -1293,9 +1390,6 @@ unit fsm_chk_u {
 						if (PCL + Y > 255) {
 							more_cycles = TRUE;
 							if (addr[7:0] != PCL + Y - 256) {
-								print addr[7:0], PCL + Y - 256;
-								print PCL, Y;
-								print 't6507lp_fsm.index';
 								dut_error("ADDR should be equal SP!");
 							};
 						}
@@ -1394,8 +1488,15 @@ unit fsm_chk_u {
 						if (mem_rw != 1) {
 							dut_error("MEM_RW should be 1 (WRITE)");
 						};
-						if (addr != PCL + X) {
-							dut_error("ADDR should be equal SP!");
+						if (PCL + X > 255) {
+							if (addr[7:0] != PCL + X - 256) {
+								dut_error("ADDR should be equal SP!");
+							};
+						}
+						else {
+							if (addr[7:0] != PCL + X) {
+								dut_error("ADDR should be equal SP!");
+							};
 						};
 					};
 					(
@@ -1410,8 +1511,15 @@ unit fsm_chk_u {
 						if (mem_rw != 1) {
 							dut_error("MEM_RW should be 1 (WRITE)");
 						};
-						if (addr != PCL + Y) {
-							dut_error("ADDR should be equal SP!");
+						if (PCL + Y > 255) {
+							if (addr[7:0] != PCL + Y - 256) {
+								dut_error("ADDR should be equal SP!");
+							};
+						}
+						else {
+							if (addr[7:0] != PCL + Y) {
+								dut_error("ADDR should be equal SP!");
+							};
 						};
 					};
 					(
@@ -1444,7 +1552,6 @@ unit fsm_chk_u {
 							dut_error("RTI_IMP is Wrong!");
 						};
 						if (addr != SP + 256) {
-							--print addr, SP;
 							dut_error("ADDR should be equal SP!");
 						};
 						SP = SP + 1;
@@ -1506,6 +1613,36 @@ unit fsm_chk_u {
 					//	SP = SP - 1;
 					//};
 					(
+					  instructions == LDA_IDX ||
+					  instructions == STA_IDX ||
+					  instructions == ORA_IDX ||
+					  instructions == EOR_IDX ||
+					  instructions == AND_IDX ||
+					  instructions == ADC_IDX ||
+					  instructions == CMP_IDX ||
+					  instructions == SBC_IDX
+					) : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (alu_enable != 0) {
+							dut_error("ASL_ACC is Wrong!");
+						};
+						if (mem_rw != 0) {
+							dut_error("MEM_RW should be 0 (WRITE)");
+						};
+						if (pointer + X + 1 > 255) {
+							if (addr[7:0] != pointer + X + 1 - 256) {
+								dut_error("ADDR is wrong");
+							};
+						}
+						else {
+							if (addr[7:0] != pointer + X + 1) {
+								dut_error("ADDR is wrong");
+							};
+						};
+					};
+					(
 					  instructions == RTI_IMP
 					) : {
 						if (alu_opcode != instructions) {
@@ -1566,7 +1703,18 @@ unit fsm_chk_u {
 					  instructions == ORA_ABX ||
 					  instructions == ADC_ABX ||
 					  instructions == SBC_ABX ||
-					  instructions == CMP_ABX
+					  instructions == CMP_ABX ||
+					  (
+						more_cycles == TRUE &&
+						(
+						  instructions == ASL_ABX ||
+						  instructions == LSR_ABX ||
+						  instructions == ROL_ABX ||
+						  instructions == ROR_ABX ||
+						  instructions == INC_ABX ||
+						  instructions == DEC_ABX
+						)
+					  )
 					) : {
 						if (alu_opcode.as_a(byte) != 0) {
 							dut_error("Opcode is Wrong!");
@@ -1582,6 +1730,30 @@ unit fsm_chk_u {
 						};
 						if (addr[12:8] != PCH[4:0] + 1) {
 							dut_error("ADDR is wrong!");
+						};
+					};
+					(
+					  more_cycles == FALSE &&
+					  (
+						  instructions == ASL_ABX ||
+						  instructions == LSR_ABX ||
+						  instructions == ROL_ABX ||
+						  instructions == ROR_ABX ||
+						  instructions == INC_ABX ||
+						  instructions == DEC_ABX
+					  )
+					) : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (alu_enable != 0) {
+							dut_error("ASL_ACC is Wrong!");
+						};
+						if (mem_rw != 0) {
+							dut_error("MEM_RW should be 0 (WRITE)");
+						};
+						if (addr[7:0] != PCL + X) {
+							dut_error("ADDR should be equal SP!");
 						};
 					};
 					(
@@ -1628,8 +1800,15 @@ unit fsm_chk_u {
 						if (mem_rw != 1) {
 							dut_error("MEM_RW should be 0 (WRITE)");
 						};
-						if (addr != PCL + X) {
-							dut_error("ADDR should be equal SP!");
+						if (PCL + X > 255) {
+							if (addr[7:0] != PCL + X - 256) {
+								dut_error("ADDR should be equal SP!");
+							};
+						}
+						else {
+							if (addr[7:0] != PCL + X) {
+								dut_error("ADDR should be equal SP!");
+							};
 						};
 					};
 					(
@@ -1696,6 +1875,50 @@ unit fsm_chk_u {
 					//	PC[12:8] = PCH[4:0];
 					//};
 					(
+					  instructions == LDA_IDX ||
+					  instructions == ORA_IDX ||
+					  instructions == EOR_IDX ||
+					  instructions == AND_IDX ||
+					  instructions == ADC_IDX ||
+					  instructions == CMP_IDX ||
+					  instructions == SBC_IDX
+					) : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (alu_enable != 0) {
+							dut_error("ASL_ACC is Wrong!");
+						};
+						if (mem_rw != 0) {
+							dut_error("MEM_RW should be 0 (WRITE)");
+						};
+						if (addr[7:0] != PCL) {
+							dut_error("ADDR is wrong");
+						};
+						if (addr[12:8] != PCH[4:0]) {
+							dut_error("ADDR is wrong");
+						};
+					};
+					(
+					  instructions == STA_IDX ||
+					) : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (alu_enable != 0) {
+							dut_error("ASL_ACC is Wrong!");
+						};
+						if (mem_rw != 1) {
+							dut_error("MEM_RW should be 0 (WRITE)");
+						};
+						if (addr[7:0] != PCL) {
+							dut_error("ADDR is wrong");
+						};
+						if (addr[12:8] != PCH[4:0]) {
+							dut_error("ADDR is wrong");
+						};
+					};
+					(
 					  instructions == RTI_IMP
 					) : {
 						if (alu_opcode.as_a(byte) != 0) {
@@ -1746,8 +1969,69 @@ unit fsm_chk_u {
 						if (mem_rw != 1) {
 							dut_error("MEM_RW should be 0 (WRITE)");
 						};
-						if (addr != PCL + X) {
-							dut_error("ADDR should be equal SP!");
+						if (PCL + X > 255) {
+							if (addr[7:0] != PCL + X - 256) {
+								dut_error("ADDR should be equal SP!");
+							};
+						}
+						else {
+							if (addr[7:0] != PCL + X) {
+								dut_error("ADDR should be equal SP!");
+							};
+						};
+					};
+					(
+					  more_cycles == TRUE &&
+					  (
+					  	instructions == ASL_ABX ||
+					  	instructions == LSR_ABX ||
+					  	instructions == ROL_ABX ||
+					  	instructions == ROR_ABX ||
+					  	instructions == INC_ABX ||
+					  	instructions == DEC_ABX
+					  )
+					) : {
+						if (alu_opcode != instructions) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (alu_enable != 1) {
+							dut_error("ASL_ACC is Wrong!");
+						};
+						if (mem_rw != 1) {
+							dut_error("MEM_RW should be 0 (WRITE)");
+						};
+						if (addr[7:0] != PCL + X - 256) {
+							dut_error("ADDR is wrong!");
+						};
+						if (addr[12:8] != PCH[4:0] + 1) {
+							dut_error("ADDR is wrong!");
+						};
+					};
+					(
+					  more_cycles == FALSE &&
+					  (
+					  	instructions == ASL_ABX ||
+					  	instructions == LSR_ABX ||
+					  	instructions == ROL_ABX ||
+					  	instructions == ROR_ABX ||
+					  	instructions == INC_ABX ||
+					  	instructions == DEC_ABX
+					  )
+					) : {
+						if (alu_opcode != instructions) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (alu_enable != 1) {
+							dut_error("ASL_ACC is Wrong!");
+						};
+						if (mem_rw != 1) {
+							dut_error("MEM_RW should be 0 (WRITE)");
+						};
+						if (addr[7:0] != PCL + X) {
+							dut_error("ADDR is wrong!");
+						};
+						if (addr[12:8] != PCH[4:0]) {
+							dut_error("ADDR is wrong!");
 						};
 					};
 					(
@@ -1780,6 +2064,60 @@ unit fsm_chk_u {
 				print_state();
 				print addr;
 				case {
+					(
+					  more_cycles == TRUE &&
+					  (
+					  	instructions == ASL_ABX ||
+					  	instructions == LSR_ABX ||
+					  	instructions == ROL_ABX ||
+					  	instructions == ROR_ABX ||
+					  	instructions == INC_ABX ||
+					  	instructions == DEC_ABX
+					  )
+					) : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (alu_enable != 0) {
+							dut_error("ASL_ACC is Wrong!");
+						};
+						if (mem_rw != 1) {
+							dut_error("MEM_RW should be 0 (WRITE)");
+						};
+						if (addr[7:0] != PCL + X - 256) {
+							dut_error("ADDR is wrong!");
+						};
+						if (addr[12:8] != PCH[4:0] + 1) {
+							dut_error("ADDR is wrong!");
+						};
+					};
+					(
+					  more_cycles == FALSE &&
+					  (
+					  	instructions == ASL_ABX ||
+					  	instructions == LSR_ABX ||
+					  	instructions == ROL_ABX ||
+					  	instructions == ROR_ABX ||
+					  	instructions == INC_ABX ||
+					  	instructions == DEC_ABX
+					  )
+					) : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (alu_enable != 0) {
+							dut_error("ASL_ACC is Wrong!");
+						};
+						if (mem_rw != 1) {
+							dut_error("MEM_RW should be 0 (WRITE)");
+						};
+						if (addr[7:0] != PCL + X) {
+							dut_error("ADDR is wrong!");
+						};
+						if (addr[12:8] != PCH[4:0]) {
+							dut_error("ADDR is wrong!");
+						};
+					};
 					(
 					  instructions == BRK_IMP
 					) : {

@@ -47,22 +47,39 @@ module t2600_kb_tb();
 	// all inputs are regs
 	reg clk;
 	reg reset_n;
+	reg kd;
+	reg kc;
 	// all outputs are wires
 	wire [15:0] io_lines; 
-	
-	initial clk = 0;
-	always #10 clk <= ~clk;
 
-	always @(posedge clk) begin
-		//$display("reset is %b", reset_n);
-		//$display("alu_enable is %b", alu_enable);
-		//$display("alu_opcode is %h", alu_opcode);
-		//$display("alu_a is %d", alu_a);
-	end
+	always #10 clk <= ~clk;
 	
-	t2600_kb t2600_kb (
+	initial begin
+		clk = 1'b0;
+		reset_n = 1'b1;
+		kd = 1'b0;
+		kc = 1'b0;
+
+		#10;
+		reset_n = 1'b0;
+	
+		#40000; 
+		$finish;
+	end
+
+	always @(clk) begin
+		kc = $random;
+		kd = $random;
+	end
+
+
+	T2600_KB T2600_KB (
 		.CLK		(clk),
 		.RST		(reset_n),
-		.io_lines	(alu_enable)
+		.io_lines	(io_lines),
+		.KC		(kc),
+		.KD		(kd)
 	);
+
+
 endmodule

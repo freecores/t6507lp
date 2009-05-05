@@ -28,16 +28,16 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+--use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-entity t2600_kb is
+entity T2600_KB is
 	Port (	CLK, RST, KD, KC: in std_logic;
 		--an: out std_logic_vector (3 downto 0);
 		--sseg: out std_logic_vector (6 downto 0);
 		io_lines: out std_logic_vector (15 downto 0)
 	);
-end t2600_kb;
+end T2600_KB;
 
 architecture Behavioral of t2600_kb is
 	------------------------------------------------------------------------
@@ -124,10 +124,10 @@ architecture Behavioral of t2600_kb is
 	io_lines(8) <= '1' when WaitReg = x"1d" else '0'; -- w
 	io_lines(7) <= '1' when WaitReg = x"05" else '0'; -- F1, p1 dif
 	io_lines(6) <= '1' when WaitReg = x"06" else '0'; -- F2, p0 dif
-	--io_lines(5) <= '1' when WaitReg = x"72" else '0'; -- not used
-	--io_lines(4) <= '1' when WaitReg = x"75" else '0'; -- not used
+	io_lines(5) <= '0'; -- not used
+	io_lines(4) <= '0'; -- not used
 	io_lines(3) <= '1' when WaitReg = x"04" else '0'; -- F3, color
-	--io_lines(2) <= '1' when WaitReg = x"1c" else '0'; -- not used
+	io_lines(2) <= '0'; -- not used
 	io_lines(1) <= '1' when WaitReg = x"0c" else '0'; -- F4, game select
 	io_lines(0) <= '1' when WaitReg = x"03" else '0'; -- F5, game select
 
