@@ -95,8 +95,9 @@ module t2600(clk, reset_n);
 		.KD		(kd)
 	);
 
+	video video (
 
-
+	);
 
 
 // VIDEO
