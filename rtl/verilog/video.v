@@ -64,159 +64,134 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data);
 	assign data = (mem_rw || !reset_n) ? 8'bZ : data_drv; // if under writing the bus receives the data from cpu, else local data. 
 
 	reg VSYNC; // vertical sync set-clear
-	reg VBLANK; //  1 1 1 vertical blank set-clear
+	reg [2:0] VBLANK; // vertical blank set-clear
 	reg WSYNC; //  s t r o b e wait for leading edge of horizontal blank
 	reg RSYNC; //  s t r o b e reset horizontal sync counter
-	reg NUSIZ0; //  1 1 1 1 1 1 number-size player-missile 0
-	reg NUSIZ1; //  1 1 1 1 1 1 number-size player-missile 1
-	reg COLUP0; //  1 1 1 1 1 1 1 color-lum player 0
-	reg COLUP1; //  1 1 1 1 1 1 1 color-lum player 1
-	reg COLUPF; //  1 1 1 1 1 1 1 color-lum playfield
-	reg COLUBK; //  1 1 1 1 1 1 1 color-lum background
-	reg CTRLPF; //  1 1 1 1 1 control playfield ball size & collisions
-	reg REFP0; //  1 reflect player 0
-	reg REFP1; //  1 reflect player 1
-	reg PF0; //  1 1 1 1 playfield register byte 0
-	reg PF1; //  1 1 1 1 1 1 1 1 playfield register byte 1
-	reg PF2; //  1 1 1 1 1 1 1 1 playfield register byte 2
+	reg [5:0] NUSIZ0; //  number-size player-missile 0
+	reg [5:0] NUSIZ1; //  number-size player-missile 1
+	reg [6:0] COLUP0; //  color-lum player 0
+	reg [6:0] COLUP1; //  color-lum player 1
+	reg [6:0] COLUPF; //  color-lum playfield
+	reg [6:0] COLUBK; //  color-lum background
+	reg [4:0] CTRLPF; //  control playfield ball size & collisions
+	reg REFP0; //  reflect player 0
+	reg REFP1; //  reflect player 1
+	reg [3:0] PF0; //  playfield register byte 0
+	reg [7:0] PF1; //  playfield register byte 1
+	reg [7:0] PF2; //  playfield register byte 2
 	reg RESP0; //  s t r o b e reset player 0
 	reg RESP1; //  s t r o b e reset player 1
 	reg RESM0; //  s t r o b e reset missile 0
 	reg RESM1; //  s t r o b e reset missile 1
 	reg RESBL; //  s t r o b e reset ball
-	reg AUDC0; //  1 1 1 1 audio control 0
-	reg AUDC1; //  1 1 1 1 1 audio control 1
-	reg AUDF0; //  1 1 1 1 1 audio frequency 0
-	reg AUDF1; //  1 1 1 1 audio frequency 1
-	reg AUDV0; //  1 1 1 1 audio volume 0
-	reg AUDV1; //  1 1 1 1 audio volume 1
-	reg GRP0; //  1 1 1 1 1 1 1 1 graphics player 0
-	reg GRP1; //  1 1 1 1 1 1 1 1 graphics player 1
-	reg ENAM0; //  1 graphics (enable) missile 0
-	reg ENAM1; //  1 graphics (enable) missile 1
-	reg ENABL; //  1 graphics (enable) ball
-	reg HMP0; //  1 1 1 1 horizontal motion player 0
-	reg HMP1; //  1 1 1 1 horizontal motion player 1
-	reg HMM0; //  1 1 1 1 horizontal motion missile 0
-	reg HMM1; //  1 1 1 1 horizontal motion missile 1
-	reg HMBL; //  1 1 1 1 horizontal motion ball
-	reg VDELP0; //  1 vertical delay player 0
-	reg VDEL01; //  1 vertical delay player 1
-	reg VDELBL; //  1 vertical delay ball
-	reg RESMP0; //  1 reset missile 0 to player 0
-	reg RESMP1; //  1 reset missile 1 to player 1
+	reg [3:0] AUDC0; //  audio control 0
+	reg [4:0] AUDC1; //  audio control 1
+	reg [4:0] AUDF0; //  audio frequency 0
+	reg [3:0] AUDF1; //  audio frequency 1
+	reg [3:0] AUDV0; //  audio volume 0
+	reg [3:0] AUDV1; //  audio volume 1
+	reg [7:0] GRP0; //  graphics player 0
+	reg [7:0] GRP1; //  graphics player 1
+	reg ENAM0; //  graphics (enable) missile 0
+	reg ENAM1; //  graphics (enable) missile 1
+	reg ENABL; //  graphics (enable) ball
+	reg [3:0] HMP0; //  horizontal motion player 0
+	reg [3:0] HMP1; //  horizontal motion player 1
+	reg [3:0] HMM0; //  horizontal motion missile 0
+	reg [3:0] HMM1; //  horizontal motion missile 1
+	reg [3:0] HMBL; //  horizontal motion ball
+	reg VDELP0; //  vertical delay player 0
+	reg VDEL01; //  vertical delay player 1
+	reg VDELBL; //  vertical delay ball
+	reg RESMP0; //  reset missile 0 to player 0
+	reg RESMP1; //  reset missile 1 to player 1
 	reg HMOVE; //  s t r o b e apply horizontal motion
 	reg HMCLR; //  s t r o b e clear horizontal motion registers
-	reg CXCLR ; // s t r o b e clear collision latches 
+	reg CXCLR ; // s t r o b e clear collision latches
 
-	always @(posedge clk  or negedge reset_n) begin // R/W register/memory handling
+	reg [1:0] CXM0P; // read collision MO P1 M0 P0
+	reg [1:0] CXM1P; // read collision M1 P0 M1 P1
+	reg [1:0] CXP0FB; // read collision P0 PF P0 BL
+	reg [1:0] CXP1FB; // read collision P1 PF P1 BL
+	reg [1:0] CXM0FB; // read collision M0 PF M0 BL
+	reg [1:0] CXM1FB; // read collision M1 PF M1 BL
+	reg CXBLPF; // read collision BL PF unused
+	reg [1:0] CXPPMM; // read collision P0 P1 M0 M1
+	reg INPT0; // read pot port
+	reg INPT1; // read pot port
+	reg INPT2; // read pot port
+	reg INPT3; // read pot port
+	reg INPT4; // read input
+	reg INPT5; // read input 
+
+	always @(posedge clk  or negedge reset_n) begin
 		if (reset_n == 1'b0) begin
 			data_drv <= 8'h00;
 		end
 		else begin
-			if (reading) begin // reading! 
+			if (mem_rw == 1'b0) begin // reading! 
 				case (address) 
-					10'h280: data_drv <= port_a;
-					10'h281: data_drv <= ddra;
-					10'h282: data_drv <= port_b;
-					10'h283: data_drv <= 8'h00; // portb ddr is always input
-					10'h284: data_drv <= timer;
-					default: data_drv <= ram[address];
+					6'h00: data_drv <= {CXM0P, 6'b000000};
+					6'h01: data_drv <= {CXM1P, 6'b000000};
+					6'h02: data_drv <= {CXP0FB, 6'b000000};
+					6'h03: data_drv <= {CXP1FB, 6'b000000};
+					6'h04: data_drv <= {CXM0FB, 6'b000000};
+					6'h05: data_drv <= {CXM1FB, 6'b000000};
+					6'h06: data_drv <= {CXBLPF, 7'b000000};
+					6'h07: data_drv <= {CXPPMM, 6'b000000};
+					6'h08: data_drv <= {INPT0, 7'b000000};
+					6'h09: data_drv <= {INPT1, 7'b000000};
+					6'h0A: data_drv <= {INPT2, 7'b000000};
+					6'h0B: data_drv <= {INPT3, 7'b000000};
+					6'h0C: data_drv <= {INPT4, 7'b000000};
+					6'h0D: data_drv <= {INPT5, 7'b000000};
+					default: ;
 				endcase
 			end  	
-			else if (writing) begin // writing! 
+			else begin // writing! 
 				case (address)
-					10'h281: begin
-						ddra <= data;
-					end 
-					10'h294: begin
-						c1_timer <= 1'b1;
-						c8_timer <= 1'b0;
-						c64_timer <= 1'b0;
-						c1024_timer <= 1'b0;
-						timer <= data;
-						flipped <= 1'b0;
-						counter <= 11'd1;
+					6'h00: begin
+						VSYNC <= data;
 					end
-					10'h295: begin
-						c1_timer <= 1'b0;
-						c8_timer <= 1'b1;
-						c64_timer <= 1'b0;
-						c1024_timer <= 1'b0;
-						timer <= data;
-						flipped <= 1'b0;
-						counter <= 11'd7;
+					6'h01: begin
+						VBLANK <= data;
 					end
-					10'h296: begin
-						c1_timer <= 1'b0;
-						c8_timer <= 1'b0;
-						c64_timer <= 1'b1;
-						c1024_timer <= 1'b0;
-						timer <= data;
-						flipped <= 1'b0;
-						counter <= 11'd63;
+					6'h02: begin
+						WSYNC <= data;
 					end
-					10'h297: begin
-						c1_timer <= 1'b0;
-						c8_timer <= 1'b0;
-						c64_timer <= 1'b0;
-						c1024_timer <= 1'b1;
-						timer <= data;
-						flipped <= 1'b0;
-						counter <= 11'd1023;
+					6'h03: begin
+						RSYNC <= data;
+					end
+					6'h04: begin
+						NUSIZ0 <= data;
+					end
+					6'h05: begin
+						NUSIZ1 <= data;
+					end
+					6'h06: begin
+						COLUP0 <= data;
+					end
+					6'h07: begin
+						COLUP1 <= data;
+					end
+					6'h08: begin
+						COLUPF <= data;
+					end
+					6'h09: begin
+						COLUBK <= data;
+					end
+					6'h0a: begin
+						CTRLPF <= data;
+					end
+					6'h0b: begin
+						NUSIZ1 <= data;
+					end
+					6'h0c: begin
+						NUSIZ1 <= data;
 					end
 					default: begin
-						ram[address] <= data;
 					end
 				endcase
-			end
-		
-			if (!writing_at_timer) begin
-				if (flipped || timer == 8'd0) begin // finished counting
-					counter <= 11'd0;
-					timer <= timer - 8'd1;
-					flipped <= 1'b1;
-				end
-				else begin
-					if (counter == 11'd0) begin
-						timer <= timer - 8'd1;
-	
-						if (c1_timer) begin
-							counter <= 11'd0;
-						end
-						if (c8_timer) begin
-							counter <= 11'd7;
-						end
-						if (c64_timer) begin
-							counter <= 11'd63;
-						end
-						if (c1024_timer) begin
-							counter <= 11'd1023;
-						end
-					end
-					else begin
-						counter <= counter - 11'd1;
-					end
-				end
-			end
-		end
-	end
-	
-	always @(*) begin // logic for easier controlling
-		reading = 1'b0;
-		writing = 1'b0;
-		writing_at_timer = 1'b0;
-
-		if (enable && reset_n) begin
-			if (mem_rw == 1'b0) begin
-				reading = 1'b1;
-			end
-			else begin
-				writing = 1'b1;
-
-				if ( (address == 10'h294) || (address == 10'h295) || (address == 10'h296) || (address == 10'h297) ) begin
-					writing_at_timer = 1'b1;
-				end
 			end
 		end
 	end
