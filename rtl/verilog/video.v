@@ -151,44 +151,142 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data);
 			else begin // writing! 
 				case (address)
 					6'h00: begin
-						VSYNC <= data;
+						VSYNC <= data[1];
 					end
 					6'h01: begin
-						VBLANK <= data;
+						VBLANK <= {data[7:6], data[1]};
 					end
 					6'h02: begin
-						WSYNC <= data;
+						WSYNC <= 1'b1; // STROBE
 					end
 					6'h03: begin
-						RSYNC <= data;
+						RSYNC <= 1'b1; // STROBE
 					end
 					6'h04: begin
-						NUSIZ0 <= data;
+						NUSIZ0 <= data[5:0];
 					end
 					6'h05: begin
-						NUSIZ1 <= data;
+						NUSIZ1 <= data[5:0];
 					end
 					6'h06: begin
-						COLUP0 <= data;
+						COLUP0 <= data[7:1];
 					end
 					6'h07: begin
-						COLUP1 <= data;
+						COLUP1 <= data[7:1];
 					end
 					6'h08: begin
-						COLUPF <= data;
+						COLUPF <= data[7:1];
 					end
 					6'h09: begin
-						COLUBK <= data;
+						COLUBK <= data[7:1];
 					end
 					6'h0a: begin
-						CTRLPF <= data;
+						CTRLPF <= {data[5:4], data[2:0]};
 					end
 					6'h0b: begin
-						NUSIZ1 <= data;
+						REFP0 <= data[3];
 					end
 					6'h0c: begin
-						NUSIZ1 <= data;
+						REFP1 <= data[3];
 					end
+					6'h0d: begin
+						PF0 <= data[7:4	];
+					end
+					6'h0e: begin
+						PF1 <= data;
+					end
+					6'h0f: begin
+						PF2 <= data;
+					end
+					6'h10: begin
+						RESP0 <= 1'b1; // STROBE
+					end
+					6'h11: begin
+						RESP1 <= 1'b1; // STROBE
+					end
+					6'h12: begin
+						RESM0 <= 1'b1; // STROBE
+					end
+					6'h13: begin
+						RESM1 <= 1'b1; // STROBE
+					end
+					6'h14: begin
+						RESBL <= 1'b1; // STROBE
+					end
+					6'h15: begin
+						AUDC0 <= data[3:0];
+					end
+					6'h16: begin
+						AUDC1 <= data[4:0];
+					end
+					6'h17: begin
+						AUDF0 <= data[4:0];
+					end
+					6'h18: begin
+						AUDF1 <= data[3:0];
+					end
+					6'h19: begin
+						AUDV0 <= data[3:0];
+					end
+					6'h1A: begin
+						AUDV1 <= data[3:0];
+					end
+					6'h1B: begin
+						GRP0 <= data;
+					end
+					6'h1C: begin
+						GRP1 <= data;
+					end
+					6'h1D: begin
+						ENAM0 <= data[1];
+					end
+					6'h1E: begin
+						ENAM1 <= data[1];
+					end
+					6'h1F: begin
+						ENABL <= data[1];
+					end
+					6'h20: begin
+						HMP0 <= data[7:4];
+					end
+					6'h21: begin
+						HMP1 <= data[7:4];
+					end
+					6'h22: begin
+						HMM0 <= data[7:4];
+					end
+					6'h23: begin
+						HMM1 <= data[7:4];
+					end
+					6'h24: begin
+						HMBL <= data[7:4];
+					end
+					6'h25: begin
+						VDELP0 <= data[0];
+					end
+					6'h26: begin
+						VDEL01 <= data[0];
+					end
+					6'h27: begin
+						VDELBL <= data[0];
+					end
+					6'h28: begin
+						RESMP0 <= data[1];
+					end
+					6'h29: begin
+						RESMP1 <= data[1];
+					end
+					6'h2a: begin
+						HMOVE <= 1'b1; // STROBE
+					end
+					6'h2b: begin
+						HMCLR <= 1'b1; // STROBE
+					end
+					6'h2c: begin
+						CXCLR <= 1'b1; // STROBE
+					end
+
+
 					default: begin
 					end
 				endcase
