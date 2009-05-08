@@ -285,8 +285,6 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data);
 					6'h2c: begin
 						CXCLR <= 1'b1; // STROBE
 					end
-
-
 					default: begin
 					end
 				endcase
