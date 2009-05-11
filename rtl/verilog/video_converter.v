@@ -9,7 +9,7 @@
 //// Color scheme conversion				 		////
 ////									////
 //// TODO:								////
-//// - Everything?							////
+//// - Maybe less colors will be used					////
 ////									////
 //// Author(s):								////
 //// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
