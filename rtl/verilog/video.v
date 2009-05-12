@@ -44,7 +44,7 @@
 
 `include "timescale.v"
 
-module video(clk, reset_n, io_lines, enable, mem_rw, address, data);
+module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel);
 	parameter [3:0] DATA_SIZE = 4'd8;
 	parameter [3:0] ADDR_SIZE = 4'd10; // this is the *local* addr_size
 
@@ -58,6 +58,7 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data);
 	input mem_rw; // read == 0, write == 1
 	input [ADDR_SIZE_:0] address; // system address bus
 	inout [DATA_SIZE_:0] data; // controler <=> riot data bus
+	output [11:0] pixel;
 
 	reg [DATA_SIZE_:0] data_drv; // wrapper for the data bus
 
@@ -65,7 +66,7 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data);
 
 	reg VSYNC; // vertical sync set-clear
 	reg [2:0] VBLANK; // vertical blank set-clear
-	reg WSYNC; //  s t r o b e wait for leading edge of horizontal blank
+	reg WSYNC; //  SEMI-strobe wait for leading edge of horizontal blank
 	reg RSYNC; //  s t r o b e reset horizontal sync counter
 	reg [5:0] NUSIZ0; //  number-size player-missile 0
 	reg [5:0] NUSIZ1; //  number-size player-missile 1
@@ -125,11 +126,29 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data);
 	reg INPT2; // read pot port
 	reg INPT3; // read pot port
 	reg INPT4; // read input
-	reg INPT5; // read input 
+	reg INPT5; // read input
+
+	reg [5:0] hor_counter; // this counter is the "current pixel". when it reaches 39 the wsync register must be driven to zero
+
+	always @(posedge clk  or negedge reset_n) begin
+		if (reset_n == 1'b0) begin
+			hor_counter <= 6'd0;
+		end
+		else begin
+			if (hor_counter == 6'd39) begin
+				hor_counter <= 6'd0;
+				WSYNC <= 1'b0;
+			end
+			else begin
+				hor_counter <= hor_counter + 6'd1;
+			end
+		end
+	end
 
 	always @(posedge clk  or negedge reset_n) begin
 		if (reset_n == 1'b0) begin
 			data_drv <= 8'h00;
+			WSYNC <= 1'b0;
 		end
 		else begin
 			if (mem_rw == 1'b0) begin // reading! 
