@@ -56,13 +56,14 @@ output [9:0] LEDR;
 output VGA_VS;
 output VGA_HS;
 
-wire [479:0] line; 
-wire [4:0] vert_counter;
+//wire [479:0] line;
+//wire [4:0] vert_counter;
 
 	vga_controller vga_controller (
 		.reset(reset),
 		.clk_50(clk_50),
 		.line(line),
+		.vert_counter(vert_counter),
 		.SW(SW),
 		.VGA_R(VGA_R),
 		.VGA_G(VGA_G),
@@ -73,6 +74,8 @@ wire [4:0] vert_counter;
 	);
 
 	controller_test controller_test (
+		.reset(reset),
+		.clk_50(clk_50),
 		.line(line),
 		.vert_counter(vert_counter)
 	);
