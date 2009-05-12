@@ -44,11 +44,12 @@
 
 `include "timescale.v"
 
-module vga_controller ( reset, clk_50, SW, VGA_R, VGA_G, VGA_B, LEDR, VGA_VS, VGA_HS);
+module vga_controller ( reset, clk_50, line, SW, VGA_R, VGA_G, VGA_B, LEDR, VGA_VS, VGA_HS);
 
 input reset;
 input clk_50;
-input [8:0] SW; 
+input [8:0] SW;
+input [479:0] line; 
 output reg [3:0] VGA_R;
 output reg [3:0] VGA_G;
 output reg [3:0] VGA_B;
