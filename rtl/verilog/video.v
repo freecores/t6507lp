@@ -74,6 +74,10 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data);
 	reg [6:0] COLUPF; //  color-lum playfield
 	reg [6:0] COLUBK; //  color-lum background
 	reg [4:0] CTRLPF; //  control playfield ball size & collisions
+		// D0 = REF (reflect playfield)
+		// D1 = SCORE (left half of playfield gets color of player 0, right half gets color of player 1)
+		// D2 = PFP (playfield gets priority over players so they can move behind the playfield)
+		// D4 & D5 = BALL SIZE
 	reg REFP0; //  reflect player 0
 	reg REFP1; //  reflect player 1
 	reg [3:0] PF0; //  playfield register byte 0
@@ -107,7 +111,6 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data);
 	reg RESMP1; //  reset missile 1 to player 1
 	reg HMOVE; //  s t r o b e apply horizontal motion
 	reg HMCLR; //  s t r o b e clear horizontal motion registers
-	reg CXCLR ; // s t r o b e clear collision latches
 
 	reg [1:0] CXM0P; // read collision MO P1 M0 P0
 	reg [1:0] CXM1P; // read collision M1 P0 M1 P1
@@ -282,8 +285,15 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data);
 					6'h2b: begin
 						HMCLR <= 1'b1; // STROBE
 					end
-					6'h2c: begin
-						CXCLR <= 1'b1; // STROBE
+					6'h2c: begin // cxclr STROBE
+						CXM0P <= 2'b0; // read collision MO P1 M0 P0
+						CXM1P <= 2'b0; // read collision M1 P0 M1 P1
+						CXP0FB <= 2'b0; // read collision P0 PF P0 BL
+						CXP1FB <= 2'b0; // read collision P1 PF P1 BL
+						CXM0FB <= 2'b0; // read collision M0 PF M0 BL
+						CXM1FB <= 2'b0; // read collision M1 PF M1 BL
+						CXBLPF <= 2'b0; // read collision BL PF unused
+						CXPPMM <= 2'b0; // read collision P0 P1 M0 M1
 					end
 					default: begin
 					end
