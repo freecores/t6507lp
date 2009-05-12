@@ -45,7 +45,7 @@
 `include "timescale.v"
 
 //module vga_tester (reset_n, clk_50);
-module vga_tester(line, vert_counter);
+module controller_test(line, vert_counter);
 
 //input reset_n;
 //input clk_50;
@@ -86,11 +86,9 @@ always @ (posedge clk_50 or negedge reset_n) begin
 	if (reset_n == 0) begin
 		clk_358 <= 1'b0;
 		counter <= 4'd0;
-		vert_counter <= 6'd0;
 		red <= 4'b1010;
 		green <= 4'b0001;
 		blue <= 4'b1110;
-		line <= 480'd0;
 	end
 	else begin
 		if (counter == 4'h6) begin
@@ -107,6 +105,8 @@ end
 
 always @ (posedge clk_358 or negedge reset_n) begin
 	if (reset_n == 0) begin
+		vert_counter <= 6'd0;
+		line <= 480'd0;
 	end
 	else begin
 		

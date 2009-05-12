@@ -46,15 +46,15 @@
 
 module vga_controller ( reset, clk_50, SW, VGA_R, VGA_G, VGA_B, LEDR, VGA_VS, VGA_HS);
 
-input reset,
-input clk_50,
-input [8:0] SW, 
-output reg [3:0] VGA_R,
-output reg [3:0] VGA_G,
-output reg [3:0] VGA_B,
-output [9:0] LEDR,
-output reg VGA_VS,
-output reg VGA_HS
+input reset;
+input clk_50;
+input [8:0] SW; 
+output reg [3:0] VGA_R;
+output reg [3:0] VGA_G;
+output reg [3:0] VGA_B;
+output [9:0] LEDR;
+output reg VGA_VS;
+output reg VGA_HS;
 
 
 reg clk_25;
