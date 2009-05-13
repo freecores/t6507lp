@@ -44,12 +44,13 @@
 
 `include "timescale.v"
 
-module controller_test(reset_n, clk_50, line, vert_counter);
+module controller_test(reset_n, clk_50, pixel, vert_counter, hor_counter);
 
 input reset_n;
 input clk_50;
-output reg [479:0] line;
-output reg [4:0] vert_counter;
+output reg [11:0] pixel;
+output reg [8:0] vert_counter;
+output reg [7:0] hor_counter;
 
 reg clk_358; // 3.58mhz
 reg [3:0] counter;
@@ -57,18 +58,6 @@ reg [3:0] counter;
 reg [3:0] red;
 reg [3:0] green;
 reg [3:0] blue;
-
-reg [11:0] pixel0;
-reg [11:0] pixel1;
-reg [11:0] pixel2;
-reg [11:0] pixel3;
-reg [11:0] pixel4;
-reg [11:0] pixel5;
-reg [11:0] pixel6;
-reg [11:0] pixel7;
-reg [11:0] pixel8;
-reg [11:0] pixel9;
-
 
 always @ (posedge clk_50 or negedge reset_n) begin
 	if (reset_n == 1'b0) begin
@@ -79,6 +68,10 @@ always @ (posedge clk_50 or negedge reset_n) begin
 		blue <= 4'b1110;
 	end
 	else begin
+		red <= 4'b1010;
+		green <= 4'b0001;
+		blue <= 4'b1110;
+
 		if (counter == 4'h6) begin
 			clk_358 <= !clk_358;
 			counter <= 4'd0;
@@ -94,36 +87,28 @@ end
 always @ (posedge clk_358 or negedge reset_n) begin
 	if (reset_n == 1'b0) begin
 		vert_counter <= 6'd0;
-		line <= 480'd0;
-		$write("NEVER!");
+		hor_counter <= 8'd0;
+		vert_counter = 9'd0;
 	end
 	else begin
-		
-		line <= {pixel0, pixel1, pixel2, pixel3, pixel4, pixel5, pixel6, pixel7, pixel8, pixel9,
-			 pixel0, pixel1, pixel2, pixel3, pixel4, pixel5, pixel6, pixel7, pixel8, pixel9,
-			 pixel0, pixel1, pixel2, pixel3, pixel4, pixel5, pixel6, pixel7, pixel8, pixel9,
-			 pixel0, pixel1, pixel2, pixel3, pixel4, pixel5, pixel6, pixel7, pixel8, pixel9};
+		if (hor_counter == 8'd227) begin // last colum
+			hor_counter <= 8'd0;
 
-		if (vert_counter == 5'd29) begin
-			vert_counter <= 6'd0;
+			if (vert_counter == 9'd261) begin // last line
+				vert_counter <= 9'd0;
+			end
+			else begin
+				vert_counter <= vert_counter + 9'd1;
+			end
 		end
 		else begin
-			vert_counter <= vert_counter + 5'd1;
+			hor_counter <= hor_counter + 8'd1;
 		end
 	end
 end
 
-always @(*) begin
-	pixel0 = {red, green, blue};
-	pixel1 = {red, green, blue};
-	pixel2 = {red, green, blue};
-	pixel3 = {red, green, blue};
-	pixel4 = {red, green, blue};
-	pixel5 = {red, green, blue};
-	pixel6 = {red, green, blue};
-	pixel7 = {red, green, blue};
-	pixel8 = {red, green, blue};
-	pixel9 = {red, green, blue};
+always @(*) begin // comb logic
+	pixel = {red, green, blue};
 end
 
 endmodule
