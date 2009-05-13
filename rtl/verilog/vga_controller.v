@@ -44,9 +44,9 @@
 
 `include "timescale.v"
 
-module vga_controller ( reset, clk_50, line, vert_counter, SW, VGA_R, VGA_G, VGA_B, LEDR, VGA_VS, VGA_HS);
+module vga_controller ( reset_n, clk_50, line, vert_counter, SW, VGA_R, VGA_G, VGA_B, LEDR, VGA_VS, VGA_HS);
 
-input reset;
+input reset_n;
 input clk_50;
 input [8:0] SW;
 input [479:0] line;
@@ -65,11 +65,11 @@ reg vsenable;
 wire vidon;
 
 assign LEDR[8:0] = SW;
-assign LEDR[9] = reset;
+assign LEDR[9] = reset_n;
 
-always @ (posedge clk_50 or negedge reset)
+always @ (posedge clk_50 or negedge reset_n)
 begin
-	if (!reset) begin
+	if (!reset_n) begin
 		clk_25 <= 0;
 	end
 	else begin
@@ -77,9 +77,9 @@ begin
 	end
 end
 
-always @ (posedge clk_25 or negedge reset)
+always @ (posedge clk_25 or negedge reset_n)
 begin
-	if (!reset) begin
+	if (!reset_n) begin
 		hc <= 0;
 		VGA_HS <= 1;
 		vsenable <= 0;
@@ -111,9 +111,9 @@ begin
 	end
 end
 
-always @ (posedge clk_25 or negedge reset)
+always @ (posedge clk_25 or negedge reset_n)
 begin
-	if (!reset) begin
+	if (!reset_n) begin
 		vc <= 0;
 		VGA_VS <= 1;
 	end
@@ -142,141 +142,50 @@ end
 
 always @ (posedge clk_25)
 begin
+	VGA_R[0] <= 0;
+	VGA_G[0] <= 0;
+	VGA_B[0] <= 0;
+	VGA_R[1] <= 0;
+	VGA_G[1] <= 0;
+	VGA_B[1] <= 0;
+	VGA_R[2] <= 0;
+	VGA_G[2] <= 0;
+	VGA_B[2] <= 0;
+	VGA_R[3] <= 0;
+	VGA_G[3] <= 0;
+	VGA_B[3] <= 0;
 	if (vidon == 1) begin
 		if (hc < 40) begin
-			if (vert_counter < 10) begin
-				/*VGA_R[0] <= line[hc*12];
-				VGA_R[1] <= line[hc*12+1];
-				VGA_R[2] <= line[hc*12+2];
-				VGA_R[3] <= line[hc*12+3];
-				VGA_G[0] <= line[hc*12+4];
-				VGA_G[1] <= line[hc*12+5];
-				VGA_G[2] <= line[hc*12+6];
-				VGA_G[3] <= line[hc*12+7];
-				VGA_B[0] <= line[hc*12+8];
-				VGA_B[1] <= line[hc*12+9];
-				VGA_B[2] <= line[hc*12+10];
-				VGA_B[3] <= line[hc*12+11];*/
-				VGA_R[0] <= 1;
-				VGA_R[1] <= 0;
-				VGA_R[2] <= 1;
-				VGA_R[3] <= 0;
-				VGA_G[0] <= 1;
-				VGA_G[1] <= 0;
-				VGA_G[2] <= 1;
-				VGA_G[3] <= 0;
-				VGA_B[0] <= 1;
-				VGA_B[1] <= 0;
-				VGA_B[2] <= 1;
-				VGA_B[3] <= 0;
-			end
-			else begin
-				VGA_R[0] <= 0;
-				VGA_G[0] <= 0;
-				VGA_B[0] <= 0;
-				VGA_R[1] <= 0;
-				VGA_G[1] <= 0;
-				VGA_B[1] <= 0;
-				VGA_R[2] <= 0;
-				VGA_G[2] <= 0;
-				VGA_B[2] <= 0;
-				VGA_R[3] <= 0;
-				VGA_G[3] <= 0;
-				VGA_B[3] <= 0;
-		end
-		end
-		else begin
-			VGA_R[0] <= 0;
-			VGA_G[0] <= 0;
-			VGA_B[0] <= 0;
-			VGA_R[1] <= 0;
-			VGA_G[1] <= 0;
-			VGA_B[1] <= 0;
-			VGA_R[2] <= 0;
-			VGA_G[2] <= 0;
-			VGA_B[2] <= 0;
-			VGA_R[3] <= 0;
-			VGA_G[3] <= 0;
-			VGA_B[3] <= 0;
-		end
-			
-/*			if (vc < 240) begin
-				VGA_R[0] <= 1;
-				VGA_G[0] <= 1;
-				VGA_B[0] <= 1;
-				VGA_R[1] <= 1;
-				VGA_G[1] <= 1;
-				VGA_B[1] <= 1;
-				VGA_R[2] <= 1;
-				VGA_G[2] <= 1;
-				VGA_B[2] <= 1;
-				VGA_R[3] <= 1;
-				VGA_G[3] <= 1;
-				VGA_B[3] <= 1;
-			end
-			else begin
-				VGA_R[0] <= 0;
-				VGA_G[0] <= 0;
-				VGA_B[0] <= 1;
-				VGA_R[1] <= 0;
-				VGA_G[1] <= 0;
-				VGA_B[1] <= 1;
-				VGA_R[2] <= 0;
-				VGA_G[2] <= 0;
-				VGA_B[2] <= 1;
-				VGA_R[3] <= 0;
-				VGA_G[3] <= 0;
-				VGA_B[3] <= 1;
-			end
-		end
-		else begin
-			if (vc < 240) begin
-				VGA_R[0] <= 1;
-				VGA_G[0] <= 0;
-				VGA_B[0] <= 0;
-				VGA_R[1] <= 1;
-				VGA_G[1] <= 0;
-				VGA_B[1] <= 0;
-				VGA_R[2] <= 1;
-				VGA_G[2] <= 0;
-				VGA_B[2] <= 0;
-				VGA_R[3] <= 1;
-				VGA_G[3] <= 0;
-				VGA_B[3] <= 0;
-			end
-			else begin
-				VGA_R[0] <= 0;
-				VGA_G[0] <= 1;
-				VGA_B[0] <= 0;
-				VGA_R[1] <= 0;
-				VGA_G[1] <= 1;
-				VGA_B[1] <= 0;
-				VGA_R[2] <= 0;
-				VGA_G[2] <= 1;
-				VGA_B[2] <= 0;
-				VGA_R[3] <= 0;
-				VGA_G[3] <= 1;
-				VGA_B[3] <= 0;
+			if (vc < 30) begin
+				if (vert_counter == 1) begin
+					/*VGA_R[0] <= line[hc*12];
+					VGA_R[1] <= line[hc*12+1];
+					VGA_R[2] <= line[hc*12+2];
+					VGA_R[3] <= line[hc*12+3];
+					VGA_G[0] <= line[hc*12+4];
+					VGA_G[1] <= line[hc*12+5];
+					VGA_G[2] <= line[hc*12+6];
+					VGA_G[3] <= line[hc*12+7];
+					VGA_B[0] <= line[hc*12+8];
+					VGA_B[1] <= line[hc*12+9];
+					VGA_B[2] <= line[hc*12+10];
+					VGA_B[3] <= line[hc*12+11];*/
+					VGA_R[0] <= 1;
+					VGA_R[1] <= 0;
+					VGA_R[2] <= 1;
+					VGA_R[3] <= 0;
+					VGA_G[0] <= 1;
+					VGA_G[1] <= 0;
+					VGA_G[2] <= 1;
+					VGA_G[3] <= 0;
+					VGA_B[0] <= 1;
+					VGA_B[1] <= 0;
+					VGA_B[2] <= 1;
+					VGA_B[3] <= 0;
+				end
 			end
 		end
 	end
-	*/
-	end
-	else begin
-		VGA_R[0] <= 0;
-		VGA_G[0] <= 0;
-		VGA_B[0] <= 0;
-		VGA_R[1] <= 0;
-		VGA_G[1] <= 0;
-		VGA_B[1] <= 0;
-		VGA_R[2] <= 0;
-		VGA_G[2] <= 0;
-		VGA_B[2] <= 0;
-		VGA_R[3] <= 0;
-		VGA_G[3] <= 0;
-		VGA_B[3] <= 0;
-	end
-	
 end
 
 assign vidon = (hc < 640 && vc < 480) ? 1 : 0;

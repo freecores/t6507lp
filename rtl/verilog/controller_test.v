@@ -44,17 +44,12 @@
 
 `include "timescale.v"
 
-//module vga_tester (reset_n, clk_50);
-module controller_test(reset, clk_50, line, vert_counter);
+module controller_test(reset_n, clk_50, line, vert_counter);
 
-input reset;
+input reset_n;
 input clk_50;
-
 output reg [479:0] line;
 output reg [4:0] vert_counter;
-
-//reg reset_n;
-//reg clk_50;
 
 reg clk_358; // 3.58mhz
 reg [3:0] counter;
@@ -74,17 +69,9 @@ reg [11:0] pixel7;
 reg [11:0] pixel8;
 reg [11:0] pixel9;
 
-//always #10 clk_50 <= !clk_50;
 
-//initial begin
-	//reset_n = 1'b0;
-	//clk_50 = 1'b0;
-	//#20;
-	//reset_n = 1'b1;
-//end
-
-always @ (posedge clk_50 or negedge reset) begin
-	if (reset == 0) begin
+always @ (posedge clk_50 or negedge reset_n) begin
+	if (reset_n == 1'b0) begin
 		clk_358 <= 1'b0;
 		counter <= 4'd0;
 		red <= 4'b1010;
@@ -100,17 +87,15 @@ always @ (posedge clk_50 or negedge reset) begin
 			counter <= counter + 4'd1;
 		end
 	end
-	red <= 4'b1010;
-	green <= 4'b0001;
-	blue <= 4'b1110;
 end
 
 
 
-always @ (posedge clk_358 or negedge reset) begin
-	if (reset == 0) begin
-		vert_counter <= 5'd0;
+always @ (posedge clk_358 or negedge reset_n) begin
+	if (reset_n == 1'b0) begin
+		vert_counter <= 6'd0;
 		line <= 480'd0;
+		$write("NEVER!");
 	end
 	else begin
 		
@@ -120,7 +105,7 @@ always @ (posedge clk_358 or negedge reset) begin
 			 pixel0, pixel1, pixel2, pixel3, pixel4, pixel5, pixel6, pixel7, pixel8, pixel9};
 
 		if (vert_counter == 5'd29) begin
-			vert_counter <= 5'd0;
+			vert_counter <= 6'd0;
 		end
 		else begin
 			vert_counter <= vert_counter + 5'd1;
