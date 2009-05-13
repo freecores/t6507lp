@@ -44,9 +44,9 @@
 
 `include "timescale.v"
 
-module test_top(reset, clk_50, SW, VGA_R, VGA_G, VGA_B, LEDR, VGA_VS, VGA_HS);
+module test_top(reset_n, clk_50, SW, VGA_R, VGA_G, VGA_B, LEDR, VGA_VS, VGA_HS);
 
-input reset;
+input reset_n;
 input clk_50;
 input [8:0] SW;
 output [3:0] VGA_R;
@@ -56,25 +56,25 @@ output [9:0] LEDR;
 output VGA_VS;
 output VGA_HS;
 
-//wire [479:0] line;
-//wire [4:0] vert_counter;
+wire [479:0] line; 
+wire [4:0] vert_counter;
 
 	vga_controller vga_controller (
-		.reset(reset),
+		.reset_n(reset_n),
 		.clk_50(clk_50),
 		.line(line),
-		.vert_counter(vert_counter),
 		.SW(SW),
 		.VGA_R(VGA_R),
 		.VGA_G(VGA_G),
 		.VGA_B(VGA_B),
 		.LEDR(LEDR),
 		.VGA_VS(VGA_VS),
-		.VGA_HS(VGA_HS)
+		.VGA_HS(VGA_HS),
+		.vert_counter(vert_counter)
 	);
 
 	controller_test controller_test (
-		.reset(reset),
+		.reset_n(reset_n),
 		.clk_50(clk_50),
 		.line(line),
 		.vert_counter(vert_counter)
