@@ -86,9 +86,8 @@ end
 
 always @ (posedge clk_358 or negedge reset_n) begin
 	if (reset_n == 1'b0) begin
-		vert_counter <= 6'd0;
 		hor_counter <= 8'd0;
-		vert_counter = 9'd0;
+		vert_counter <= 9'd0;
 	end
 	else begin
 		if (hor_counter == 8'd227) begin // last colum

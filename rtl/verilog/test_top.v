@@ -56,7 +56,7 @@ output [9:0] LEDR;
 output VGA_VS;
 output VGA_HS;
 
-//wire [11:0] pixel; 
+wire [11:0] pixel; 
 wire [8:0] vert_counter;
 
 	vga_controller vga_controller (
