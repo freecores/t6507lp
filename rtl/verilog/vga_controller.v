@@ -156,33 +156,19 @@ begin
 	VGA_B[3] <= 0;
 	if (vidon == 1) begin
 		if (hc < 40) begin
-			if (vc < 30) begin
-				if (vert_counter == 1) begin
-					/*VGA_R[0] <= line[hc*12];
-					VGA_R[1] <= line[hc*12+1];
-					VGA_R[2] <= line[hc*12+2];
-					VGA_R[3] <= line[hc*12+3];
-					VGA_G[0] <= line[hc*12+4];
-					VGA_G[1] <= line[hc*12+5];
-					VGA_G[2] <= line[hc*12+6];
-					VGA_G[3] <= line[hc*12+7];
-					VGA_B[0] <= line[hc*12+8];
-					VGA_B[1] <= line[hc*12+9];
-					VGA_B[2] <= line[hc*12+10];
-					VGA_B[3] <= line[hc*12+11];*/
-					VGA_R[0] <= 1;
-					VGA_R[1] <= 0;
-					VGA_R[2] <= 1;
-					VGA_R[3] <= 0;
-					VGA_G[0] <= 1;
-					VGA_G[1] <= 0;
-					VGA_G[2] <= 1;
-					VGA_G[3] <= 0;
-					VGA_B[0] <= 1;
-					VGA_B[1] <= 0;
-					VGA_B[2] <= 1;
-					VGA_B[3] <= 0;
-				end
+			if (vert_counter == 15) begin
+				VGA_R[0] <= line[hc*12];
+				VGA_R[1] <= line[hc*12+1];
+				VGA_R[2] <= line[hc*12+2];
+				VGA_R[3] <= line[hc*12+3];
+				VGA_G[0] <= line[hc*12+4];
+				VGA_G[1] <= line[hc*12+5];
+				VGA_G[2] <= line[hc*12+6];
+				VGA_G[3] <= line[hc*12+7];
+				VGA_B[0] <= line[hc*12+8];
+				VGA_B[1] <= line[hc*12+9];
+				VGA_B[2] <= line[hc*12+10];
+				VGA_B[3] <= line[hc*12+11];
 			end
 		end
 	end
