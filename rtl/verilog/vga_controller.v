@@ -44,7 +44,7 @@
 
 `include "timescale.v"
 
-module vga_controller ( reset_n, clk_50, pixel, vert_counter, SW, VGA_R, VGA_G, VGA_B, LEDR, VGA_VS, VGA_HS);
+module vga_controller ( reset_n, clk_50, pixel, vert_counter, SW, VGA_R, VGA_G, VGA_B, LEDR, VGA_VS, VGA_HS, clk_358);
 
 input reset_n;
 input clk_50;
@@ -57,6 +57,7 @@ output reg [3:0] VGA_B;
 output [9:0] LEDR;
 output reg VGA_VS;
 output reg VGA_HS;
+input clk_358;
 
 reg clk_25;
 reg [9:0] hc;
@@ -140,8 +141,18 @@ begin
 	end
 end
 
-always @ (posedge clk_25)
-begin
+reg [11:0] pixel_reg;
+
+always @ (posedge clk_358 or negedge reset_n) begin
+	if (!reset_n) begin
+		pixel_reg <= 12'd0;
+	end
+	else begin
+		pixel_reg <= pixel;
+	end 
+end
+
+always @ (posedge clk_25) begin
 	VGA_R[0] <= 0;
 	VGA_G[0] <= 0;
 	VGA_B[0] <= 0;
@@ -154,19 +165,20 @@ begin
 	VGA_R[3] <= 0;
 	VGA_G[3] <= 0;
 	VGA_B[3] <= 0;
+
 	if (vidon == 1) begin
-		VGA_R[0] <= pixel[0];
-		VGA_R[1] <= pixel[1];
-		VGA_R[2] <= pixel[2];
-		VGA_R[3] <= pixel[3];
-		VGA_G[0] <= pixel[4];
-		VGA_G[1] <= pixel[5];
-		VGA_G[2] <= pixel[6];
-		VGA_G[3] <= pixel[7];
-		VGA_B[0] <= pixel[8];
-		VGA_B[1] <= pixel[9];
-		VGA_B[2] <= pixel[10];
-		VGA_B[3] <= pixel[11];
+		VGA_R[0] <= pixel_reg[0];
+		VGA_R[1] <= pixel_reg[1];
+		VGA_R[2] <= pixel_reg[2];
+		VGA_R[3] <= pixel_reg[3];
+		VGA_G[0] <= pixel_reg[4];
+		VGA_G[1] <= pixel_reg[5];
+		VGA_G[2] <= pixel_reg[6];
+		VGA_G[3] <= pixel_reg[7];
+		VGA_B[0] <= pixel_reg[8];
+		VGA_B[1] <= pixel_reg[9];
+		VGA_B[2] <= pixel_reg[10];
+		VGA_B[3] <= pixel_reg[11];
 	end
 end
 

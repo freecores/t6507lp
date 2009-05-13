@@ -70,14 +70,16 @@ wire [8:0] vert_counter;
 		.LEDR(LEDR),
 		.VGA_VS(VGA_VS),
 		.VGA_HS(VGA_HS),
-		.vert_counter(vert_counter)
+		.vert_counter(vert_counter),
+		.clk_358(clk_358)
 	);
 
 	controller_test controller_test (
 		.reset_n(reset_n),
 		.clk_50(clk_50),
 		.pixel(pixel),
-		.vert_counter(vert_counter)
+		.vert_counter(vert_counter),
+		.clk_358(clk_358)
 	);
 
 endmodule

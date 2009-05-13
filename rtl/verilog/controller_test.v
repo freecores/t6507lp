@@ -44,7 +44,7 @@
 
 `include "timescale.v"
 
-module controller_test(reset_n, clk_50, pixel, vert_counter, hor_counter);
+module controller_test(reset_n, clk_50, pixel, vert_counter, hor_counter, clk_358);
 
 input reset_n;
 input clk_50;
@@ -52,7 +52,7 @@ output reg [11:0] pixel;
 output reg [8:0] vert_counter;
 output reg [7:0] hor_counter;
 
-reg clk_358; // 3.58mhz
+output reg clk_358; // 3.58mhz
 reg [3:0] counter;
 
 reg [3:0] red;
@@ -82,8 +82,6 @@ always @ (posedge clk_50 or negedge reset_n) begin
 	end
 end
 
-
-
 always @ (posedge clk_358 or negedge reset_n) begin
 	if (reset_n == 1'b0) begin
 		hor_counter <= 8'd0;
@@ -107,7 +105,12 @@ always @ (posedge clk_358 or negedge reset_n) begin
 end
 
 always @(*) begin // comb logic
-	pixel = {red, green, blue};
+	if (hor_counter < 10) begin
+		pixel = {red, green, blue};
+	end
+	else begin
+		pixel = {red, red, green};
+	end
 end
 
 endmodule
