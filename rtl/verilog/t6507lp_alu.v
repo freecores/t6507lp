@@ -319,7 +319,7 @@ always @ (*) begin
 					AH = op1[7:4] + op2[7:4];
 					STATUS[Z] = (AL == 0 && AH == 0) ? 1 : 0;
 					if (AL > 9) begin
-						bcdl = AL - 6;
+						bcdl = AL + 6;
 						bcdh = AH + 1;
 					end
 					else begin

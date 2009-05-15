@@ -458,7 +458,7 @@ unit alu_chk_u {
 			reg_result = reg_a - inst.alu_a - 1 + reg_status[0:0];	
 
 			reg_status[7:7] = temp[7:7]; // N
-			print  (reg_a ^ inst.alu_a) & (reg_a ^ temp) & 0x80;
+			//print  (reg_a ^ inst.alu_a) & (reg_a ^ temp) & 0x80;
 			reg_status[6:6] = (reg_a[7:7] ^ inst.alu_a[7:7]) & (reg_a[7:7] ^ temp[7:7]); // V
 			
 			if (reg_result == 0) {
@@ -469,8 +469,8 @@ unit alu_chk_u {
 
 			reg_a = temp.as_a(byte);
 
-			print  (temp & 0xff00);
-			print (temp & 0xff00) != 0x0000;
+			//print  (temp & 0xff00);
+			//print (temp & 0xff00) != 0x0000;
 
 			if ( (temp & 0xff00) != 0x0000 ) {
 				reg_status[0:0] = 0;
@@ -598,34 +598,54 @@ unit alu_chk_u {
 		if (reg_status[3:3] == 1) {
 			var op1 : byte;
 			var op2 : byte;
+			var aux : byte;
 
 			//out("i am adding ", reg_a, " and ", inst.alu_a, " carry is ", reg_status[0:0]);
 
-			op1 = inst.alu_a[3:0];
-			op2 = inst.alu_a[7:4];
-		
-			op1 = reg_a[3:0] + op1 + reg_status[0:0];
-			op2 = reg_a[7:4] + op2;
+			op1 = reg_a[3:0] + inst.alu_a[3:0] + reg_status[0:0];
+			print op1;
+			//Int32 lo = (A & 0x0f) + (operand & 0x0f) + (C ? 1 : 0);
 
-			if (op1 >= 10) {
-				op2 = op2  + op1/ 10;
-				op1 = op1 % 10;
-			};
-		
-			if (op2 >= 10) {
-				op2 = op2 % 10;
-				reg_status[0:0] = 1;
+			op2 = reg_a[7:4] + inst.alu_a[7:4];
+			//carry_aux = reg_a[7:4] + inst.alu_a[7:4];
+			print op2;
+			//Int32 hi = (A & 0xf0) + (operand & 0xf0);
+
+			aux = op1 + op2;
+
+			if (aux[7:0] == 0) {
+				reg_status[1:1] = 1;
 			}
 			else {
-				reg_status[0:0] = 0;
+				reg_status[1:1] = 0;
 			};
+			//notZ = (lo+hi) & 0xff;
+
+			if (op1 > 0x09) {
+				op2 += 0x01;
+				op1 += 0x06;
+			};
+
+			reg_status[7:7] = op2[3:3];
+			//N = hi & 0x80;
+
+			reg_status[6:6] = ~(reg_a[7:7] ^ inst.alu_a[7:7]) & (reg_a[7:7] ^ op2[3:3]); // V
+			//V = ~(A ^ operand) & (A ^ hi) & 0x80;
+			print op2;
+			if (op2 > 0x09) {
+				op2 += 0x06;
+				print op2;
+			};
+			//if (hi > 0x90) hi += 0x60;
+
+			reg_status[0:0] = (op2 > 15) ? 1 : 0;
+			//C = hi & 0xff00;
+
+			reg_a[3:0] = op1[3:0];
+			reg_a[7:4] = op2[3:0];
+			//reg_a = (lo & 0x0f) + (hi & 0xf0);
 			
-			reg_result[3:0] = op1;
-			reg_result[7:4] = op2;	
-			update_z(reg_result);
-			update_n(reg_result);
-			update_v(reg_a, inst.alu_a, reg_result);
-			reg_a = reg_result;
+			reg_result = reg_a;
 		}
 		else { // stella checked
 			reg_result = reg_a + inst.alu_a + reg_status[0:0];
