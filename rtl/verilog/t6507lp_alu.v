@@ -68,7 +68,7 @@ output reg [7:0] alu_y;
 
 reg [7:0] A;
 reg [7:0] STATUS;
-reg [7:0] result;
+reg [9:0] result;
 reg [7:0] op1;
 reg [7:0] op2;
 reg [7:0] bcdl;
@@ -108,25 +108,25 @@ begin
 			SBC_IMM, SBC_ZPG, SBC_ZPX, SBC_ABS, SBC_ABX, SBC_ABY,
 			SBC_IDX, SBC_IDY, LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS,
 			LDA_ABX, LDA_ABY, LDA_IDX, LDA_IDY, PLA_IMP : begin
-				A          <= result;
-				alu_result <= result;
+				A          <= result[7:0];
+				alu_result <= result[7:0];
 				alu_status <= STATUS;
 			end
 			LDX_IMM, LDX_ZPG, LDX_ZPY, LDX_ABS, LDX_ABY, TAX_IMP,
 			TSX_IMP, INX_IMP, DEX_IMP : begin
-				alu_x      <= result;
+				alu_x      <= result[7:0];
 				alu_status <= STATUS;
 			end
 			TXS_IMP : begin
-				alu_x      <= result;
+				alu_x      <= result[7:0];
 			end
 			TXA_IMP, TYA_IMP : begin
-				A          <= result;
+				A          <= result[7:0];
 				alu_status <= STATUS;
 			end
 			LDY_IMM, LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX, TAY_IMP,
 			INY_IMP, DEY_IMP : begin
-				alu_y      <= result;
+				alu_y      <= result[7:0];
 				alu_status <= STATUS;
 			end
 			CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY,
@@ -136,13 +136,13 @@ begin
 			end
 			PHA_IMP, STA_ZPG, STA_ZPX, STA_ABS, STA_ABX, STA_ABY,
 			STA_IDX, STA_IDY : begin
-				alu_result <= result;
+				alu_result <= result[7:0];
 			end
 			STX_ZPG, STX_ZPY, STX_ABS : begin
-				alu_x <= result;
+				alu_x <= result[7:0];
 			end
 			STY_ZPG, STY_ZPX, STY_ABS : begin
-				alu_y <= result;
+				alu_y <= result[7:0];
 			end
 			SEC_IMP : begin
 				alu_status[C] <= 1;
@@ -188,7 +188,7 @@ begin
 			LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX, ROL_ZPG, ROL_ZPX,
 			ROL_ABS, ROL_ABX, ROR_ZPG, ROR_ZPX, ROR_ABS, ROR_ABX :
 			begin
-				alu_result <= result;
+				alu_result <= result[7:0];
 				alu_status <= STATUS;
 			end
 			default : begin
@@ -201,7 +201,8 @@ always @ (*) begin
 	if (alu_enable == 1) begin
 		op1       = A;
 		op2       = alu_a;
-		result    = A;
+		result    = A[7:0];
+		result[9:8] = 0;
 		STATUS[N] = alu_status[N];
 		STATUS[C] = alu_status[C];
 		STATUS[V] = alu_status[V];
@@ -221,14 +222,14 @@ always @ (*) begin
 		case (alu_opcode)
 			// BIT - Bit Test
 			BIT_ZPG, BIT_ABS: begin
-				result = A & alu_a;
+				result[7:0] = A & alu_a;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 	
 			// PLA - Pull Accumulator
 			PLA_IMP : begin
-				result = alu_a;
+				result[7:0] = alu_a;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
@@ -239,7 +240,7 @@ always @ (*) begin
 			// STA - Store Accumulator
 			TAX_IMP, TAY_IMP, PHA_IMP, STA_ZPG, STA_ZPX, STA_ABS, STA_ABX,
 			STA_ABY, STA_IDX, STA_IDY : begin
-				result = A;
+				result[7:0] = A;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
@@ -248,7 +249,7 @@ always @ (*) begin
 			// TXA - Transfer X to Accumulator
 			// TXS - Transfer X to Stack pointer
 			STX_ZPG, STX_ZPY, STX_ABS, TXA_IMP, TXS_IMP : begin
-				result = alu_x;
+				result[7:0] = alu_x;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
@@ -256,49 +257,49 @@ always @ (*) begin
 			// STY - Store Y Register
 			// TYA - Transfer Y to Accumulator
 			STY_ZPG, STY_ZPX, STY_ABS, TYA_IMP : begin
-				result = alu_y;
+				result[7:0] = alu_y;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 	
 			// INC - Increment memory
 			INC_ZPG, INC_ZPX, INC_ABS, INC_ABX : begin
-				result = alu_a + 1;
+				result[7:0] = alu_a + 1;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 	
 			// INX - Increment X Register
 			INX_IMP: begin
-				result = alu_x + 1;
+				result[7:0] = alu_x + 1;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 	
 			// INY - Increment Y Register
 			INY_IMP : begin
-				result = alu_y + 1;
+				result[7:0] = alu_y + 1;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 	
 			// DEC - Decrement memory
 			DEC_ZPG, DEC_ZPX, DEC_ABS, DEC_ABX : begin
-				result = alu_a - 1;
+				result[7:0] = alu_a - 1;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 	
 			// DEX - Decrement X register
 			DEX_IMP: begin
-				result = alu_x - 1;
+				result[7:0] = alu_x - 1;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 	
 			// DEY - Decrement Y Register
 			DEY_IMP: begin
-				result = alu_y - 1;
+				result[7:0] = alu_y - 1;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
@@ -307,10 +308,11 @@ always @ (*) begin
 			ADC_IMM, ADC_ZPG, ADC_ZPX, ADC_ABS,
 			ADC_ABX, ADC_ABY, ADC_IDX, ADC_IDY : begin
 				if (!alu_status[D]) begin
-					{STATUS[C],result} = op1 + op2 + alu_status[C];
+					result = op1 + op2 + alu_status[C];
 					STATUS[N] = result[7];
 					STATUS[Z] = (result == 0) ? 1 : 0;
 					STATUS[V] = ((op1[7] == op2[7]) && (op1[7] != result[7])) ? 1 : 0;
+					STATUS[C] = result[8];
 				end
 				else begin
 					AL = op1[3:0] + op2[3:0] + alu_status[C];
@@ -333,14 +335,14 @@ always @ (*) begin
 						bcdh2 = bcdh;
 					end
 					STATUS[C] = bcdh2[4] || bcdh2[5];
-					result = {bcdh2[3:0],bcdl[3:0]};
+					result[7:0] = {bcdh2[3:0],bcdl[3:0]};
 				end
 			end
 				
 			// AND - Logical AND
 			AND_IMM, AND_ZPG, AND_ZPX, AND_ABS, AND_ABX, AND_ABY, AND_IDX,
 			AND_IDY : begin
-				result = A & alu_a;
+				result[7:0] = A & alu_a;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
@@ -348,7 +350,7 @@ always @ (*) begin
 			// CMP - Compare
 			CMP_IMM, CMP_ZPG, CMP_ZPX, CMP_ABS, CMP_ABX, CMP_ABY, CMP_IDX,
 			CMP_IDY : begin
-				result = A - alu_a;
+				result[7:0] = A - alu_a;
 				STATUS[C] = (A >= alu_a) ? 1 : 0;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
@@ -357,7 +359,7 @@ always @ (*) begin
 			// EOR - Exclusive OR
 			EOR_IMM, EOR_ZPG, EOR_ZPX, EOR_ABS, EOR_ABX, EOR_ABY,
 			EOR_IDX, EOR_IDY : begin
-				result = A ^ alu_a;
+				result[7:0] = A ^ alu_a;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
@@ -369,7 +371,7 @@ always @ (*) begin
 			LDA_IMM, LDA_ZPG, LDA_ZPX, LDA_ABS, LDA_ABX, LDA_ABY, LDA_IDX,
 			LDA_IDY, LDX_IMM, LDX_ZPG, LDX_ZPY, LDX_ABS, LDX_ABY, LDY_IMM,
 			LDY_ZPG, LDY_ZPX, LDY_ABS, LDY_ABX, TSX_IMP : begin
-				result = alu_a;
+				result[7:0] = alu_a;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
@@ -377,7 +379,7 @@ always @ (*) begin
 			// ORA - Logical OR
 			ORA_IMM, ORA_ZPG, ORA_ZPX, ORA_ABS, ORA_ABX, ORA_ABY, ORA_IDX,
 			ORA_IDY : begin
-				result = A | alu_a;
+				result[7:0] = A | alu_a;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
@@ -387,9 +389,9 @@ always @ (*) begin
 			SBC_IDY : begin
 				result = op1 - op2 - (1 - alu_status[C]);
 				STATUS[N] = result[7];
-				STATUS[V] = ((op1[7] == op2[7]) && (op1[7] == result[7])) ? 1 : 0;
+				STATUS[V] = ((op1[7] ^ op2[7]) && (op1[7] ^ result[7])) ? 1 : 0;
 				STATUS[Z] = (result == 0) ? 1 : 0;
-				STATUS[C] = ~result[7];
+				STATUS[C] = ~(result[8] || result[9]);
 				if (alu_status[D]) begin
 					AL = op1[3:0] - op2[3:0] - (1 - alu_status[C]);
 					AH = op1[7:4] - op2[7:4];
@@ -407,61 +409,61 @@ always @ (*) begin
 					else begin
 						bcdh2 = bcdh;
 					end
-					result = {bcdh2[3:0],bcdl[3:0]};
+					result[7:0] = {bcdh2[3:0],bcdl[3:0]};
 				end
 			end
   	
 			// ASL - Arithmetic Shift Left
 			ASL_ACC : begin
-				{STATUS[C],result} = {A,1'b0};
+				{STATUS[C],result[7:0]} = {A,1'b0};
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 			ASL_ZPG, ASL_ZPX, ASL_ABS, ASL_ABX : begin
-				{STATUS[C],result} = {alu_a,1'b0};
+				{STATUS[C],result[7:0]} = {alu_a,1'b0};
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 	
 			// LSR - Logical Shift Right
 			LSR_ACC: begin
-				{result,STATUS[C]} = {1'b0,A};
+				{result[7:0],STATUS[C]} = {1'b0,A};
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 			LSR_ZPG, LSR_ZPX, LSR_ABS, LSR_ABX : begin
-				{result,STATUS[C]} = {1'b0,alu_a};
+				{result[7:0],STATUS[C]} = {1'b0,alu_a};
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 				
 			// ROL - Rotate Left
 			ROL_ACC : begin
-				{STATUS[C],result} = {A,alu_status[C]};
+				{STATUS[C],result[7:0]} = {A,alu_status[C]};
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 			ROL_ZPG, ROL_ZPX, ROL_ABS, ROL_ABX : begin
-				{STATUS[C],result} = {alu_a,alu_status[C]};
+				{STATUS[C],result[7:0]} = {alu_a,alu_status[C]};
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 	
 			// ROR - Rotate Right
 			ROR_ACC : begin
-				{result,STATUS[C]} = {alu_status[C],A};
+				{result[7:0],STATUS[C]} = {alu_status[C],A};
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 			ROR_ZPG, ROR_ZPX, ROR_ABS, ROR_ABX : begin
-				{result, STATUS[C]} = {alu_status[C], alu_a};
+				{result[7:0], STATUS[C]} = {alu_status[C], alu_a};
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
 			end
 	
 			// CPX - Compare X Register
 			CPX_IMM, CPX_ZPG, CPX_ABS : begin
-				result = alu_x - alu_a;
+				result[7:0] = alu_x - alu_a;
 				STATUS[C] = (alu_x >= alu_a) ? 1 : 0;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];
@@ -469,7 +471,7 @@ always @ (*) begin
 	
 			// CPY - Compare Y Register
 			CPY_IMM, CPY_ZPG, CPY_ABS : begin
-				result = alu_y - alu_a;
+				result[7:0] = alu_y - alu_a;
 				STATUS[C] = (alu_y >= alu_a) ? 1 : 0;
 				STATUS[Z] = (result == 0) ? 1 : 0;
 				STATUS[N] = result[7];

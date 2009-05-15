@@ -56,8 +56,13 @@ output [9:0] LEDR;
 output VGA_VS;
 output VGA_HS;
 
-wire [11:0] pixel; 
-wire [8:0] vert_counter;
+wire [2:0] pixel;
+wire [10:0] read_addr;
+wire [10:0] write_addr;
+wire [2:0] read_data;
+wire [2:0] write_data;
+wire write_enable_n;
+wire clk_358;
 
 	vga_controller vga_controller (
 		.reset_n(reset_n),
@@ -70,16 +75,28 @@ wire [8:0] vert_counter;
 		.LEDR(LEDR),
 		.VGA_VS(VGA_VS),
 		.VGA_HS(VGA_HS),
-		.vert_counter(vert_counter),
-		.clk_358(clk_358)
+		.read_addr(read_addr),
+		.read_data(read_data)
 	);
 
 	controller_test controller_test (
 		.reset_n(reset_n),
 		.clk_50(clk_50),
 		.pixel(pixel),
-		.vert_counter(vert_counter),
+		.write_addr(write_addr),
+		.write_data(write_data),
+		.write_enable_n(write_enable_n),
 		.clk_358(clk_358)
+	);
+
+	video_mem video_mem (
+		.clk_358(clk_358),
+		.reset_n(reset_n),
+		.write_addr(write_addr),
+		.write_enable_n(write_enable_n),
+		.read_addr(read_addr),
+		.write_data(write_data),
+		.read_data(read_data)
 	);
 
 endmodule

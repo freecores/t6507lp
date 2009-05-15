@@ -411,7 +411,7 @@ unit alu_chk_u {
 	};
 
 	exec_sub() is {
-		if (reg_status[3:3] == 1) {
+		if (reg_status[3:3] == 1) { // decimal
 			var op1 : int;
 			var op2 : int;
 
@@ -445,24 +445,40 @@ unit alu_chk_u {
 			
 			reg_result[3:0] = op1;
 			reg_result[7:4] = op2;
+
+			update_n(reg_result);
+			update_z(reg_result);
+			update_v(reg_a, inst.alu_a, reg_result);
+			reg_a = reg_result;
 		}
 		else {
-			reg_result = reg_a - inst.alu_a - 1 + reg_status[0:0];
-			if (reg_result[7:7] == 1) {
-				reg_status[0:0] = 0;
-			}
-			else {
-				reg_status[0:0] = 1;
+			var temp: int;
+
+			temp = reg_a - inst.alu_a - 1 + reg_status[0:0];
+			reg_result = reg_a - inst.alu_a - 1 + reg_status[0:0];	
+
+			reg_status[7:7] = temp[7:7]; // N
+			print  (reg_a ^ inst.alu_a) & (reg_a ^ temp) & 0x80;
+			reg_status[6:6] = (reg_a[7:7] ^ inst.alu_a[7:7]) & (reg_a[7:7] ^ temp[7:7]); // V
+			
+			if (reg_result == 0) {
+				reg_status[1:1] = 1; // Z
+			} else {
+				reg_status[1:1] = 0; // Z
 			};
+
+			reg_a = temp.as_a(byte);
+
+			print  (temp & 0xff00);
+			print (temp & 0xff00) != 0x0000;
+
+			if ( (temp & 0xff00) != 0x0000 ) {
+				reg_status[0:0] = 0;
+			} else {
+				reg_status[0:0] = 1;
+			}
+
 		};
-
-		update_z(reg_result);
-		update_n(reg_result);
-		update_v(reg_a, inst.alu_a, reg_result);
-		
-	
-		reg_a = reg_result;
-
 	};
 
 	exec_rot(left : bool, arg1 : byte) is {
@@ -611,12 +627,13 @@ unit alu_chk_u {
 			update_v(reg_a, inst.alu_a, reg_result);
 			reg_a = reg_result;
 		}
-		else {
+		else { // stella checked
 			reg_result = reg_a + inst.alu_a + reg_status[0:0];
-			update_c(reg_a, inst.alu_a, reg_status[0:0]);
+			update_n(reg_result);
 			update_v(reg_a, inst.alu_a, reg_result);
 			update_z(reg_result);
-			update_n(reg_result);
+			update_c(reg_a, inst.alu_a, reg_status[0:0]);
+	
 			reg_a = reg_result;
 		};
 	};

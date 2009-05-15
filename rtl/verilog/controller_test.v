@@ -44,33 +44,37 @@
 
 `include "timescale.v"
 
-module controller_test(reset_n, clk_50, pixel, vert_counter, hor_counter, clk_358);
+module controller_test(reset_n, clk_50, pixel, write_addr, write_data, write_enable_n, clk_358);
 
 input reset_n;
 input clk_50;
-output reg [11:0] pixel;
-output reg [8:0] vert_counter;
-output reg [7:0] hor_counter;
-
+output reg [2:0] pixel;
+output reg [10:0] write_addr;
+output reg [2:0] write_data;
+output reg write_enable_n;
 output reg clk_358; // 3.58mhz
+
 reg [3:0] counter;
 
-reg [3:0] red;
-reg [3:0] green;
-reg [3:0] blue;
+//reg [3:0] red;
+//reg [3:0] green;
+//reg [3:0] blue;
+
+reg [8:0] vert_counter;
+reg [7:0] hor_counter;
 
 always @ (posedge clk_50 or negedge reset_n) begin
 	if (reset_n == 1'b0) begin
 		clk_358 <= 1'b0;
 		counter <= 4'd0;
-		red <= 4'b1010;
-		green <= 4'b0001;
-		blue <= 4'b1110;
+		//red <= 4'b1010;
+		//green <= 4'b0001;
+		//blue <= 4'b1110;
 	end
 	else begin
-		red <= 4'b1010;
-		green <= 4'b0001;
-		blue <= 4'b1110;
+		//red <= 4'b1010;
+		//green <= 4'b0001;
+		//blue <= 4'b1110;
 
 		if (counter == 4'h6) begin
 			clk_358 <= !clk_358;
@@ -105,11 +109,17 @@ always @ (posedge clk_358 or negedge reset_n) begin
 end
 
 always @(*) begin // comb logic
-	if (hor_counter < 10) begin
-		pixel = {red, green, blue};
+	if (hor_counter < 68 || vert_counter < 40 || vert_counter > 232) begin
+		pixel = 3'd0;
+		write_enable_n = 1'b1;
+		write_addr = 0;
+		write_data = vert_counter[2:0];
 	end
 	else begin
-		pixel = {red, red, green};
+		pixel = 3'd4;
+		write_enable_n = 1'b0;
+		write_addr = (hor_counter - 68) + (vert_counter - 40)*160;
+		write_data = 3'd4;
 	end
 end
 

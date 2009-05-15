@@ -44,26 +44,28 @@
 
 `include "timescale.v"
 
-module vga_controller ( reset_n, clk_50, pixel, vert_counter, SW, VGA_R, VGA_G, VGA_B, LEDR, VGA_VS, VGA_HS, clk_358);
+module vga_controller ( reset_n, clk_50, pixel, read_data, SW, VGA_R, VGA_G, VGA_B, LEDR, VGA_VS, VGA_HS, read_addr);
 
 input reset_n;
 input clk_50;
 input [8:0] SW;
-input [11:0] pixel;
-input [4:0] vert_counter;
+input [2:0] pixel;
+input [2:0] read_data;
 output reg [3:0] VGA_R;
 output reg [3:0] VGA_G;
 output reg [3:0] VGA_B;
 output [9:0] LEDR;
 output reg VGA_VS;
 output reg VGA_HS;
-input clk_358;
+output reg [10:0] read_addr;
 
 reg clk_25;
 reg [9:0] hc;
 reg [9:0] vc;
 reg vsenable;
 wire vidon;
+
+reg [11:0] vid_data;
 
 assign LEDR[8:0] = SW;
 assign LEDR[9] = reset_n;
@@ -141,45 +143,55 @@ begin
 	end
 end
 
-reg [11:0] pixel_reg;
-
-always @ (posedge clk_358 or negedge reset_n) begin
-	if (!reset_n) begin
-		pixel_reg <= 12'd0;
+always @ (posedge clk_25) begin
+	//if (reset_n == 1'b0) begin
+		VGA_R[0] <= 0;
+		VGA_G[0] <= 0;
+		VGA_B[0] <= 0;
+		VGA_R[1] <= 0;
+		VGA_G[1] <= 0;
+		VGA_B[1] <= 0;
+		VGA_R[2] <= 0;
+		VGA_G[2] <= 0;
+		VGA_B[2] <= 0;
+		VGA_R[3] <= 0;
+		VGA_G[3] <= 0;
+		VGA_B[3] <= 0;
+	//end
+	//else
+	if (vidon == 1) begin
+		if (hc < 480 && vc < 400) begin
+			VGA_R[0] <= vid_data[0];
+			VGA_R[1] <= vid_data[1];
+			VGA_R[2] <= vid_data[2];
+			VGA_R[3] <= vid_data[3];
+			VGA_G[0] <= vid_data[4];
+			VGA_G[1] <= vid_data[5];
+			VGA_G[2] <= vid_data[6];
+			VGA_G[3] <= vid_data[7];
+			VGA_B[0] <= vid_data[8];
+			VGA_B[1] <= vid_data[9];
+			VGA_B[2] <= vid_data[10];
+			VGA_B[3] <= vid_data[11];
+		end
 	end
-	else begin
-		pixel_reg <= pixel;
-	end 
 end
 
-always @ (posedge clk_25) begin
-	VGA_R[0] <= 0;
-	VGA_G[0] <= 0;
-	VGA_B[0] <= 0;
-	VGA_R[1] <= 0;
-	VGA_G[1] <= 0;
-	VGA_B[1] <= 0;
-	VGA_R[2] <= 0;
-	VGA_G[2] <= 0;
-	VGA_B[2] <= 0;
-	VGA_R[3] <= 0;
-	VGA_G[3] <= 0;
-	VGA_B[3] <= 0;
-
-	if (vidon == 1) begin
-		VGA_R[0] <= pixel_reg[0];
-		VGA_R[1] <= pixel_reg[1];
-		VGA_R[2] <= pixel_reg[2];
-		VGA_R[3] <= pixel_reg[3];
-		VGA_G[0] <= pixel_reg[4];
-		VGA_G[1] <= pixel_reg[5];
-		VGA_G[2] <= pixel_reg[6];
-		VGA_G[3] <= pixel_reg[7];
-		VGA_B[0] <= pixel_reg[8];
-		VGA_B[1] <= pixel_reg[9];
-		VGA_B[2] <= pixel_reg[10];
-		VGA_B[3] <= pixel_reg[11];
+always @ (*) begin
+	if (hc < 400 && vc < 480) begin
+		read_addr = hc/10 + (vc/10)*48;
+		
+		//case (read_data)
+		//	default: begin
+				vid_data = 12'd10;
+		//	end
+		//endcase
 	end
+	else begin
+		read_addr = 10'd0;
+		vid_data = 12'b101010101010;
+	end 
+	
 end
 
 assign vidon = (hc < 640 && vc < 480) ? 1 : 0;

@@ -12,7 +12,7 @@ struct alu_input_s {
 	alu_opcode: valid_opcodes;
 	alu_a: byte;
 
-//	keep test_kind == RAND;
+	keep test_kind == REGULAR;
 	
 	when REGULAR'test_kind alu_input_s {
 		keep soft input_kind == select {
