@@ -44,6 +44,7 @@
 
 // note: this converts 7 ypbpr bits into 24 rgb bits. In order to use less rgb bits just use the most significant ones.
 
+`include "timescale.v"
 
 module video_converter(ypbpr, rgb);
 

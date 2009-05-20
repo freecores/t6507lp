@@ -9,8 +9,9 @@
 //// Video module					 		////
 ////									////
 //// TODO:								////
-//// - Everything?							////
-////									////
+//// - Collision detection						////
+//// - Pixel output							////
+//// 									////
 //// Author(s):								////
 //// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
 //// - Samuel Nascimento Pagliarini (creep), snpagliarini@gmail.com	////
@@ -44,7 +45,7 @@
 
 `include "timescale.v"
 
-module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel);
+module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel, write_addr, write_data, write_enable_n);
 	parameter [3:0] DATA_SIZE = 4'd8;
 	parameter [3:0] ADDR_SIZE = 4'd10; // this is the *local* addr_size
 
@@ -57,9 +58,12 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel);
 	input enable; // since the address bus is shared an enable signal is used
 	input mem_rw; // read == 0, write == 1
 	input [ADDR_SIZE_:0] address; // system address bus
-	inout [DATA_SIZE_:0] data; // controler <=> riot data bus
-	output [11:0] pixel;
-
+	inout [DATA_SIZE_:0] data; // controler <=> video data bus
+	output reg [2:0] pixel;
+	output reg [10:0] write_addr; // for the video memory
+	output reg [2:0] write_data;
+	output reg write_enable_n;
+	
 	reg [DATA_SIZE_:0] data_drv; // wrapper for the data bus
 
 	assign data = (mem_rw || !reset_n) ? 8'bZ : data_drv; // if under writing the bus receives the data from cpu, else local data. 
@@ -84,7 +88,7 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel);
 	reg [3:0] PF0; //  playfield register byte 0
 	reg [7:0] PF1; //  playfield register byte 1
 	reg [7:0] PF2; //  playfield register byte 2
-	reg RESP0; //  s t r o b e reset player 0
+	//reg RESP0; //  s t r o b e reset player 0
 	reg RESP1; //  s t r o b e reset player 1
 	reg RESM0; //  s t r o b e reset missile 0
 	reg RESM1; //  s t r o b e reset missile 1
@@ -128,16 +132,25 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel);
 	reg INPT4; // read input
 	reg INPT5; // read input
 
-	reg [5:0] hor_counter; // this counter is the "current pixel". when it reaches 39 the wsync register must be driven to zero
+	reg [8:0] vert_counter;
+	reg [7:0] hor_counter;
 
 	always @(posedge clk  or negedge reset_n) begin
 		if (reset_n == 1'b0) begin
-			hor_counter <= 6'd0;
+			hor_counter <= 8'd0;
+			vert_counter <= 9'd0;
 		end
 		else begin
-			if (hor_counter == 6'd39) begin
-				hor_counter <= 6'd0;
-				WSYNC <= 1'b0;
+			if (hor_counter == 8'd227) begin
+				hor_counter <= 8'd0;
+				WSYNC <= 1'b0; // TODO: check this on stella pdf
+
+				if (vert_counter == 9'd261) begin
+					vert_counter <= 9'd0;
+				end
+				else begin
+					vert_counter <= vert_counter + 9'd1;
+				end
 			end
 			else begin
 				hor_counter <= hor_counter + 6'd1;
@@ -150,7 +163,7 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel);
 			data_drv <= 8'h00;
 			WSYNC <= 1'b0;
 		end
-		else begin
+		else if (enable == 1'b1) begin
 			if (mem_rw == 1'b0) begin // reading! 
 				case (address) 
 					6'h00: data_drv <= {CXM0P, 6'b000000};
@@ -221,7 +234,7 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel);
 						PF2 <= data;
 					end
 					6'h10: begin
-						RESP0 <= 1'b1; // STROBE
+						//RESP0 <= 1'b1; // STROBE
 					end
 					6'h11: begin
 						RESP1 <= 1'b1; // STROBE
@@ -320,6 +333,123 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel);
 			end
 		end
 	end
+
+reg draw_p0;
+reg draw_p1;
+reg draw_m0;
+reg draw_m1;
+reg draw_bl;
+
+always @ (*) begin // always combinational block that handles strobe register
+	draw_p0 = 1'b0;
+	draw_p1 = 1'b0;
+	draw_m0 = 1'b0;
+	draw_m1 = 1'b0;
+	draw_bl = 1'b0;
+
+	if (enable == 1'b1 && mem_rw == 1'b1) begin // writing! 
+		case (address)
+			6'h10: begin
+				draw_p0 = 1'b1;
+			end
+			6'h11: begin
+				draw_p1 = 1'b1;
+			end
+			6'h12: begin
+				draw_m0 = 1'b1;
+			end
+			6'h13: begin
+				draw_m1 = 1'b1;
+			end
+			6'h14: begin
+				draw_bl = 1'b1;
+			end
+		endcase
+	end
+end
+
+
+always @(*) begin // comb logic
+	if (hor_counter < 68 || vert_counter < 40 || vert_counter > 232) begin
+		pixel = 3'd0;
+		write_enable_n = 1'b1;
+		write_addr = 0;
+		write_data = vert_counter[2:0];
+	end
+	else begin
+		write_enable_n = 1'b0;
+		write_addr = (hor_counter - 68) + (vert_counter - 40)*160;
+		write_data = 3'd4;
+
+		if (CTRLPF[2] == 1'b1) begin // playfield gets priority over players so they can move behind the playfield
+				// Priority Objects
+				// 1 		PF, BL
+				// 2 		P0, M0
+				// 3 		P1, M1
+				// 4 		BK
+
+		end
+		else begin // regular priority
+				// Priority 	Objects
+				// 1 		P0, M0
+				// 2 		P1, M1
+				// 3 		BL, PF
+				// 4 		BK
+			if (CTRLPF[0] == 1'b1) begin// reflected PF
+				if (ENABL == 1'b1) begin // the ball is enabled
+					
+				end
+				else begin 
+					if (vert_counter < 4) begin
+						pixel = (PF0[vert_counter] == 1'b1) ? COLUPF : COLUBK;
+					end
+					else if (vert_counter < 12) begin
+						pixel = (PF1[vert_counter - 4] == 1'b1) ? COLUPF : COLUBK;
+					end
+					else if (vert_counter < 20) begin
+						pixel = (PF2[vert_counter - 12] == 1'b1) ? COLUPF : COLUBK;
+					end
+					else if (vert_counter < 28) begin
+						pixel = (PF2[vert_counter - 20] == 1'b1) ? COLUPF : COLUBK;
+					end
+					else if (vert_counter < 36) begin
+						pixel = (PF1[vert_counter - 28] == 1'b1) ? COLUPF : COLUBK;
+					end
+					else begin
+						pixel = (PF0[vert_counter - 36] == 1'b1) ? COLUPF : COLUBK;
+					end
+				end
+			end
+			else begin
+				if (vert_counter < 4) begin
+					pixel = (PF0[vert_counter] == 1'b1) ? COLUPF : COLUBK;
+				end
+				else if (vert_counter < 12) begin
+					pixel = (PF1[vert_counter - 4] == 1'b1) ? COLUPF : COLUBK;
+				end
+				else if (vert_counter < 20) begin
+					pixel = (PF2[vert_counter - 12] == 1'b1) ? COLUPF : COLUBK;
+				end
+				else if (vert_counter < 24) begin
+					pixel = (PF0[vert_counter - 20] == 1'b1) ? COLUPF : COLUBK;
+				end
+				else if (vert_counter < 32) begin
+					pixel = (PF1[vert_counter - 24] == 1'b1) ? COLUPF : COLUBK;
+				end
+				else begin
+					pixel = (PF2[vert_counter - 32] == 1'b1) ? COLUPF : COLUBK;
+				end
+			end
+		end
+		// 1: ordem de avaliacao
+		// 2: pinta da cor do objeto
+		// 3: senao pinta de bk
+
+			pixel = 3'd4;
+
+	end
+end
+
 	
 endmodule
 
