@@ -6,7 +6,8 @@
 //// http://www.opencores.org/cores/t2600/				////
 ////									////
 //// Description							////
-//// VGA controller					 		////
+//// VGA controller test file. This is just a test file, it does not	////
+//// contain any part of the design itself		 		////
 ////									////
 //// TODO:								////
 //// - Feed the controller with data					////

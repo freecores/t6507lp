@@ -88,11 +88,12 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel, write
 	reg [3:0] PF0; //  playfield register byte 0
 	reg [7:0] PF1; //  playfield register byte 1
 	reg [7:0] PF2; //  playfield register byte 2
+	// all the RES register became combinational logic
 	//reg RESP0; //  s t r o b e reset player 0
-	reg RESP1; //  s t r o b e reset player 1
-	reg RESM0; //  s t r o b e reset missile 0
-	reg RESM1; //  s t r o b e reset missile 1
-	reg RESBL; //  s t r o b e reset ball
+	//reg RESP1; //  s t r o b e reset player 1
+	//reg RESM0; //  s t r o b e reset missile 0
+	//reg RESM1; //  s t r o b e reset missile 1
+	//reg RESBL; //  s t r o b e reset ball
 	reg [3:0] AUDC0; //  audio control 0
 	reg [4:0] AUDC1; //  audio control 1
 	reg [4:0] AUDF0; //  audio frequency 0
@@ -233,21 +234,6 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel, write
 					6'h0f: begin
 						PF2 <= data;
 					end
-					6'h10: begin
-						//RESP0 <= 1'b1; // STROBE
-					end
-					6'h11: begin
-						RESP1 <= 1'b1; // STROBE
-					end
-					6'h12: begin
-						RESM0 <= 1'b1; // STROBE
-					end
-					6'h13: begin
-						RESM1 <= 1'b1; // STROBE
-					end
-					6'h14: begin
-						RESBL <= 1'b1; // STROBE
-					end
 					6'h15: begin
 						AUDC0 <= data[3:0];
 					end
@@ -307,9 +293,11 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel, write
 					end
 					6'h28: begin
 						RESMP0 <= data[1];
+						ENAM0 <= 1'b0;
 					end
 					6'h29: begin
 						RESMP1 <= data[1];
+						ENAM1 <= 1'b0;
 					end
 					6'h2a: begin
 						HMOVE <= 1'b1; // STROBE
@@ -318,14 +306,14 @@ module video(clk, reset_n, io_lines, enable, mem_rw, address, data, pixel, write
 						HMCLR <= 1'b1; // STROBE
 					end
 					6'h2c: begin // cxclr STROBE
-						CXM0P <= 2'b0; // read collision MO P1 M0 P0
-						CXM1P <= 2'b0; // read collision M1 P0 M1 P1
-						CXP0FB <= 2'b0; // read collision P0 PF P0 BL
-						CXP1FB <= 2'b0; // read collision P1 PF P1 BL
-						CXM0FB <= 2'b0; // read collision M0 PF M0 BL
-						CXM1FB <= 2'b0; // read collision M1 PF M1 BL
-						CXBLPF <= 2'b0; // read collision BL PF unused
-						CXPPMM <= 2'b0; // read collision P0 P1 M0 M1
+						CXM0P <= 2'b0; // collision MO P1 M0 P0
+						CXM1P <= 2'b0; // collision M1 P0 M1 P1
+						CXP0FB <= 2'b0; // collision P0 PF P0 BL
+						CXP1FB <= 2'b0; // collision P1 PF P1 BL
+						CXM0FB <= 2'b0; // collision M0 PF M0 BL
+						CXM1FB <= 2'b0; // collision M1 PF M1 BL
+						CXBLPF <= 1'b0; // collision BL PF unused
+						CXPPMM <= 2'b0; // collision P0 P1 M0 M1
 					end
 					default: begin
 					end
@@ -340,14 +328,74 @@ reg draw_m0;
 reg draw_m1;
 reg draw_bl;
 
-always @ (*) begin // always combinational block that handles strobe register
+reg [8:0] p0_position; // sized in the same way the vert counter is
+reg [8:0] p1_position; // sized in the same way the vert counter is
+reg [8:0] m0_position; // sized in the same way the vert counter is
+reg [8:0] m1_position; // sized in the same way the vert counter is
+reg [8:0] bl_position; // sized in the same way the vert counter is
+
+always @(posedge clk or negedge reset_n) begin
+	if (reset_n == 1'b0) begin
+		p0_position <= 9'b000000000;
+		p1_position <= 9'b000000000;
+		m0_position <= 9'b000000000;
+		m1_position <= 9'b000000000;
+		bl_position <= 9'b000000000;
+	end
+	else begin
+		if (draw_p0) begin
+			p0_position <= vert_counter;
+		end
+		if (draw_p1) begin
+			p1_position <= vert_counter;
+		end
+
+		if (RESMP0) begin
+			m0_position <= p0_position;
+		end
+		else if (draw_m0) begin
+			m0_position <= vert_counter;
+		end
+	
+		if (RESMP1) begin
+			m1_position <= p1_position;
+		end
+		else if (draw_m1) begin
+			m1_position <= vert_counter;
+		end
+
+		if (draw_bl) begin
+			bl_position <= vert_counter;
+		end
+
+		// collision detection. note that the playfield must be handled differently
+		CXM0P[0] <= (m0_position == p0_position);	
+		CXM0P[1] <= (m0_position == p1_position);	
+		CXM1P[0] <= (m1_position == p1_position);	
+		CXM1P[1] <= (m1_position == p0_position);
+		CXP0FB[0] <= (p0_position == bl_position);	
+		//CXP0FB[1] <= (p0_position == pf_position);		
+		CXP1FB[0] <= (p1_position == bl_position);	
+		//CXP1FB[1] <= (p1_position == pf_position);	
+		CXM0FB[0] <= (m0_position == bl_position);	
+		//CXM0FB[1] <= (m0_position == pf_position);	
+		CXM1FB[0] <= (m1_position == bl_position);	
+		//CXM1FB[1] <= (m1_position == pf_position);
+		//CXBLPF <= (bl_position == pf_position);	
+		CXPPMM[0] <= (m0_position == m1_position);			
+		CXPPMM[1] <= (p0_position == p1_position);			
+
+	end
+end
+
+always @ (*) begin // always combinational block that handles strobe registers.
 	draw_p0 = 1'b0;
 	draw_p1 = 1'b0;
 	draw_m0 = 1'b0;
 	draw_m1 = 1'b0;
 	draw_bl = 1'b0;
 
-	if (enable == 1'b1 && mem_rw == 1'b1) begin // writing! 
+	if (enable == 1'b1 && mem_rw == 1'b1) begin //  
 		case (address)
 			6'h10: begin
 				draw_p0 = 1'b1;
