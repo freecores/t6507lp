@@ -445,7 +445,9 @@ always @(*) begin // comb logic
 				// 4 		BK
 			if (CTRLPF[0] == 1'b1) begin// reflected PF
 				if (ENABL == 1'b1) begin // the ball is enabled
-					
+					if (vert_counter == bl_position) begin
+						pixel = COLUPF;
+					end	
 				end
 				else begin 
 					if (vert_counter < 4) begin
@@ -489,15 +491,11 @@ always @(*) begin // comb logic
 				end
 			end
 		end
-		// 1: ordem de avaliacao
-		// 2: pinta da cor do objeto
-		// 3: senao pinta de bk
 
 			pixel = 3'd4;
 
 	end
 end
-
 	
 endmodule
 
