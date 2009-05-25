@@ -187,14 +187,14 @@ unit alu_chk_u {
 			ASL_ABS: { exec_asl_mem(); };
 			ASL_ABX: { exec_asl_mem(); };
 
-			BCC_REL: {}; // nothing is done. these are all branches.
-			BCS_REL: {};
-			BEQ_REL: {};
-			BMI_REL: {};
-			BNE_REL: {};
-			BPL_REL: {};
-			BVC_REL: {};
-			BVS_REL: {};
+			//BCC_REL: {}; // nothing is done. these are all branches.
+			//BCS_REL: {};
+			//BEQ_REL: {};
+			//BMI_REL: {};
+			//BNE_REL: {};
+			//BPL_REL: {};
+			//BVC_REL: {};
+			//BVS_REL: {};
 
 			BIT_ZPG: { exec_bit(); }; // Z = A & M, N = M7, V = M6
 			BIT_ABS: { exec_bit(); };
@@ -248,9 +248,9 @@ unit alu_chk_u {
 			INX_IMP: { exec_inc(reg_x, FALSE); };
 			INY_IMP: { exec_inc(reg_y, FALSE); };
 
-			JMP_ABS: {};
-			JMP_IND: {};
-			JSR_ABS: {};
+			//JMP_ABS: {};
+			//JMP_IND: {};
+			//JSR_ABS: {};
 
 			LDA_IMM: { exec_load(reg_a, TRUE); }; // A,Z,N = M
 			LDA_ZPG: { exec_load(reg_a, TRUE); };
@@ -279,7 +279,7 @@ unit alu_chk_u {
 			LSR_ABS: { exec_lsr(inst.alu_a); };
 			LSR_ABX: { exec_lsr(inst.alu_a); };
 
-			NOP_IMP: {};
+			//NOP_IMP: {};
 
 			ORA_IMM: { exec_or(); }; // A,Z,N = A|M
 			ORA_ZPG: { exec_or(); };
@@ -291,7 +291,7 @@ unit alu_chk_u {
 			ORA_IDY: { exec_or(); };
 
 			PHA_IMP: { reg_result = reg_a; };
-			PHP_IMP: {}; // P is always connected and the result is not updated
+			//PHP_IMP: {}; // P is always connected and the result is not updated
 			PLA_IMP: { 
 				reg_a = inst.alu_a;
 				reg_result = inst.alu_a;
@@ -315,7 +315,7 @@ unit alu_chk_u {
 			ROR_ABX: { exec_rot(FALSE, inst.alu_a); };
 
 			RTI_IMP: { reg_status = inst.alu_a; reg_status[5:5] = 1; };
-			RTS_IMP: { };
+			//RTS_IMP: { };
 
 			SBC_IMM: { exec_sub(); }; // A,Z,C,N = A-M-(1-C)
 			SBC_ZPG: { exec_sub(); };
@@ -372,10 +372,8 @@ unit alu_chk_u {
 		reg_result = reg_a - inst.alu_a - 1 + reg_status[0:0];	
 
 		reg_status[7:7] = temp[7:7]; // N
-		//print  (reg_a ^ inst.alu_a) & (reg_a ^ temp) & 0x80;
 		reg_status[6:6] = (reg_a[7:7] ^ inst.alu_a[7:7]) & (reg_a[7:7] ^ temp[7:7]); // V
 			
-		print reg_result;
 		if (reg_result == 0) {
 			reg_status[1:1] = 1; // Z
 		} else {
@@ -387,21 +385,16 @@ unit alu_chk_u {
 			var op2 : int;
 
 			op1 = (reg_a & 0x0f ) - (inst.alu_a & 0x0f) - ( (reg_status[0:0] == 1) ? 0 : 1);
-			print op1;
 			op2 = (reg_a & 0xf0) - (inst.alu_a & 0xf0);
-			print op2;	
 
 			if (op1[4:4] == 1) {
 				op1 -= 6;
 				op2 = op2 - 1;
 			};
-			print op1;
-			print op2;
  
 			if(op2[8:8] == 1) {
 			      op2 -= 0x60;
 			};
-			print op2;
 
 			reg_a = (op1 & 0x0f) | (op2 & 0xf0);
 			reg_result = reg_a;
