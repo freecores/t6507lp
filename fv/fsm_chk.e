@@ -166,10 +166,10 @@ unit fsm_chk_u {
 						) : {
 							new_state = CYCLE_3;
 						};
-						//JSR_ABS : {
-						//	new_state = CYCLE_3;
-						//	PCL = input.data_in;
-						//};
+						instruction == JSR_ABS : {
+							new_state = CYCLE_3;
+							PCL = input.data_in;
+						};
 						(
 						  instruction == ADC_ABS ||
 						  instruction == ASL_ABS ||
@@ -295,10 +295,10 @@ unit fsm_chk_u {
 				};
 				CYCLE_3 : {
 					case {
-						//JSR_ABS : {
-						//	new_state = CYCLE_4;
-						//	PCH = input.data_in;
-						//};
+						instruction == JSR_ABS : {
+							new_state = CYCLE_4;
+							//PCH = input.data_in;
+						};
 						(
 						  instruction == BRK_IMP ||
 						  instruction == PLA_IMP ||
@@ -422,9 +422,9 @@ unit fsm_chk_u {
 				};
 				CYCLE_4 : {
 					case {
-						//JSR_ABS : {
-						//	new_state = CYCLE_5;
-						//};
+						instruction == JSR_ABS : {
+							new_state = CYCLE_5;
+						};
 						(
 						  instruction == RTS_IMP ||
 						  instruction == JMP_IND
@@ -518,9 +518,9 @@ unit fsm_chk_u {
 				};
 				CYCLE_5 : {
 					case {
-						//JSR_ABS : {
-						//	new_state = CYCLE_6;
-						//};
+						instruction == JSR_ABS : {
+							new_state = CYCLE_6;
+						};
 						(
 						  instruction == RTI_IMP
 						) : {
@@ -602,7 +602,13 @@ unit fsm_chk_u {
 							PCL = input.data_in;
 						};
 						(
-						  instructions == RTI_IMP
+						  instruction == RTI_IMP
+						) : {
+							new_state = CYCLE_1;
+							PCH = input.data_in;
+						};
+						(
+						  instruction == JSR_ABS
 						) : {
 							new_state = CYCLE_1;
 							PCH = input.data_in;
@@ -911,7 +917,8 @@ unit fsm_chk_u {
 					  instructions == ADC_IDY ||
 					  instructions == CMP_IDY ||
 					  instructions == SBC_IDY ||
-					  instructions == JMP_IND
+					  instructions == JMP_IND ||
+					  instructions == JSR_ABS					
 					) : {
 						if (alu_opcode.as_a(byte) != 0) {
 							dut_error("Opcode is Wrong!");
@@ -1050,20 +1057,20 @@ unit fsm_chk_u {
 						};
 						SP = SP - 1;
 					};
-					//JSR_ABS : {
-					//	if (alu_opcode.as_a(byte) != 0) {
-					//		dut_error("Opcode is Wrong!");
-					//	};
-					//	if (mem_rw != 0) {
-					//		dut_error("MEM_RW should be 1 (WRITE)");
-					//	};
-					//	if (alu_enable != 0) {
-					//		dut_error("JSR_IMP is Wrong!");
-					//	};
-					//	if (addr != PC) {
-					//		dut_error("ADDR should be equal PC!");
-					//	};
-					//};
+					instructions == JSR_ABS : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (mem_rw != 0) {
+							dut_error("MEM_RW should be 1 (WRITE)");
+						};
+						if (alu_enable != 0) {
+							dut_error("JSR_IMP is Wrong!");
+						};
+						if (addr != SP + 256) {
+							dut_error("ADDR should be equal PC!");
+						};
+					};
 					-- TODO: This is probably an error STA should not use ALU on the third cycle
 					(
   					  instructions == STA_ZPX ||
@@ -1377,24 +1384,24 @@ unit fsm_chk_u {
 						};
 						SP = SP - 1;
 					};
-					//JSR_ABS : {
-					//	if (alu_opcode.as_a(byte) != 0) {
-					//		dut_error("Opcode is Wrong!");
-					//	};
-					//	if (mem_rw != 1) {
-					//		dut_error("MEM_RW should be 1 (WRITE)");
-					//	};
-					//	if (alu_enable != 0) {
-					//		dut_error("JSR_ABS is Wrong!");
-					//	};
-					//	if (data_out != PC[7:0]) {
-					//		dut_error("JSR_ABS is Wrong!");
-					//	};
-					//	if (addr != SP + 256) {
-					//		dut_error("ADDR should be equal SP!");
-					//	};
-					//	SP = SP - 1;
-					//};
+					instructions == JSR_ABS : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (mem_rw != 1) {
+							dut_error("MEM_RW should be 1 (WRITE)");
+						};
+						if (alu_enable != 0) {
+							dut_error("JSR_ABS is Wrong!");
+						};
+						if (data_out[4:0] != PC[12:8]) {
+							dut_error("JSR_ABS is Wrong!");
+						};
+						if (addr != SP + 256) {
+							dut_error("ADDR should be equal SP!");
+						};
+						SP = SP - 1;
+					};
 					(
 					  instructions == STA_ABX
 					) : {
@@ -1856,24 +1863,24 @@ unit fsm_chk_u {
 						PC[7:0] = PCL;
 						PC[12:8] = PCH[4:0];
 					};
-					//JSR_ABS : {
-					//	if (alu_opcode.as_a(byte) != 0) {
-					//		dut_error("Opcode is Wrong!");
-					//	};
-					//	if (mem_rw != 1) {
-					//		dut_error("MEM_RW should be 1 (WRITE)");
-					//	};
-					//	if (alu_enable != 0) {
-					//		dut_error("JSR_ABS is Wrong!");
-					//	};
-					//	if (data_out != PC[12:8]) {
-					//		dut_error("JSR_ABS is Wrong!");
-					//	};
-					//	if (addr != SP + 256) {
-					//		dut_error("ADDR should be equal SP!");
-					//	};
-					//	SP = SP - 1;
-					//};
+					instructions == JSR_ABS : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (mem_rw != 1) {
+							dut_error("MEM_RW should be 1 (WRITE)");
+						};
+						if (alu_enable != 0) {
+							dut_error("JSR_ABS is Wrong!");
+						};
+						if (data_out != PC[7:0]) {
+							dut_error("JSR_ABS is Wrong!");
+						};
+						if (addr != SP + 256) {
+							dut_error("ADDR should be equal SP!");
+						};
+						SP = SP - 1;
+					};
 					(
 					  instructions == LDA_IDX ||
 					  instructions == ORA_IDX ||
@@ -1909,7 +1916,7 @@ unit fsm_chk_u {
 					};
 					(
 					  instructions == LDA_IDY ||
-					  instructions == STA_IDY ||
+					  //instructions == STA_IDY ||
 					  instructions == ORA_IDY ||
 					  instructions == EOR_IDY ||
 					  instructions == AND_IDY ||
@@ -1966,6 +1973,30 @@ unit fsm_chk_u {
 							};
 						};
 					};
+					(
+					  instructions == STA_IDY
+					) : {
+						if (alu_opcode != instructions) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (alu_enable != 1) {
+							dut_error("ASL_ACC is Wrong!");
+						};
+						if (mem_rw != 0) {
+							dut_error("MEM_RW should be 0 (WRITE)");
+						};
+						if (pointer + Y > 255) {
+							if (addr[7:0] != pointer + Y - 256) {
+								dut_error("ADDR is wrong");
+							};
+						}
+						else {
+							if (addr[7:0] != pointer + Y) {
+								dut_error("ADDR is wrong");
+							};
+						};
+					};
+
 					(
 					  instructions == STA_ABX
 					) : {
@@ -2240,22 +2271,22 @@ unit fsm_chk_u {
 						};
 						PC[7:0] = PCL;
 					};
-					//JSR_ABS : {
-					//	if (alu_opcode.as_a(byte) != 0) {
-					//		dut_error("Opcode is Wrong!");
-					//	};
-					//	if (mem_rw != 0) {
-					//		dut_error("MEM_RW should be 1 (WRITE)");
-					//	};
-					//	if (alu_enable != 0) {
-					//		dut_error("JSR_ABS is Wrong!");
-					//	};
-					//	if (addr != PC) {
-					//		dut_error("ADDR should be equal SP!");
-					//	};
-					//	PC [7:0] = PCL;
-					//	PC[12:8] = PCH[4:0];
-					//};
+					instructions == JSR_ABS : {
+						if (alu_opcode.as_a(byte) != 0) {
+							dut_error("Opcode is Wrong!");
+						};
+						if (mem_rw != 0) {
+							dut_error("MEM_RW should be 1 (WRITE)");
+						};
+						if (alu_enable != 0) {
+							dut_error("JSR_ABS is Wrong!");
+						};
+						if (addr != PC) {
+							dut_error("ADDR should be equal SP!");
+						};
+						PC [7:0] = PCL;
+						PC[12:8] = PCH[4:0];
+					};
 					(
 					  instructions == LDA_IDX ||
 					  instructions == ORA_IDX ||

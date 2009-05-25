@@ -22,7 +22,7 @@ type valid_opcodes : [
 	STY_ABS = 8'h8C, TAX_IMP = 8'hAA, TAY_IMP = 8'hA8, TSX_IMP = 8'hBA, TXA_IMP = 8'h8A, TXS_IMP = 8'h9A, TYA_IMP = 8'h98 ];
 '>
 
-JMP_IND = 8'h6C REMOVED FROM TEST SINCE THESE DO NOT GO TO THE ALU
+JMP_IND = 8'h6C REMOVED FROM TEST SINCE THESE DO NOT GO TO THE ALU. these are kept here cause they might be reused in another test
 JMP_ABS = 8'h4C
 PHP_IMP = 8'h08
 BCC_REL = 8'h90,

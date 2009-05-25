@@ -72,7 +72,7 @@ type valid_opcodes : [
 	INY_IMP = 8'hC8,
 	JMP_ABS = 8'h4C,
 	JMP_IND = 8'h6C, 
-	//JSR_ABS = 8'h20,
+	JSR_ABS = 8'h20,
 	LDA_IMM = 8'hA9,
 	LDA_ZPG = 8'hA5,
 	LDA_ZPX = 8'hB5,
