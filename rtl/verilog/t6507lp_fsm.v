@@ -170,11 +170,14 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		page_crossed = 1'b0;
 
 		case (state) 
-			READ_MEM_FIX_ADDR, FETCH_HIGH_CALC_INDEX, READ_FROM_POINTER_X1: begin
+			READ_MEM_FIX_ADDR, FETCH_HIGH_CALC_INDEX: begin
 				{page_crossed, address_plus_index[7:0]} = temp_addr[7:0] + index;
 				address_plus_index[12:8] = temp_addr[12:8] + page_crossed;
 			end
-			
+			READ_FROM_POINTER_X1: begin
+				{page_crossed, address_plus_index[7:0]} = temp_addr[7:0] + index;
+				address_plus_index[12:8] = temp_addr[12:8];
+			end
 			FETCH_OP_FIX_PC, FETCH_OP_EVAL_BRANCH: begin
 				if (branch) begin
 					{page_crossed, address_plus_index[7:0]} = pc[7:0] + index;
