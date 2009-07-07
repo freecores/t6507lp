@@ -150,6 +150,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 	reg txs;
 	reg nop;
 
+	reg invalid;
+
 	wire [ADDR_SIZE_:0] next_pc;	 // a simple logic to add one to the PC
 	assign next_pc = pc + 13'b0000000000001;
 
@@ -336,6 +338,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 						else if (pla || plp) begin
 							pc <= pc;
 							address <= sp;
+							mem_rw <= MEM_READ;
+						end
+						else if (invalid) begin
+							address <= pc;
 							mem_rw <= MEM_READ;
 						end
 						else begin // jsr
@@ -526,7 +532,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 						mem_rw <= MEM_READ;
 					end
 				end
-				PUSH_PCH: begin
+				PUSH_PCH: begin // this is probably wrong
 					pc <= pc;
 					address <= sp_minus_one;
 					data_out <= pc[7:0];
@@ -616,7 +622,10 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		alu_enable = 1'b0;
 		next_state = RESET; // these lines prevents latches
 
-		case (state)
+		if (invalid == 1'b1) begin
+			next_state = FETCH_OP;
+		end
+		else case (state)
 			RESET: begin
 				if (rst_counter == 3'd6) begin
 					next_state = FETCH_OP;
@@ -931,6 +940,8 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		txs = 1'b0;
 		nop = 1'b0;
 
+		invalid = 1'b0;
+
 		case (ir)
 			CLC_IMP, CLD_IMP, CLI_IMP, CLV_IMP, DEX_IMP, DEY_IMP, INX_IMP, INY_IMP, SEC_IMP, SED_IMP, SEI_IMP, TAX_IMP,
 			TAY_IMP, TXA_IMP, TYA_IMP: begin
@@ -1112,6 +1123,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			end
 			JSR_ABS: begin
 				jsr = 1'b1;
+				jump = 1'b1;
 			end
 			TSX_IMP: begin
 				tsx = 1'b1;
@@ -1123,6 +1135,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 				index_is_x = 1'b1;
 				//$write("state : %b", state);
 				if (reset_n == 1'b1 && state != FETCH_OP_FIX_PC) begin // the processor is NOT being reset neither it is fixing the pc
+					invalid = 1'b1;
 					//$write("\nunknown OPCODE!!!!! 0x%h\n", ir);
 					//$finish();
 				end

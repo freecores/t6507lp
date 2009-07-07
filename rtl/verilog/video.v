@@ -444,7 +444,13 @@ always @(*) begin // comb logic
 				// 3 		BL, PF
 				// 4 		BK
 			if (CTRLPF[0] == 1'b1) begin// reflected PF
-				if (ENABL == 1'b1) begin // the ball is enabled
+				if (vert_counter == p0 || vert_counter == m0) begin
+					pixel = COLUP0;
+				end
+				else if (vert_counter == p1 || vert_counter == m1) begin
+					pixel = COLUP1;
+				end
+				else if (ENABL == 1'b1) begin // the ball is enabled
 					if (vert_counter == bl_position) begin
 						pixel = COLUPF;
 					end	

@@ -97,11 +97,18 @@ module t6507lp_fsm_tb();
 			fake_mem[my_i]=8'h00;
 		end
 
-		fake_mem[0] = ASL_ACC; // testing ACC mode
+		fake_mem[0] = STA_IDY; // testing IDY mode WRITE TYPE, page crossed;
+		fake_mem[1] = 8'h00;  
+		fake_mem[2] = STA_IDY; // testing IDY mode WRITE TYPE, page not crossed;
+		fake_mem[3] = 8'h04; 
+		fake_mem[4] = 8'hFF; 
+
+
+		/*fake_mem[0] = ASL_ACC; // testing ACC mode
 		fake_mem[1] = ADC_IMM; // testing IMM mode
 		fake_mem[2] = 8'h27;
 		fake_mem[3] = JMP_ABS; // testing ABS mode, JMP type
-		fake_mem[4] = 8'h09;
+		fake_mem[4] = 8'h09;*/
 		fake_mem[5] = 8'h00;
 		fake_mem[6] = ASL_ACC; // wont be executed
 		fake_mem[7] = ASL_ACC; // wont be executed
