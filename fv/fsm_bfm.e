@@ -27,8 +27,6 @@ unit fsm_bfm_u {
 		var last_Y : byte;
 		gen data;
 
-		--print mem[i];
-		--keep data.data_in == mem[i].as_a(byte);
 		while (reset_needed) {
 			gen data;
 	
@@ -37,29 +35,11 @@ unit fsm_bfm_u {
 			};
 		};
 
-	--	if (data.test_kind == REGULAR) {
-	--		emit data.T1_cover_event;
-	--		alu_opcode$ = data.alu_opcode.as_a(byte);
-	--	}
-	--	else {
-	--		emit data.T2_cover_event;
-	--		alu_opcode$ = data.rand_op;
-	--	};
-
 		reset_n$    = data.reset_n;
 		alu_result$ = data.alu_result;
 		alu_status$ = data.alu_status;
-		--data_in$    = data.data_in;
 		data_in$    = mem[i].as_a(byte);
 		data.data_in = mem[i].as_a(byte);
-		--data_in$    = 8'hF8;
-		--print me.agent.chk.old_state;
-		--if (me.agent.chk.old_state == CYCLE_1) {
-		--	last_X = data.alu_x;
-		--	last_Y = data.alu_y;
-		--};
-		--alu_x$      = last_X;
-		--alu_y$      = last_Y;
 		alu_x$ = data.alu_x;
 		alu_y$ = data.alu_y;
 		

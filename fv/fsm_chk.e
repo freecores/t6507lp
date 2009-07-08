@@ -10,8 +10,6 @@ unit fsm_chk_u {
 	  keep soft Y == 0;
 	!PC : uint(bits : 13);
 	  keep soft PC == 0;
-//	!SP : uint(bits : 9);
-//	  keep soft SP == 9'b100000000;
 	!SP : byte;
 	  keep soft SP == 0;
 	!pointer : byte;
@@ -21,57 +19,21 @@ unit fsm_chk_u {
 
 	!more_cycles : bool;
 	  keep soft more_cycles == FALSE;
-	--!R  : byte;
-	-- keep soft R == 0;
-	--!PS : byte;
-	--  keep soft PS[0:0] == 0;
-	--  keep soft PS[1:1] == 0;
-	--  keep soft PS[2:2] == 0;
-	--  keep soft PS[3:3] == 0;
-	--  keep soft PS[4:4] == 0;
-	--  keep soft PS[5:5] == 1;
-	--  keep soft PS[6:6] == 0;
-	--  keep soft PS[7:7] == 0;
-	-- N : bit;
-	-- V : bit;
-	-- B : bit;
-	-- D : bit;
-	-- I : bit;
-	-- Z : bit;
-	-- C : bit;
-	-- keep soft N == 0;
-	-- keep soft V == 0;
-	-- keep soft B == 0;
-	-- keep soft D == 0;
-	-- keep soft I == 0;
-	-- keep soft Z == 0;
-	-- keep soft C == 0;
 
 	!new_inst   : bool;
 	keep new_inst == FALSE;
 	!new_input : fsm_input_s;
 	!old_input : fsm_input_s;
-	--!new_inst  : bool;
-	--keep soft new_inst == FALSE;
-
-	--!i : ps_index;
 
 	!new_state : state_t;
 	!old_state : state_t;
 	
-	--count_cycles : int;
-	--first_cycle  : bool;
-	--last_a       : byte;
-	--last_status  : byte;
-	--last_result  : byte;
 	!PCL:byte;
 	!PCH:byte;
 	!SP_aux:byte;
 	!rst : bit;
 	!rst_counter  : byte;
 
-	--keep first_cycle  == TRUE;
-	--keep count_cycles == 0;
 	keep rst_counter  == 0;
 	
 	!instruction      : valid_opcodes;
@@ -122,12 +84,6 @@ unit fsm_chk_u {
 	};
 
 	store(input : fsm_input_s) is {
-	--reset_n    : bit;
-	--alu_result : byte;
-	--alu_status : byte;
-	--data_in    : byte;
-	--alu_x      : byte;
-	--alu_y      : byte;
 	//print me;
 	//print input;
 		if (input.reset_n == 0) {
@@ -1394,7 +1350,9 @@ unit fsm_chk_u {
 						if (alu_enable != 0) {
 							dut_error("JSR_ABS is Wrong!");
 						};
-						if (data_out[4:0] != PC[12:8]) {
+						if (data_out[4:0] != PC[12:8] && data_out[7:5] != 0) {
+						//if (data_out[4:0] != PCH[4:0]) {
+							print data_out[4:0], PCH[4:0];
 							dut_error("JSR_ABS is Wrong!");
 						};
 						if (addr != SP + 256) {
@@ -1985,18 +1943,31 @@ unit fsm_chk_u {
 						if (mem_rw != 0) {
 							dut_error("MEM_RW should be 0 (WRITE)");
 						};
-						if (pointer + Y > 255) {
-							if (addr[7:0] != pointer + Y - 256) {
+						if (PCL + Y > 255) {
+							if (addr[7:0] != PCL + Y - 256) {
 								dut_error("ADDR is wrong");
 							};
+							//out("EH MAIOR Q 255\n");
+							//if (addr[12:8] != PCH[4:0] + 1) {
+							//	dut_error("ADDR is wrong");
+							//};
 						}
 						else {
-							if (addr[7:0] != pointer + Y) {
+							//if (addr[7:0] != PCL + Y) {
+							//	dut_error("ADDR is wrong");
+							//};
+							//out("EH MENOR Q 255\n");
+							if (addr[7:0] != PCL + Y) {
 								dut_error("ADDR is wrong");
 							};
 						};
+						if (addr[12:8] != PCH[4:0]) {
+							//print addr[12:8], PCH[4:0];
+							//print 't6507lp_fsm.pc[12:8]';
+							//print 't6507lp_fsm.address[12:8]';
+							dut_error("ADDR is wrong");
+						};
 					};
-
 					(
 					  instructions == STA_ABX
 					) : {
@@ -2010,7 +1981,7 @@ unit fsm_chk_u {
 							if (addr[7:0] != PCL + X - 256) {
 								dut_error("ADDR should be equal SP!");
 							};
-							if (addr[12:8] != PCH + 1) {
+							if (addr[12:8] != PCH[4:0] + 1) {
 								dut_error("ADDR should be equal SP!");
 							};
 						}
@@ -2039,7 +2010,7 @@ unit fsm_chk_u {
 							if (addr[7:0] != PCL + Y - 256) {
 								dut_error("ADDR should be equal SP!");
 							};
-							if (addr[12:8] != PCH + 1) {
+							if (addr[12:8] != PCH[4:0] + 1) {
 								dut_error("ADDR should be equal SP!");
 							};
 						}
