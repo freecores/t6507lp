@@ -9,12 +9,13 @@ set_attribute lp_insert_operand_isolation true /
 
 set_attribute hdl_search_path $SVNPATH/rtl/verilog/
 set_attr lib_search_path $SVNPATH/syn/cadence/libs/
+
 read_hdl $FILE_LIST -v2001
 set_attr library { D_CELLS_3_3V.lib D_CELLSL_3_3V.lib}
 
-set_attribute avoid false [find / -libcell LGC*]
-set_attribute avoid false [find / -libcell LSG*]
-set_attribute avoid false [find / -libcell LSOGC*]
+#set_attribute avoid false [find / -libcell LGC*]
+#set_attribute avoid false [find / -libcell LSG*]
+#set_attribute avoid false [find / -libcell LSOGC*]
 
 set_attribute lef_library {xc06_m3_FE.lef D_CELLS.lef D_CELLSL.lef}
 set_attr cap_table_file xc06m3_typ.CapTbl
@@ -34,5 +35,3 @@ clock_gating share
 synthesize -incremental -effort high
 
 write_encounter design -basename /home/nscad/samuel/Desktop/svn_atari/trunk/syn/cadence/results/t6507lp t6507lp
-
-#write_hdl t6507lp > ../results/t6507lp.vg
