@@ -6,7 +6,7 @@
 //// http://www.opencores.org/cores/t6507lp/				////
 ////									////
 //// Description							////
-//// Implementation of a 6507-compatible microprocessor			////
+//// 6507 io wrapper							////
 ////									////
 //// TODO:								////
 //// - Nothing								////
@@ -44,17 +44,13 @@
 
 `include "timescale.v"
 
-//`include  "T6507LP_ALU.v" 
-//`include  "t6507lp_fsm.v"
-
-module t6507lp(clk, reset_n, data_in, rw_mem, data_out, address);
+module t6507lp_io(clk, reset_n, data_in, rw_mem, data_out, address);
 	parameter [3:0] DATA_SIZE = 4'd8;
 	parameter [3:0] ADDR_SIZE = 4'd13;
 
 	localparam [3:0] DATA_SIZE_ = DATA_SIZE - 4'b0001;
 	localparam [3:0] ADDR_SIZE_ = ADDR_SIZE - 4'b0001;
 
-	// note: in the top level inputs are just inputs, outputs are just outputs and the internal signals are wired.
 	input                 clk;
 	input                 reset_n;
 	input  [DATA_SIZE_:0] data_in;
@@ -62,41 +58,15 @@ module t6507lp(clk, reset_n, data_in, rw_mem, data_out, address);
 	output [DATA_SIZE_:0] data_out;
 	output [ADDR_SIZE_:0] address;
 
-	wire [DATA_SIZE_:0] alu_result;
-	wire [DATA_SIZE_:0] alu_status;
-	wire [DATA_SIZE_:0] alu_x;
-	wire [DATA_SIZE_:0] alu_y;
-	wire [DATA_SIZE_:0] alu_opcode;
-	wire [DATA_SIZE_:0] alu_a;
-	wire alu_enable;
-
-	// `include  "T6507LP_Package.v"
-	//TODO change rw_mem to mem_rw
-	t6507lp_fsm #(DATA_SIZE, ADDR_SIZE) t6507lp_fsm(
+	t6507lp #(DATA_SIZE, ADDR_SIZE) t6507lp(
 		.clk		(clk),
 		.reset_n	(reset_n),
-		.alu_result	(alu_result),
-		.alu_status	(alu_status),
 		.data_in	(data_in),
-		.alu_x		(alu_x),
-		.alu_y		(alu_y),
 		.address	(address),
 		.rw_mem		(rw_mem),
-		.data_out	(data_out),
-		.alu_opcode	(alu_opcode),
-		.alu_a		(alu_a),
-		.alu_enable	(alu_enable)
+		.data_out	(data_out)
 	);
 
-	t6507lp_alu t6507lp_alu (
-		.clk		(clk),
-		.reset_n  	(reset_n),
-		.alu_enable	(alu_enable),
-		.alu_result	(alu_result),
-		.alu_status	(alu_status),
-		.alu_opcode	(alu_opcode),
-		.alu_a		(alu_a),
-		.alu_x		(alu_x),
-		.alu_y		(alu_y)
-	);
 endmodule
+
+
