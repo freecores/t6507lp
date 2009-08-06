@@ -100,7 +100,6 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 	localparam DUMMY = 5'b11100;
 	localparam RESET = 5'b11111;
 
-	// OPCODES TODO: verify how this get synthesised
 	`include "t6507lp_package.v"
 
 	// rw_mem signals
@@ -916,7 +915,7 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 		relative = 1'b0;
 		zero_page = 1'b0;
 		zero_page_indexed = 1'b0;
-		//index_is_x = 1'b1;
+		index_is_x = 1'b0;
 		index_is_branch = 1'b0;
 	
 		//index = 8'h00;
@@ -1076,22 +1075,18 @@ module t6507lp_fsm(clk, reset_n, alu_result, alu_status, data_in, alu_x, alu_y, 
 			SBC_ABX, STA_ABX: begin
 				absolute_indexed = 1'b1;
 				index_is_x = 1'b1;
-				//index = alu_x;
 			end
 			ADC_ABY, AND_ABY, CMP_ABY, EOR_ABY, LDA_ABY, LDX_ABY, ORA_ABY, SBC_ABY, STA_ABY: begin
 				absolute_indexed = 1'b1;
 				index_is_x = 1'b0;
-				//index = alu_y;
 			end
 			ADC_IDX, AND_IDX, CMP_IDX, EOR_IDX, LDA_IDX, ORA_IDX, SBC_IDX, STA_IDX: begin
 				indirectx = 1'b1;
 				index_is_x = 1'b1;
-				//index = alu_x;
 			end
 			ADC_IDY, AND_IDY, CMP_IDY, EOR_IDY, LDA_IDY, ORA_IDY, SBC_IDY, STA_IDY: begin 
 				indirecty = 1'b1;
 				index_is_x = 1'b0;
-				//index = alu_y;	
 			end
 			JMP_ABS: begin
 				absolute = 1'b1;
