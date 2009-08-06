@@ -1,15 +1,12 @@
 ////////////////////////////////////////////////////////////////////////////
 ////									////
-//// T6507LP IP Core	 						////
+//// t6507 IP Core	 						////
 ////									////
-//// This file is part of the T6507LP project				////
-//// http://www.opencores.org/cores/t6507lp/				////
+//// This file is part of the t6507 project				////
+//// http://www.opencores.org/cores/t2600/				////
 ////									////
 //// Description							////
-//// 6507 io wrapper							////
-////									////
-//// TODO:								////
-//// - Nothing								////
+//// I/O wrapper for the 6507 processor			 		////
 ////									////
 //// Author(s):								////
 //// - Gabriel Oshiro Zardo, gabrieloshiro@gmail.com			////
@@ -44,238 +41,502 @@
 
 `include "timescale.v"
 `include "stubs.v"
-
-module t6507lp_io(vdd, gnd, clk, reset_n, data_in, rw_mem, data_out, address, clkIO, reset_nIO, data_inIO, rw_memIO, data_outIO, addressIO);
+module t6507lp_io(clk, reset_n, data_in, rw_mem, data_out, address);
 	parameter [3:0] DATA_SIZE = 4'd8;
 	parameter [3:0] ADDR_SIZE = 4'd13;
 
 	localparam [3:0] DATA_SIZE_ = DATA_SIZE - 4'b0001;
 	localparam [3:0] ADDR_SIZE_ = ADDR_SIZE - 4'b0001;
 
-	input vdd;
-	input gnd;
-
 	input clk;
-	output clkIO;
+	wire clkIO;
 
 	input reset_n;
-	output reset_nIO;
+	wire reset_nIO;
 
 	input [DATA_SIZE_:0] data_in;
-	output [DATA_SIZE_:0] data_inIO;
+	reg [DATA_SIZE_:0] data_inIO;
 
-	input rw_mem;
-	output rw_memIO;
+	output rw_mem;
+	wire rw_memIO;
 
-	input [DATA_SIZE_:0] data_out;
-	output [DATA_SIZE_:0] data_outIO;
+	output [DATA_SIZE_:0] data_out;
+	reg [DATA_SIZE_:0] data_outIO;
 
-	input [ADDR_SIZE_:0] address;
-	output [ADDR_SIZE_:0] addressIO;
+	output [ADDR_SIZE_:0] address;
+	reg [ADDR_SIZE_:0] addressIO;
 
-	// the ICP cell format is PAD PI Y PO
+	wire clampc;
+	wire pipo1, pipo2, pipo3, pipo4, pipo5, pipo6, pipo7, pipo8, pipo9, chainfinal;
+
+	wire muxed;
+
+	t6507lp t6507lp(  //core
+		.clk		(clkIO),
+		.reset_n	(reset_nIO),
+		.data_in	(data_inIO),
+		.rw_mem		(rw_memIO),
+		.data_out	(data_outIO),
+		.address	(addressIO)
+	);
+
+	assign muxed = (reset_nIO == 0) ? chainfinal : rw_memIO;
+
+	wire dummy_vdd, dummy_gnd, dummy_clampc;
+
 	ICP clk_pad(
-		.PI	(gnd),
-		.PO	(gnd),
-		.PAD	(clk),
+		.PAD	(clk), 
+		.PI	(pipo9),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PO	(chain_final),
 		.Y	(clkIO)
 	);
 
 	ICP reset_n_pad(
-		.PI	(gnd),
-		.PO	(gnd),
-		.PAD	(reset_n),
+		.PAD	(reset_n), 
+		.PI	(pipo8),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PO	(pipo9),
 		.Y	(reset_nIO)
 	);
 
 	ICP data_in_pad0(
-		.PI	(gnd),
-		.PO	(gnd),
-		.PAD	(data_in[0]),
+		.PAD	(data_in[0]), 
+		.PI	(pipo7),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PO	(pipo8),
 		.Y	(data_inIO[0])
 	);
 
 	ICP data_in_pad1(
-		.PI	(gnd),
-		.PO	(gnd),
-		.PAD	(data_in[1]),
+		.PAD	(data_in[1]), 
+		.PI	(pipo6),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PO	(pipo7),
 		.Y	(data_inIO[1])
 	);
 
 	ICP data_in_pad2(
-		.PI	(gnd),
-		.PO	(gnd),
-		.PAD	(data_in[2]),
+		.PAD	(data_in[2]), 
+		.PI	(pipo5),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PO	(pipo6),
 		.Y	(data_inIO[2])
 	);
 
 	ICP data_in_pad3(
-		.PI	(gnd),
-		.PO	(gnd),
-		.PAD	(data_in[3]),
+		.PAD	(data_in[3]), 
+		.PI	(pipo4),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PO	(pipo5),
 		.Y	(data_inIO[3])
 	);
 
 	ICP data_in_pad4(
-		.PI	(gnd),
-		.PO	(gnd),
-		.PAD	(data_in[4]),
+		.PAD	(data_in[4]), 
+		.PI	(pipo3),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PO	(pipo4),
 		.Y	(data_inIO[4])
 	);
 
 	ICP data_in_pad5(
-		.PI	(gnd),
-		.PO	(gnd),
-		.PAD	(data_in[5]),
+		.PAD	(data_in[5]), 
+		.PI	(pipo2),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PO	(pipo3),
 		.Y	(data_inIO[5])
 	);
 
 	ICP data_in_pad6(
-		.PI	(gnd),
-		.PO	(gnd),
-		.PAD	(data_in[6]),
+		.PAD	(data_in[6]), 
+		.PI	(pipo1),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PO	(pipo2),
 		.Y	(data_inIO[6])
 	);
 
 	ICP data_in_pad7(
-		.PI	(gnd),
-		.PO	(gnd),
-		.PAD	(data_in[7]),
+		.PAD	(data_in[7]), 
+		.PI	(dummy_vdd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PO	(pipo1),
 		.Y	(data_inIO[7])
 	);
 
-	BBT16P rw_mem_pad(
-		.EN	(gnd),
-		.PAD	(rw_memIO),
-		.A	(rw_mem)
+	BT4P rw_mem_pad(
+		.A	(muxed),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(rw_mem)
 	);
 
-	BBT16P data_out_pad0(
-		.EN	(gnd),
-		.PAD	(data_outIO[0]),
-		.A	(data_out[0])
+	BT4P data_out_pad0(
+		.A	(data_outIO[0]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(data_out[0])
 	);
 
-	BBT16P data_out_pad1(
-		.EN	(gnd),
-		.PAD	(data_outIO[1]),
-		.A	(data_out[1])
+	BT4P data_out_pad1(
+		.A	(data_outIO[1]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(data_out[1])
 	);
 
-	BBT16P data_out_pad2(
-		.EN	(gnd),
-		.PAD	(data_outIO[2]),
-		.A	(data_out[2])
+	BT4P data_out_pad2(
+		.A	(data_outIO[2]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(data_out[2])
 	);
 
-	BBT16P data_out_pad3(
-		.EN	(gnd),
-		.PAD	(data_outIO[3]),
-		.A	(data_out[3])
+	BT4P data_out_pad3(
+		.A	(data_outIO[3]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(data_out[3])
 	);
 
-	BBT16P data_out_pad4(
-		.EN	(gnd),
-		.PAD	(data_outIO[4]),
-		.A	(data_out[4])
+	BT4P data_out_pad4(
+		.A	(data_outIO[4]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(data_out[4])
 	);
 
-	BBT16P data_out_pad5(
-		.EN	(gnd),
-		.PAD	(data_outIO[5]),
-		.A	(data_out[5])
+	BT4P data_out_pad5(
+		.A	(data_outIO[5]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(data_out[5])
 	);
 
-	BBT16P data_out_pad6(
-		.EN	(gnd),
-		.PAD	(data_outIO[6]),
-		.A	(data_out[6])
+	BT4P data_out_pad6(
+		.A	(data_outIO[6]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(data_out[6])
 	);
 
-	BBT16P data_out_pad7(
-		.EN	(gnd),
-		.PAD	(data_outIO[7]),
-		.A	(data_out[7])
+	BT4P data_out_pad7(
+		.A	(data_outIO[7]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(data_out[7])
 	);
 
-	BBT16P adress_pad0(
-		.EN	(gnd),
-		.PAD	(addressIO[0]),
-		.A	(address[0])
+	BT4P address_pad0(
+		.A	(addressIO[0]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[0])
 	);
 
-	BBT16P adress_pad1(
-		.EN	(gnd),
-		.PAD	(addressIO[1]),
-		.A	(address[1])
+	BT4P address_pad1(
+		.A	(addressIO[1]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[1])
+	);
+	BT4P address_pad2(
+		.A	(addressIO[2]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[2])
+	);
+	BT4P address_pad3(
+		.A	(addressIO[3]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[3])
+	);
+	BT4P address_pad4(
+		.A	(addressIO[4]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[4])
+	);
+	BT4P address_pad5(
+		.A	(addressIO[5]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[5])
+	);
+	BT4P address_pad6(
+		.A	(addressIO[6]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[6])
+	);
+	BT4P address_pad7(
+		.A	(addressIO[7]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[7])
+	);
+	BT4P address_pad8(
+		.A	(addressIO[8]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[8])
+	);
+	BT4P address_pad9(
+		.A	(addressIO[9]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[9])
+	);
+	BT4P address_pad10(
+		.A	(addressIO[10]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[10])
+	);
+	BT4P address_pad11(
+		.A	(addressIO[11]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[11])
 	);
 
-	BBT16P adress_pad2(
-		.EN	(gnd),
-		.PAD	(addressIO[2]),
-		.A	(address[2])
+	BT4P address_pad12(
+		.A	(addressIO[12]),
+		.EN	(dummy_gnd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.CLAMPC	(dummy_clampc),
+		.PAD	(address[12])
 	);
 
-	BBT16P adress_pad3(
-		.EN	(gnd),
-		.PAD	(addressIO[3]),
-		.A	(address[3])
+	CORNERCLMP left_up_pad (
+		.CLAMPC	(dummy_clampc),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd)
 	);
 
-	BBT16P adress_pad4(
-		.EN	(gnd),
-		.PAD	(addressIO[4]),
-		.A	(address[4])
+	CORNERCLMP left_down_pad (
+		.CLAMPC	(dummy_clampc),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd)
 	);
 
-	BBT16P adress_pad5(
-		.EN	(gnd),
-		.PAD	(addressIO[5]),
-		.A	(address[5])
+	CORNERCLMP right_up_pad (
+		.CLAMPC	(dummy_clampc),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd)
 	);
 
-	BBT16P adress_pad6(
-		.EN	(gnd),
-		.PAD	(addressIO[6]),
-		.A	(address[6])
+	CORNERCLMP right_down_pad (
+		.CLAMPC	(dummy_clampc),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd)
 	);
 
-	BBT16P adress_pad7(
-		.EN	(gnd),
-		.PAD	(addressIO[7]),
-		.A	(address[7])
+ 	GND5ALLPADP gnd_pad_left (
+		.CLAMPC	(dummy_clampc),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.GND	(dummy_gnd)
 	);
 
-	BBT16P adress_pad8(
-		.EN	(gnd),
-		.PAD	(addressIO[8]),
-		.A	(address[8])
+	GND5ALLPADP gnd_pad_right (
+		.CLAMPC	(dummy_clampc),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.GND	(dummy_gnd)
 	);
 
-	BBT16P adress_pad9(
-		.EN	(gnd),
-		.PAD	(addressIO[9]),
-		.A	(address[9])
+	GND5ALLPADP gnd_pad_up (
+		.CLAMPC	(dummy_clampc),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.GND	(dummy_gnd)
 	);
 
-	BBT16P adress_pad10(
-		.EN	(gnd),
-		.PAD	(addressIO[10]),
-		.A	(address[10])
+	GND5ALLPADP gnd_pad_down (
+		.CLAMPC	(dummy_clampc),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.GND	(dummy_gnd)
 	);
 
-	BBT16P adress_pad11(
-		.EN	(gnd),
-		.PAD	(addressIO[11]),
-		.A	(address[11])
+	VDD5ALLPADP vdd_pad_left (
+		.CLAMPC	(dummy_clampc),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD	(dummy_vdd)
 	);
 
-	BBT16P adress_pad12(
-		.EN	(gnd),
-		.PAD	(addressIO[12]),
-		.A	(address[12])
+	VDD5ALLPADP vdd_pad_right (
+		.CLAMPC	(dummy_clampc),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD	(dummy_vdd)
 	);
 
+	VDD5ALLPADP vdd_pad_up (
+		.CLAMPC	(dummy_clampc),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD	(dummy_vdd)
+	);
+
+	VDD5ALLPADP vdd_pad_down (
+		.CLAMPC	(dummy_clampc),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd),
+		.VDD	(dummy_vdd)
+	);
+ 
+	FILLERP_110 filler0 (
+		.CLAMPC	(dummy_clampc),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd)
+	);
+
+	FILLERP_110 filler1 (
+		.CLAMPC	(dummy_clampc),
+		.VDD5O	(dummy_vdd),
+		.VDD5R	(dummy_vdd),
+		.GND5O	(dummy_gnd),
+		.GND5R	(dummy_gnd)
+	);
 endmodule
-
-

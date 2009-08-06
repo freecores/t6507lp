@@ -44,16 +44,55 @@
 
 `include "timescale.v"
 
-module ICP (PI, PO, PAD, Y);
-	input PAD;
+module ICP (PAD, PI, GND5O, GND5R, VDD5O, VDD5R, CLAMPC, PO, Y);
+	input PAD; 
 	input PI;
-	output Y;
+	input GND5O;
+	input GND5R;
+	input VDD5O;
+	input VDD5R;
+	input CLAMPC;
 	output PO;
+	output Y;
 endmodule
 
-module BBT16P (EN, PAD, A);
-	input	A;
-	input	EN;
-	output	PAD;
+module BT4P (A, EN, GND5O, GND5R, VDD5O, VDD5R, CLAMPC, PAD);
+	input A;
+	input EN;
+	input GND5O;
+	input GND5R;
+	input VDD5O;
+	input VDD5R;
+	input CLAMPC;
+	output PAD;
 endmodule
 
+module CORNERCLMP (GND5O, GND5R, VDD5O, VDD5R, CLAMPC);
+	input CLAMPC;
+	input VDD5O;
+	input VDD5R;
+	input GND5O;
+	input GND5R;
+endmodule
+
+module GND5ALLPADP (VDD5O, VDD5R, CLAMPC, GND);
+	input CLAMPC;
+	input VDD5O;
+	input VDD5R;
+	input GND;
+endmodule
+
+module VDD5ALLPADP (GND5O, GND5R, CLAMPC, VDD);
+	input CLAMPC;
+	input GND5O;
+	input GND5R;
+	input VDD;
+endmodule
+
+module FILLERP_110 (GND5O, GND5R, VDD5O, VDD5R, CLAMPC);
+	input CLAMPC;
+	input VDD5O;
+	input VDD5R;
+	input GND5O;
+	input GND5R;
+endmodule
