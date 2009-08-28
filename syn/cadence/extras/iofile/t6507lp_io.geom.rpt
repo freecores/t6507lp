@@ -1,0 +1,1109 @@
+Verify Geometry report created on Tue Jul 28 14:22:49 2009
+ 
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M1 )
+Bounds : ( 760.400, 1643.400 ) ( 848.700, 1977.200 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 763.900, 1678.300 ) ( 845.400, 1744.300 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 765.500, 1643.200 ) ( 843.600, 2070.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 808.750, 1640.400 ) ( 831.850, 2070.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 765.700, 1679.100 ) ( 845.200, 1743.500 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 765.700, 1640.500 ) ( 844.450, 2069.500 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 765.700, 1640.500 ) ( 843.600, 2070.000 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell reset_n_pad  ( M1 )
+Bounds : ( 804.500, 1640.400 ) ( 869.600, 1977.200 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 788.700, 1643.200 ) ( 864.500, 2069.600 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 805.250, 1640.400 ) ( 866.300, 2069.600 )
+
+
+OVERLAP: Cell filler1 & Cell address_pad12
+Bounds : ( 784.800, 1640.000 ) ( 849.100, 2070.000 )
+
+
+OVERLAP: Cell reset_n_pad & Cell address_pad12
+Bounds : ( 760.000, 1640.000 ) ( 849.100, 2070.000 )
+
+
+OVERLAP: Cell reset_n_pad & Cell filler1
+Bounds : ( 784.800, 1640.000 ) ( 870.000, 2070.000 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M2 )
+Bounds : ( 757.100, 1679.100 ) ( 763.100, 1743.500 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M3 )
+Bounds : ( 757.100, 1679.100 ) ( 764.700, 1743.500 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 739.100, 1679.100 ) ( 743.800, 1743.500 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 739.100, 1679.100 ) ( 742.200, 1743.500 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 784.800, 1679.100 ) ( 787.900, 1743.500 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 784.800, 1679.100 ) ( 787.900, 1743.500 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell filler1  ( M1 )
+Bounds : ( 785.200, 1643.200 ) ( 804.250, 1977.200 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M1 )
+Bounds : ( 760.400, 1643.150 ) ( 783.550, 1977.200 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell filler1  ( M1 )
+Bounds : ( 785.200, 1640.400 ) ( 803.800, 1977.200 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M1 )
+Bounds : ( 760.400, 1640.400 ) ( 783.300, 1977.200 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M1 )
+Bounds : ( 739.500, 1640.400 ) ( 759.600, 1977.200 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M1 )
+Bounds : ( 748.300, 1640.400 ) ( 750.800, 2069.600 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 743.000, 1640.400 ) ( 756.300, 2069.600 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 788.250, 1640.400 ) ( 794.950, 2070.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell filler1  ( M2 )
+Bounds : ( 788.700, 1640.400 ) ( 803.050, 2069.600 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 765.500, 1640.400 ) ( 782.550, 2070.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 763.900, 1640.400 ) ( 782.550, 2069.600 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 744.600, 1640.400 ) ( 754.500, 2070.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 744.800, 1679.100 ) ( 756.100, 1743.500 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 744.800, 1640.500 ) ( 754.500, 2070.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 744.800, 1640.500 ) ( 755.350, 2069.500 )
+
+
+OVERLAP: Cell clk_pad & Cell address_pad12
+Bounds : ( 739.100, 1640.000 ) ( 760.000, 2070.000 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M3 )
+Bounds : ( 846.200, 1679.100 ) ( 849.100, 1743.500 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M2 )
+Bounds : ( 846.200, 1679.100 ) ( 849.100, 1743.500 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell filler1  ( M3 )
+Bounds : ( 867.100, 1679.100 ) ( 873.100, 1743.500 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 891.900, 1679.100 ) ( 894.800, 1743.500 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 891.900, 1679.100 ) ( 894.800, 1743.500 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell filler1  ( M1 )
+Bounds : ( 837.400, 1640.400 ) ( 848.700, 2069.600 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 837.550, 1640.400 ) ( 843.600, 2070.000 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M1 )
+Bounds : ( 870.400, 1640.400 ) ( 894.400, 2069.600 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell reset_n_pad  ( M1 )
+Bounds : ( 858.300, 1640.400 ) ( 869.600, 2069.600 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 873.900, 1640.400 ) ( 891.100, 2069.600 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 874.100, 1679.100 ) ( 890.900, 1743.500 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 874.850, 1640.500 ) ( 890.150, 2069.500 )
+
+
+OVERLAP: Cell filler0 & Cell filler1
+Bounds : ( 870.000, 1640.000 ) ( 894.800, 2070.000 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M2 )
+Bounds : ( 1197.100, 1679.100 ) ( 1200.000, 1743.500 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M3 )
+Bounds : ( 1197.650, 1679.100 ) ( 1200.000, 1743.500 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1191.950, 1679.100 ) ( 1196.100, 1743.500 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1191.950, 1679.100 ) ( 1195.050, 1743.500 )
+
+
+SPACING: Pin of Cell address_pad11 & Pin of Cell address_pad10  ( M3 )
+Bounds : ( 1196.650, 1679.100 ) ( 1197.100, 1743.500 )
+Actual:     0.45     Min:     1  SameNetGap
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M1 )
+Bounds : ( 1192.350, 1640.400 ) ( 1199.600, 2069.600 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1195.850, 1640.400 ) ( 1196.300, 2069.600 )
+
+
+OVERLAP: Cell address_pad10 & Cell address_pad11
+Bounds : ( 1191.950, 1640.000 ) ( 1200.000, 2070.000 )
+
+
+SPACING: Blockage of Cell vdd_pad_left & Pin of Cell left_down_pad  ( M1 )
+Bounds : ( 427.400, 430.000 ) ( 429.600, 430.400 )
+Actual:     0.4     Min:     0.8
+
+SPACING: Pin of Cell left_down_pad & Blockage of Cell data_in_pad0  ( M1 )
+Bounds : ( 430.000, 427.400 ) ( 430.400, 429.600 )
+Actual:     0.4     Min:     0.8
+
+SPACING: Pin of Cell left_down_pad & Blockage of Cell data_in_pad0  ( M1 )
+Bounds : ( 430.000, 426.900 ) ( 430.400, 427.400 )
+Actual:     0.64     Min:     0.8
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 763.900, 1643.200 ) ( 845.400, 1677.900 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 760.400, 1677.900 ) ( 848.700, 1678.300 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 760.500, 1640.500 ) ( 848.600, 1641.450 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 764.100, 1643.200 ) ( 845.200, 1677.100 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 764.850, 1640.500 ) ( 844.450, 1678.100 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 805.250, 1640.400 ) ( 869.600, 1642.400 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M1 )
+Bounds : ( 784.100, 1640.400 ) ( 786.700, 1642.600 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M2 )
+Bounds : ( 757.100, 1643.200 ) ( 763.100, 1677.100 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M3 )
+Bounds : ( 757.100, 1643.200 ) ( 763.100, 1677.100 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 739.100, 1643.200 ) ( 742.200, 1677.100 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 739.100, 1643.200 ) ( 742.200, 1677.100 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M1 )
+Bounds : ( 804.600, 1640.400 ) ( 807.200, 1642.600 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell filler1  ( M1 )
+Bounds : ( 801.100, 1640.400 ) ( 803.700, 1642.600 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell filler1  ( M1 )
+Bounds : ( 796.500, 1640.400 ) ( 799.100, 1642.600 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 784.800, 1643.200 ) ( 787.900, 1677.100 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 784.800, 1643.200 ) ( 787.900, 1677.100 )
+
+
+SPACING: Blockage of Cell rw_mem_pad & Pin of Cell left_up_pad  ( M1 )
+Bounds : ( 426.850, 1639.600 ) ( 427.400, 1640.000 )
+Actual:     0.68     Min:     0.8
+
+SPACING: Blockage of Cell rw_mem_pad & Pin of Cell left_up_pad  ( M1 )
+Bounds : ( 427.400, 1639.600 ) ( 429.600, 1640.000 )
+Actual:     0.4     Min:     0.8
+
+SPACING: Pin of Cell left_up_pad & Blockage of Cell gnd_pad_up  ( M1 )
+Bounds : ( 430.000, 1640.400 ) ( 430.400, 1642.600 )
+Actual:     0.4     Min:     0.8
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 739.500, 1677.900 ) ( 759.600, 1678.300 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 739.500, 1640.400 ) ( 759.600, 1642.400 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell filler1  ( M2 )
+Bounds : ( 785.200, 1640.400 ) ( 803.050, 1642.400 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 760.400, 1640.400 ) ( 782.550, 1642.400 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 739.600, 1640.500 ) ( 759.500, 1641.450 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 743.200, 1643.200 ) ( 756.100, 1677.100 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 743.950, 1640.500 ) ( 755.350, 1678.100 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M2 )
+Bounds : ( 1197.100, 1643.200 ) ( 1200.000, 1677.100 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M3 )
+Bounds : ( 1197.100, 1643.200 ) ( 1200.000, 1677.100 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1191.950, 1643.200 ) ( 1195.050, 1677.100 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1191.950, 1643.200 ) ( 1195.050, 1677.100 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M3 )
+Bounds : ( 846.200, 1643.200 ) ( 849.100, 1677.100 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M2 )
+Bounds : ( 846.200, 1643.200 ) ( 849.100, 1677.100 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M1 )
+Bounds : ( 833.400, 1640.400 ) ( 836.000, 1642.600 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell filler1  ( M3 )
+Bounds : ( 867.100, 1643.200 ) ( 873.100, 1677.100 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 891.900, 1643.200 ) ( 894.800, 1677.100 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 891.900, 1643.200 ) ( 894.800, 1677.100 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1192.350, 1677.900 ) ( 1199.600, 1678.300 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1192.350, 1640.400 ) ( 1199.600, 1642.400 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1192.450, 1640.500 ) ( 1199.500, 1641.450 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1196.050, 1643.200 ) ( 1196.100, 1677.100 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 870.400, 1677.900 ) ( 894.400, 1678.300 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 870.400, 1640.400 ) ( 894.400, 1642.400 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 870.500, 1640.500 ) ( 894.300, 1641.450 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 874.100, 1643.200 ) ( 890.900, 1677.100 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M1 )
+Bounds : ( 1547.950, 1374.450 ) ( 1550.750, 1388.450 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M1 )
+Bounds : ( 1971.350, 1353.850 ) ( 1975.550, 1419.600 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M1 )
+Bounds : ( 1551.550, 1353.850 ) ( 1884.750, 1419.600 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1688.150, 1357.150 ) ( 1868.350, 1416.100 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1652.250, 1357.150 ) ( 1687.750, 1416.100 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1585.850, 1357.150 ) ( 1651.850, 1416.100 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1550.750, 1357.150 ) ( 1585.450, 1416.100 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1868.350, 1353.850 ) ( 1977.150, 1419.600 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1687.750, 1353.850 ) ( 1688.150, 1419.600 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1651.850, 1353.850 ) ( 1652.250, 1419.600 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1585.450, 1353.850 ) ( 1585.850, 1419.600 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1550.750, 1358.950 ) ( 1977.550, 1414.500 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1550.750, 1358.950 ) ( 1977.150, 1416.100 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1869.300, 1353.950 ) ( 1977.050, 1419.500 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1548.050, 1353.950 ) ( 1549.000, 1419.500 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1783.850, 1357.350 ) ( 1867.550, 1415.900 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1779.750, 1357.350 ) ( 1782.350, 1415.900 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1688.950, 1357.350 ) ( 1778.250, 1415.900 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1653.050, 1357.350 ) ( 1686.950, 1415.900 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1586.650, 1357.350 ) ( 1651.050, 1414.300 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1550.750, 1357.350 ) ( 1584.650, 1415.900 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1652.050, 1358.100 ) ( 1977.050, 1415.150 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1548.050, 1358.100 ) ( 1977.050, 1414.300 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1548.050, 1358.100 ) ( 1585.650, 1415.150 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1652.050, 1358.950 ) ( 1977.550, 1414.500 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1548.050, 1358.950 ) ( 1977.550, 1414.300 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Pin of Cell address_pad8  ( M1 )
+Bounds : ( 1885.550, 1365.950 ) ( 1970.550, 1407.500 )
+
+
+OVERLAP: Cell address_pad8 & Cell gnd_pad_right
+Bounds : ( 1547.550, 1353.450 ) ( 1977.550, 1420.000 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M1 )
+Bounds : ( 1885.550, 1353.850 ) ( 1970.550, 1365.150 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M1 )
+Bounds : ( 1547.950, 1353.850 ) ( 1550.150, 1354.500 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1653.050, 1353.450 ) ( 1686.950, 1356.350 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1550.750, 1353.450 ) ( 1584.650, 1356.350 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1653.050, 1353.450 ) ( 1686.950, 1356.350 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1550.750, 1353.450 ) ( 1584.650, 1356.350 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1688.950, 1353.450 ) ( 1778.250, 1356.350 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1688.950, 1353.450 ) ( 1778.250, 1356.350 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1783.850, 1353.450 ) ( 1867.550, 1356.350 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1586.650, 1353.450 ) ( 1651.050, 1356.350 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1783.850, 1353.450 ) ( 1867.550, 1356.350 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1586.650, 1353.450 ) ( 1651.050, 1356.350 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1779.750, 1353.450 ) ( 1782.350, 1356.350 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M3 )
+Bounds : ( 1779.750, 1353.450 ) ( 1782.350, 1356.350 )
+
+
+SPACING: Pin of Cell right_down_pad & Blockage of Cell address_pad0  ( M1 )
+Bounds : ( 1547.950, 430.000 ) ( 1550.150, 430.400 )
+Actual:     0.4     Min:     0.8
+
+SPACING: Pin of Cell right_down_pad & Blockage of Cell address_pad0  ( M1 )
+Bounds : ( 1550.150, 430.000 ) ( 1550.700, 430.400 )
+Actual:     0.68     Min:     0.8
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M1 )
+Bounds : ( 1547.950, 1355.300 ) ( 1884.750, 1373.650 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M1 )
+Bounds : ( 1550.750, 1354.850 ) ( 1884.750, 1373.650 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M1 )
+Bounds : ( 1550.950, 1353.850 ) ( 1884.750, 1373.650 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1547.950, 1356.050 ) ( 1549.950, 1372.900 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1547.950, 1357.150 ) ( 1977.150, 1372.900 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1547.950, 1358.950 ) ( 1977.550, 1372.900 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M2 )
+Bounds : ( 1783.850, 1416.900 ) ( 1867.550, 1420.000 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M2 )
+Bounds : ( 1688.950, 1416.900 ) ( 1778.250, 1420.000 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M2 )
+Bounds : ( 1653.050, 1416.900 ) ( 1686.950, 1420.000 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M2 )
+Bounds : ( 1586.650, 1416.900 ) ( 1651.050, 1420.000 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M2 )
+Bounds : ( 1550.750, 1416.900 ) ( 1584.650, 1420.000 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M3 )
+Bounds : ( 1783.850, 1416.900 ) ( 1867.550, 1420.000 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M3 )
+Bounds : ( 1779.750, 1416.900 ) ( 1782.350, 1420.000 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M3 )
+Bounds : ( 1688.950, 1416.900 ) ( 1778.250, 1420.000 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M3 )
+Bounds : ( 1653.050, 1416.900 ) ( 1686.950, 1420.000 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M3 )
+Bounds : ( 1586.650, 1415.300 ) ( 1651.050, 1420.000 )
+
+
+SHORT: Pin of Cell address_pad8 & Blockage of Cell gnd_pad_right  ( M3 )
+Bounds : ( 1550.750, 1416.900 ) ( 1584.650, 1420.000 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M1 )
+Bounds : ( 1885.550, 1408.300 ) ( 1970.550, 1419.600 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M1 )
+Bounds : ( 1547.950, 1410.450 ) ( 1550.750, 1419.600 )
+
+
+SHORT: Pin of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M1 )
+Bounds : ( 1547.950, 1392.450 ) ( 1550.750, 1406.450 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M1 )
+Bounds : ( 1547.950, 1407.250 ) ( 1884.750, 1409.650 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M1 )
+Bounds : ( 1547.950, 1389.250 ) ( 1884.750, 1391.650 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1547.950, 1408.000 ) ( 1977.550, 1408.900 )
+
+
+OVERLAP: Blockage of Cell gnd_pad_right & Blockage of Cell address_pad8  ( M2 )
+Bounds : ( 1547.950, 1390.000 ) ( 1977.550, 1390.900 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell filler1  ( M1 )
+Bounds : ( 772.500, 1978.000 ) ( 857.500, 2063.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M1 )
+Bounds : ( 760.400, 2063.800 ) ( 848.700, 2068.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 763.900, 1780.600 ) ( 845.400, 1960.800 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 763.900, 1744.700 ) ( 845.400, 1780.200 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 760.400, 1960.800 ) ( 848.700, 2069.600 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 760.400, 1780.200 ) ( 848.700, 1780.600 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 760.400, 1744.300 ) ( 848.700, 1744.700 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 760.500, 1961.750 ) ( 848.600, 2069.500 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 764.100, 1876.300 ) ( 845.200, 1960.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 764.100, 1872.200 ) ( 845.200, 1874.800 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 764.100, 1781.400 ) ( 845.200, 1870.700 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 764.100, 1745.500 ) ( 845.200, 1779.400 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 764.850, 1744.500 ) ( 844.450, 2069.500 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 765.500, 1744.500 ) ( 843.600, 2070.000 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M2 )
+Bounds : ( 757.100, 1876.300 ) ( 763.100, 1960.000 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M3 )
+Bounds : ( 757.100, 1876.300 ) ( 763.100, 1960.000 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 739.100, 1876.300 ) ( 742.200, 1960.000 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 739.100, 1876.300 ) ( 742.200, 1960.000 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 784.800, 1876.300 ) ( 787.900, 1960.000 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 784.800, 1876.300 ) ( 787.900, 1960.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 743.200, 1876.300 ) ( 756.100, 1960.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 743.950, 1744.500 ) ( 755.350, 2069.500 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 744.600, 1744.500 ) ( 754.500, 2070.000 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M2 )
+Bounds : ( 757.100, 1781.400 ) ( 763.100, 1870.700 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M2 )
+Bounds : ( 757.100, 1745.500 ) ( 763.100, 1779.400 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M3 )
+Bounds : ( 757.100, 1872.200 ) ( 763.100, 1874.800 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M3 )
+Bounds : ( 757.100, 1781.400 ) ( 763.100, 1870.700 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell address_pad12  ( M3 )
+Bounds : ( 757.100, 1745.500 ) ( 763.100, 1779.400 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 739.100, 1745.500 ) ( 742.200, 1779.400 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 739.100, 1745.500 ) ( 742.200, 1779.400 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 739.100, 1781.400 ) ( 742.200, 1870.700 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 739.100, 1781.400 ) ( 742.200, 1870.700 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 739.100, 1872.200 ) ( 742.200, 1874.800 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 739.100, 1872.200 ) ( 742.200, 1874.800 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 784.800, 1745.500 ) ( 787.900, 1779.400 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 784.800, 1745.500 ) ( 787.900, 1779.400 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 784.800, 1781.400 ) ( 787.900, 1870.700 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 784.800, 1781.400 ) ( 787.900, 1870.700 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M3 )
+Bounds : ( 784.800, 1872.200 ) ( 787.900, 1874.800 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell reset_n_pad  ( M2 )
+Bounds : ( 784.800, 1872.200 ) ( 787.900, 1874.800 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 739.500, 1780.200 ) ( 759.600, 1780.600 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 739.500, 1744.300 ) ( 759.600, 1744.700 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 743.200, 1872.200 ) ( 756.100, 1874.800 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 743.200, 1781.400 ) ( 756.100, 1870.700 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 743.200, 1745.500 ) ( 756.100, 1779.400 )
+
+
+SHORT: Pin of Cell clk_pad & Blockage of Cell address_pad12  ( M1 )
+Bounds : ( 739.500, 1978.000 ) ( 747.500, 2063.000 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell reset_n_pad  ( M1 )
+Bounds : ( 760.400, 1978.000 ) ( 771.700, 2063.000 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell clk_pad  ( M1 )
+Bounds : ( 751.600, 1978.000 ) ( 759.600, 2063.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M1 )
+Bounds : ( 739.500, 2063.800 ) ( 759.600, 2068.000 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M2 )
+Bounds : ( 739.500, 1960.800 ) ( 759.600, 2069.600 )
+
+
+OVERLAP: Blockage of Cell address_pad12 & Blockage of Cell clk_pad  ( M3 )
+Bounds : ( 739.600, 1961.750 ) ( 759.500, 2069.500 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M2 )
+Bounds : ( 1197.100, 1876.300 ) ( 1200.000, 1960.000 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M3 )
+Bounds : ( 1197.100, 1876.300 ) ( 1200.000, 1960.000 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1191.950, 1876.300 ) ( 1195.050, 1960.000 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1191.950, 1876.300 ) ( 1195.050, 1960.000 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M3 )
+Bounds : ( 846.200, 1876.300 ) ( 849.100, 1960.000 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M2 )
+Bounds : ( 846.200, 1876.300 ) ( 849.100, 1960.000 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell filler1  ( M3 )
+Bounds : ( 867.100, 1876.300 ) ( 873.100, 1960.000 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 891.900, 1876.300 ) ( 894.800, 1960.000 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 891.900, 1876.300 ) ( 894.800, 1960.000 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1196.050, 1876.300 ) ( 1196.100, 1960.000 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 874.100, 1876.300 ) ( 890.900, 1960.000 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M3 )
+Bounds : ( 846.200, 1745.500 ) ( 849.100, 1779.400 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M2 )
+Bounds : ( 846.200, 1745.500 ) ( 849.100, 1779.400 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M3 )
+Bounds : ( 846.200, 1781.400 ) ( 849.100, 1870.700 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M2 )
+Bounds : ( 846.200, 1781.400 ) ( 849.100, 1870.700 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M3 )
+Bounds : ( 846.200, 1872.200 ) ( 849.100, 1874.800 )
+
+
+SHORT: Pin of Cell address_pad12 & Blockage of Cell filler1  ( M2 )
+Bounds : ( 846.200, 1872.200 ) ( 849.100, 1874.800 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell filler1  ( M3 )
+Bounds : ( 867.100, 1872.200 ) ( 873.100, 1874.800 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell filler1  ( M3 )
+Bounds : ( 867.100, 1781.400 ) ( 873.100, 1870.700 )
+
+
+SHORT: Pin of Cell reset_n_pad & Blockage of Cell filler1  ( M3 )
+Bounds : ( 867.100, 1745.500 ) ( 873.100, 1779.400 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 891.900, 1745.500 ) ( 894.800, 1779.400 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 891.900, 1745.500 ) ( 894.800, 1779.400 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 891.900, 1781.400 ) ( 894.800, 1870.700 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 891.900, 1781.400 ) ( 894.800, 1870.700 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 891.900, 1872.200 ) ( 894.800, 1874.800 )
+
+
+SHORT: Pin of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 891.900, 1872.200 ) ( 894.800, 1874.800 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 870.400, 1780.200 ) ( 894.400, 1780.600 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 870.400, 1744.300 ) ( 894.400, 1744.700 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 874.100, 1872.200 ) ( 890.900, 1874.800 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 874.100, 1781.400 ) ( 890.900, 1870.700 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 874.100, 1745.500 ) ( 890.900, 1779.400 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M2 )
+Bounds : ( 1197.100, 1872.200 ) ( 1200.000, 1874.800 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M2 )
+Bounds : ( 1197.100, 1781.400 ) ( 1200.000, 1870.700 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M2 )
+Bounds : ( 1197.100, 1745.500 ) ( 1200.000, 1779.400 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M3 )
+Bounds : ( 1197.100, 1872.200 ) ( 1200.000, 1874.800 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M3 )
+Bounds : ( 1197.100, 1781.400 ) ( 1200.000, 1870.700 )
+
+
+SHORT: Pin of Cell address_pad10 & Blockage of Cell address_pad11  ( M3 )
+Bounds : ( 1197.100, 1745.500 ) ( 1200.000, 1779.400 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1191.950, 1745.500 ) ( 1195.050, 1779.400 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1191.950, 1745.500 ) ( 1195.050, 1779.400 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1191.950, 1781.400 ) ( 1195.050, 1870.700 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1191.950, 1781.400 ) ( 1195.050, 1870.700 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1191.950, 1872.200 ) ( 1195.050, 1874.800 )
+
+
+SHORT: Pin of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1191.950, 1872.200 ) ( 1195.050, 1874.800 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1192.350, 1780.200 ) ( 1199.600, 1780.600 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1192.350, 1744.300 ) ( 1199.600, 1744.700 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1196.050, 1872.200 ) ( 1196.100, 1874.800 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1196.050, 1781.400 ) ( 1196.100, 1870.700 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1196.050, 1745.500 ) ( 1196.100, 1779.400 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M2 )
+Bounds : ( 1192.350, 1960.800 ) ( 1199.600, 2069.600 )
+
+
+OVERLAP: Blockage of Cell address_pad11 & Blockage of Cell address_pad10  ( M3 )
+Bounds : ( 1192.450, 1961.750 ) ( 1199.500, 2069.500 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M2 )
+Bounds : ( 870.400, 1960.800 ) ( 894.400, 2069.600 )
+
+
+OVERLAP: Blockage of Cell filler1 & Blockage of Cell filler0  ( M3 )
+Bounds : ( 870.500, 1961.750 ) ( 894.300, 2069.500 )
+
+
+
+Begin Summary ...
+  Cells       : 0
+  SameNet     : 9
+  Wiring      : 0
+  Antenna     : 0
+  Short       : 128
+  Overlap     : 137
+End Summary
+
+  Total Violations : 274 Viols.

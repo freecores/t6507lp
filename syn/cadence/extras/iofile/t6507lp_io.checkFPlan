@@ -1,0 +1,16 @@
+##########################################
+#                                        #
+#  Cadence Design Systems, Inc.          #
+#  FirstEncounter Floorplan check file   #
+#                                        #
+##########################################
+**INFO: Unplaced Io Pins = 34 
+ 
+**INFO: Floating/Unconnected IO Pins = 1 
+ 
+**INFO: No. of regular pre-routes not on tracks : 0 
+  
+
+Reporting Utilizations....
+
+Core Utilization = 32.625702
