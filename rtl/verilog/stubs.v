@@ -89,10 +89,11 @@ module VDD5ALLPADP (GND5O, GND5R, CLAMPC, VDD);
 	input VDD;
 endmodule
 
-module FILLERP_110 (GND5O, GND5R, VDD5O, VDD5R, CLAMPC);
+/*module FILLERP_110 (GND5O, GND5R, VDD5O, VDD5R, CLAMPC);
 	input CLAMPC;
 	input VDD5O;
 	input VDD5R;
 	input GND5O;
 	input GND5R;
 endmodule
+*/
