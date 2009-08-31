@@ -26,14 +26,15 @@ set_attr cap_table_file xc06m3_typ.CapTbl
 set_attr interconnect_mode ple /
 
 elaborate
+
 define_clock -period 1000000 -name 1MHz [find [ find / -design t6507lp_io] -port clk]
 set_attribute slew {0 0 1 1} [find / -clock 1MHz]
 external_delay -clock [find / -clock 1MHz] -output 100 [all_outputs]
 external_delay -clock [find / -clock 1MHz] -input 100 [all_inputs]
-#0.1 ns each
 
 define_dft shift_enable -active high [find / -port scan_enable] -name SE
 set_attribute lp_clock_gating_test_signal SE /des*/*
+set_attribute lp_clock_gating_extract_common_enable true /des*/*
 
 #read_vcd simvision.vcd -module t6507lp -static
 #argh
@@ -42,10 +43,10 @@ set_attribute lp_clock_gating_test_signal SE /des*/*
 #report timing -lint
 
 check_dft_rules
-
 synthesize -to_generic -effort high
 synthesize -to_mapped -effort high -no_incremental
-#clock_gating share
+clock_gating share -hier
+
 define_dft scan_chain -name chain1 -sdi [find / -pin data_in[0]] -sdo [find / -pin data_out[0]] -shared_out -shared_select SE -shift_enable SE
 connect_scan_chains
 check_dft_rules
